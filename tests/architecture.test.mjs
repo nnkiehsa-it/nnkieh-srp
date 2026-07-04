@@ -131,6 +131,7 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(firebaseAuth, /accounts:lookup/u);
   assert.match(firebaseAuth, /ALLOWED_DOMAIN/u);
   assert.match(http, /errorStatus/u);
+  assert.match(http, /is not configured/u);
   assert.doesNotMatch(session, /adminEmails/u);
 });
 
