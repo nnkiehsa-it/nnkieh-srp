@@ -3,6 +3,9 @@ import { RequestFailure } from '@/lib/request';
 export function toReadableBackendError(error: unknown) {
   if (error instanceof RequestFailure) return error;
   const message = error instanceof Error ? error.message : '';
+  if (message.includes('is not configured')) {
+    return new Error('服務設定尚未完成，請稍後再試。', { cause: error });
+  }
   if (message.includes('達到上限')) {
     return new Error(message);
   }
@@ -16,7 +19,7 @@ export function toReadableBackendError(error: unknown) {
   if (code === 'unauthenticated' || code === '401') {
     return new Error('請先登入後再繼續。');
   }
-  if (/backend|後端|provider|session|permission-denied|unauthenticated/i.test(message)) {
+  if (/backend|provider|session/i.test(message)) {
     return new Error('操作失敗，請稍後再試。');
   }
   return new Error(message || '操作失敗，請稍後再試。');
