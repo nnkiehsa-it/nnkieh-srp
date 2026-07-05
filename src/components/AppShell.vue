@@ -42,7 +42,7 @@
 
         <div class="hidden items-center gap-3 md:flex">
           <NotificationBell v-if="isAllowedUser" />
-          <SettingsPanel />
+          <SettingsPanel v-if="isAllowedUser" />
         </div>
       </div>
     </header>

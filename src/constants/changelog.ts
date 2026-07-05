@@ -2,6 +2,17 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "最佳化登入畫面視覺呈現",
+    version: "v2.0.44",
+    date: "2026-07-06",
+    time: "01:23",
+    items: [
+      {
+        title: "隱藏登入頁面頂部導覽列的多餘登入按鈕，提供更乾淨的視覺體驗。",
+      },
+    ],
+  },
+  {
     title: "最佳化深色模式啟動畫面",
     version: "v2.0.43",
     date: "2026-07-06",
