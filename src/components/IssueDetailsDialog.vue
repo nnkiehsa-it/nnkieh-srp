@@ -63,12 +63,33 @@
 
     <template #comments="{ compactHeader }">
       <IssueComments
+        v-if="commentsEnabled"
         :can-compose="commentsEnabled"
         :compact-header="compactHeader"
         :issue-id="issue.id"
         class="h-full"
         @content-unavailable="emit('contentUnavailable', $event)"
       />
+      <section v-else class="flex h-full min-h-0 flex-col">
+        <div
+          class="flex shrink-0 items-center justify-between gap-3 border-b border-ink-100 pb-2 dark:border-ink-800"
+          :class="{ 'max-md:hidden': compactHeader }"
+        >
+          <div class="flex min-w-0 items-center gap-2">
+            <AppIcon name="comment" class="shrink-0 text-ink-500" />
+            <h4 class="truncate whitespace-nowrap text-base font-semibold text-ink-900 dark:text-ink-100">
+              討論留言
+            </h4>
+          </div>
+        </div>
+        <div class="flex min-h-0 flex-1 items-center py-4 pr-1">
+          <EmptyStatePanel
+            title="目前不開放留言"
+            description="提案完成審核後才會開放留言討論。"
+            icon="comment"
+          />
+        </div>
+      </section>
     </template>
   </DetailDialogShell>
 
@@ -125,6 +146,7 @@ import type { IssueRecord } from '@/types';
 import DetailDialogShell from '@/components/ui/DetailDialogShell.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import DialogOverlay from '@/components/ui/DialogOverlay.vue';
+import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
 import IssueDetailContent from '@/components/IssueDetailContent.vue';
 import IssueDetailSupportFooter from '@/components/IssueDetailSupportFooter.vue';
 import IssueComments from '@/components/IssueComments.vue';
