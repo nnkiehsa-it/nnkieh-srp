@@ -2,6 +2,20 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "修正待審核提案瀏覽問題",
+    version: "v2.0.60",
+    date: "2026-07-07",
+    time: "01:07",
+    items: [
+      {
+        title: "修正待審核提案開啟詳情時可能自動關閉的問題。",
+      },
+      {
+        title: "調整未開放留言提案的提示呈現，避免誤判為內容無法查看。",
+      },
+    ],
+  },
+  {
     title: "改善提案與留言討論體驗",
     version: "v2.0.59",
     date: "2026-07-07",
