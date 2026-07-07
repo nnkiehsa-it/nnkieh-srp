@@ -5,7 +5,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "最佳化行動版底部導覽列視覺與更新穩定性",
     version: "v2.0.103",
     date: "2026-07-08",
-    time: "06:43",
+    time: "06:51",
     items: [
       {
         title: "將行動裝置底部導覽列調整為懸浮大膠囊設計，並統一固定底邊距（全面屏為 22px、普通螢幕為 12px），確保多裝置的一致呈現。"
@@ -21,6 +21,12 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       },
       {
         title: "最佳化應用程式自動更新限制，放寬同版本背景自動載入上限至最多嘗試 2 次，確保更新順利部署並維持防死鎖防護。"
+      },
+      {
+        title: "最佳化提案與公告列表點擊回饋，合併整條列表列的按壓回饋，並阻斷標題文字重複縮放，使互動更加自然流暢。"
+      },
+      {
+        title: "禁用 Android 等行動裝置預設的 WebKit 點擊高亮藍色區塊，呈現更純淨的自訂視覺特效。"
       }
     ]
   },

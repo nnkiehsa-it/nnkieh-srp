@@ -109,7 +109,15 @@
     overflow-x: clip;
     scrollbar-gutter: stable;
     touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  a,
+  button,
+  [role="button"],
+  .cursor-pointer,
+  .app-bottom-nav__item {
+    -webkit-tap-highlight-color: transparent !important;
   }
 
   body {
@@ -670,8 +678,14 @@
   }
 
   .issue-table-row:active,
-  .issue-row-mobile:active {
-    background-color: rgb(241 245 249 / 0.82);
+  .issue-row-mobile:active,
+  .issue-row-mobile:has(.list-row-title-trigger:active),
+  .issue-table-row:has(.list-row-title-trigger:active) {
+    background-color: rgb(241 245 249 / 0.92);
+    box-shadow: inset 0 2px 8px rgb(var(--color-shadow) / 0.08);
+    opacity: 0.92;
+    transform: translateY(1px) scale(0.992) !important;
+    transition-duration: 60ms;
   }
 
   .list-row-title-trigger {
@@ -679,20 +693,11 @@
   }
 
   .list-row-title-trigger:active:not(:disabled):not([aria-disabled='true']) {
-    filter: none;
-    opacity: 1;
-    scale: 1;
-    transform: none;
-    translate: 0 0;
-  }
-
-  .issue-row-mobile:has(.list-row-title-trigger:active),
-  .issue-table-row:has(.list-row-title-trigger:active) {
-    background-color: rgb(241 245 249 / 0.92);
-    box-shadow: inset 0 2px 8px rgb(var(--color-shadow) / 0.08);
-    opacity: 0.92;
-    transform: translateY(1px) scale(0.992);
-    transition-duration: 60ms;
+    filter: none !important;
+    opacity: 1 !important;
+    scale: 1 !important;
+    transform: none !important;
+    translate: 0 0 !important;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -711,10 +716,7 @@
 
 
     .issue-table-row:active,
-    .issue-row-mobile:active {
-      background-color: rgb(30 41 59 / 0.78);
-    }
-
+    .issue-row-mobile:active,
     .issue-row-mobile:has(.list-row-title-trigger:active),
     .issue-table-row:has(.list-row-title-trigger:active) {
       background-color: rgb(30 41 59 / 0.9);
