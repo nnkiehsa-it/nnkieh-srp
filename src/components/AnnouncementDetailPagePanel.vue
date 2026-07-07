@@ -18,10 +18,11 @@
       />
     </template>
 
-    <template #actions>
+    <template #actions="{ compact }">
       <AnnouncementDetailActions
         :announcement="announcement"
         :can-manage="canManage"
+        :compact="compact"
         :liking="liking"
         @delete="emit('delete')"
         @edit="emit('edit')"

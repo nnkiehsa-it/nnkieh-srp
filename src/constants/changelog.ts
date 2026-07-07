@@ -2,6 +2,20 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "修正手機版留言按鈕顯示問題",
+    version: "v2.0.78",
+    date: "2026-07-07",
+    time: "16:40",
+    items: [
+      {
+        title: "修正手機版討論留言區底部按鈕可能被底端導覽列遮擋的問題。"
+      },
+      {
+        title: "最佳化公告詳情頁面在手機裝置下的按鈕排版，使其能正確套用緊湊配置樣式。"
+      }
+    ]
+  },
+  {
     title: "最佳化提案詳情頁面排版與間距設定",
     version: "v2.0.77",
     date: "2026-07-07",
