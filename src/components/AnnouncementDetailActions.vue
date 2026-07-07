@@ -1,9 +1,10 @@
 <template>
-  <div class="mt-auto flex shrink-0 flex-wrap items-center gap-2 border-t border-ink-100 pt-3 dark:border-ink-800">
+  <div class="mt-auto flex shrink-0 flex-wrap items-center gap-2 border-t border-ink-100 pt-3 dark:border-ink-800" :class="compact ? 'px-1' : ''">
     <DetailActionButton
       :active="announcement.currentUserLiked"
       :disabled="liking"
       :label="announcement.currentUserLiked ? `已讚 ${announcement.like_count}` : `讚 ${announcement.like_count}`"
+      :class="compact ? '!h-8 !gap-1 !px-2.5 text-xs' : ''"
       :title="announcement.currentUserLiked ? '取消讚' : '讚'"
       :aria-label="announcement.currentUserLiked ? '取消讚' : '讚'"
       @click="emit('toggleLike')"
@@ -15,6 +16,7 @@
 
     <DetailActionButton
       label="分享"
+      :class="compact ? '!h-8 !gap-1 !px-2.5 text-xs' : ''"
       title="複製分享連結"
       aria-label="複製分享連結"
       @click="emit('share')"
@@ -25,6 +27,7 @@
     <DetailActionButton
       v-if="canManage"
       label="編輯"
+      :class="compact ? '!h-8 !gap-1 !px-2.5 text-xs' : ''"
       title="編輯公告"
       aria-label="編輯公告"
       @click="emit('edit')"
@@ -39,6 +42,7 @@
       v-if="canManage"
       danger
       label="刪除"
+      :class="compact ? '!h-8 !gap-1 !px-2.5 text-xs' : ''"
       title="刪除公告"
       aria-label="刪除公告"
       @click="emit('delete')"
@@ -57,6 +61,7 @@ import type { AnnouncementRecord } from '@/types';
 defineProps<{
   announcement: AnnouncementRecord;
   canManage: boolean;
+  compact?: boolean;
   liking: boolean;
 }>();
 
