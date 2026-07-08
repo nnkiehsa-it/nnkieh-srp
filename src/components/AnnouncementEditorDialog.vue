@@ -10,7 +10,7 @@
       <div class="flex items-center justify-between border-b border-ink-200 dark:border-ink-800 pb-4 shrink-0">
         <div class="min-w-0">
           <span class="text-xs font-semibold tracking-wide text-ink-500 dark:text-ink-400">{{ announcement ? '修改公告內容' : '發布新的校內公告' }}</span>
-          <h2 class="mt-1 text-xl font-bold tracking-tight text-ink-950 dark:text-ink-50">公告內容編輯</h2>
+          <h2 class="mt-1 text-xl font-bold tracking-tight text-ink-950 dark:text-ink-50">公告內容</h2>
         </div>
         <button
           type="button"

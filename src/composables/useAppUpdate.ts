@@ -4,7 +4,7 @@ import { resetAppConnection } from '@/lib/reconnect';
 
 const updateAvailable = ref(false);
 const checking = ref(false);
-const reloading = ref(false);
+const reloading = ref<false | 'update' | 'restart'>(false);
 const remoteVersion = ref('');
 const initialCheckDone = ref(false);
 let lastCheckedAt = 0;
@@ -111,7 +111,7 @@ export function useAppUpdate() {
     return savedCount < 2;
   }
 
-  async function reloadApp(options: { automatic?: boolean } = {}) {
+  async function reloadApp(options: { automatic?: boolean; reason?: 'update' | 'restart' } = {}) {
     if (reloading.value) {
       return;
     }
@@ -120,7 +120,7 @@ export function useAppUpdate() {
       return;
     }
 
-    reloading.value = true;
+    reloading.value = options.reason || 'update';
 
     if (options.automatic && remoteVersion.value) {
       const savedVersion = sessionStorage.getItem(AUTO_RELOAD_STORAGE_KEY);

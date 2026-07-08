@@ -1,5 +1,5 @@
 <template>
-  <AppStartupScreen v-if="startupGateOpen" />
+  <AppStartupScreen v-if="startupGateOpen && !reloading" />
   <AppShell v-else>
     <RouterView v-slot="{ Component }">
       <Suspense>
@@ -32,20 +32,20 @@
       @install="promptInstall"
     />
   </AppShell>
-  <AppUpdatePromptDialog
-    :open="shouldShowUpdateDialog"
-    :busy="reloading"
-    @reload="reloadApp"
-  />
   <Teleport to="body">
     <Transition name="dialog" appear>
-      <AppStartupScreen
+      <div
         v-if="reloading"
-        class="z-[70]"
-        aria-label="正在更新應用程式"
-        title="正在更新"
-        message="正在重新載入最新狀態"
-      />
+        class="fixed inset-0 z-[70] flex items-center justify-center bg-ink-900/50 text-white backdrop-blur-sm"
+        role="status"
+        aria-live="assertive"
+        :aria-label="reloadingAriaLabel"
+      >
+        <div class="flex flex-col items-center gap-3">
+          <LoadingSpinner :size="8" />
+          <p class="text-sm font-semibold">{{ reloadingText }}</p>
+        </div>
+      </div>
     </Transition>
   </Teleport>
 </template>
@@ -55,9 +55,9 @@ import { RouterView, useRoute, useRouter } from 'vue-router';
 import AppShell from '@/components/AppShell.vue';
 import AppStartupScreen from '@/components/AppStartupScreen.vue';
 import AppInstallPromptDialog from '@/components/AppInstallPromptDialog.vue';
-import AppUpdatePromptDialog from '@/components/AppUpdatePromptDialog.vue';
 import PushPermissionPromptDialog from '@/components/PushPermissionPromptDialog.vue';
 import ToastViewport from '@/components/ToastViewport.vue';
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { useAppInstallPrompt } from '@/composables/useAppInstallPrompt';
 import { useAppStartupGate } from '@/composables/useAppStartupGate';
 import { useAppUpdate } from '@/composables/useAppUpdate';
@@ -77,17 +77,20 @@ if (typeof document !== 'undefined') {
   document.documentElement.dataset.appRelease = APP_RELEASE_MARKER;
 }
 
-const { canAutoReloadCurrentVersion, reloadApp, reloading, updateAvailable } = useAppUpdate();
+const { reloadApp, reloading, updateAvailable } = useAppUpdate();
 const { open: startupGateOpen } = useAppStartupGate();
 const route = useRoute();
 const router = useRouter();
 const { appReady, user } = useSession();
-const shouldShowUpdateDialog = computed(() => {
-  if (!updateAvailable.value) return false;
-  if (reloading.value) return false;
-  if (startupGateOpen.value && canAutoReloadCurrentVersion()) return false;
-  return true;
+
+const reloadingText = computed(() => {
+  return reloading.value === 'restart' ? '正在重啟' : '正在更新';
 });
+
+const reloadingAriaLabel = computed(() => {
+  return reloading.value === 'restart' ? '正在重啟' : '正在更新';
+});
+
 const {
   enablePushNotifications,
   loading: pushLoading,
@@ -156,10 +159,10 @@ async function enablePushFromPrompt() {
 }
 
 watch(
-  [updateAvailable, startupGateOpen],
-  ([hasUpdate, isStarting]) => {
-    if (hasUpdate && isStarting && canAutoReloadCurrentVersion()) {
-      void reloadApp({ automatic: true });
+  updateAvailable,
+  (hasUpdate) => {
+    if (hasUpdate) {
+      void reloadApp({ reason: 'update' });
     }
   },
   { immediate: true },

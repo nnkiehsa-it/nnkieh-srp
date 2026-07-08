@@ -90,12 +90,13 @@ function notificationForEvent(event: OutboxEvent): Record<string, unknown> | nul
     };
   }
   if (event.event_type === "issue.comment_created") {
+    const authorName = asString(event.payload.author_name).trim() || "匿名使用者";
     return {
       source: "user",
       type: "issue_comment_created",
       target_type: "issue",
       target_id: event.target_id,
-      title: "提案有新的留言",
+      title: `來自 ${authorName} 的留言`,
       actor_uid: event.actor_uid,
       actor_name: asString(event.payload.author_name),
       actor_photo_url: asString(event.payload.author_photo_url),
@@ -157,12 +158,13 @@ function notificationForEvent(event: OutboxEvent): Record<string, unknown> | nul
     };
   }
   if (event.event_type === "announcement.comment_created") {
+    const authorName = asString(event.payload.author_name).trim() || "匿名使用者";
     return {
       source: asString(event.payload.parent_author_uid) ? "user" : "admin",
       type: "announcement_comment_created",
       target_type: "announcement",
       target_id: event.target_id,
-      title: "公告有新的留言",
+      title: `來自 ${authorName} 的留言`,
       actor_uid: event.actor_uid,
       actor_name: asString(event.payload.author_name),
       actor_photo_url: asString(event.payload.author_photo_url),
@@ -352,9 +354,10 @@ async function sendPushes(
   const targetType = asString(notification.target_type);
   const targetId = asString(notification.target_id);
   const category = asString(notification.issue_category);
+  const isComment = isCommentNotificationType(notificationType);
   const link = targetType === "announcement"
-    ? `/announcements/${encodeURIComponent(targetId)}`
-    : `/issues/${encodeURIComponent(category || "public-issues")}/${encodeURIComponent(targetId)}`;
+    ? `/announcements/${encodeURIComponent(targetId)}${isComment ? "?tab=comments" : ""}`
+    : `/issues/${encodeURIComponent(category || "public-issues")}/${encodeURIComponent(targetId)}${isComment ? "?tab=comments" : ""}`;
   const recipientUids = [...new Set(tokens.map((row) => asString(row.uid)).filter(Boolean))];
   const preferences = new Map<string, { comments: boolean; issueUpdates: boolean }>();
   if (recipientUids.length > 0) {
@@ -381,6 +384,8 @@ async function sendPushes(
 
     const title = asString(notification.title);
     const body = asString(notification.body_preview);
+    const view = isComment ? "comment" : "detail";
+    const tab = isComment ? "comments" : "details";
     try {
       await sendFcmMessage({
         token: row.token,
@@ -392,6 +397,8 @@ async function sendPushes(
           target_type: targetType,
           title,
           type: notificationType,
+          view,
+          tab,
         },
       });
       await supabase.schema("app_private").from("push_delivery_logs").insert({
