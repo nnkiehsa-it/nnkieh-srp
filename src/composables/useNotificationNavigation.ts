@@ -20,21 +20,25 @@ export function useNotificationNavigation() {
       if (notification.target_type === 'announcement') {
         const announcement = await fetchAnnouncementRecordById(notification.target_id);
         if (currentVersion !== navigationVersion) return false;
+        const isComment = notification.type === 'announcement_comment_created';
         await router.push({
           name: 'announcement-detail',
           params: { announcementId: announcement.id },
+          query: isComment ? { tab: 'comments' } : undefined,
         });
         return true;
       }
 
       const issue = await fetchIssueRecordById(notification.target_id);
       if (currentVersion !== navigationVersion) return false;
+      const isComment = notification.type === 'issue_comment_created';
       await router.push({
         name: 'issue-detail',
         params: {
           filter: issue.category,
           issueId: issue.id,
         },
+        query: isComment ? { tab: 'comments' } : undefined,
       });
       return true;
     } catch {

@@ -189,7 +189,7 @@ async function handlePushAction() {
 
 async function handleRestartApp() {
   closePanel();
-  await reloadApp();
+  await reloadApp({ reason: 'restart' });
 }
 
 const handleClickOutside = (event: MouseEvent) => {
