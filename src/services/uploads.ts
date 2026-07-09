@@ -72,29 +72,29 @@ export async function createImageUploadPolicy(file: File, width: number, height:
     });
     const body = new FormData();
     body.set('file', file);
-    body.set('api_key', session.data.apiKey);
-    body.set('timestamp', String(session.data.timestamp));
-    body.set('public_id', session.data.publicId);
-    body.set('signature', session.data.signature);
-    if (session.data.allowedFormats) {
-      body.set('allowed_formats', session.data.allowedFormats);
+    body.set('api_key', session.apiKey);
+    body.set('timestamp', String(session.timestamp));
+    body.set('public_id', session.publicId);
+    body.set('signature', session.signature);
+    if (session.allowedFormats) {
+      body.set('allowed_formats', session.allowedFormats);
     }
-    if (session.data.folder) {
-      body.set('folder', session.data.folder);
+    if (session.folder) {
+      body.set('folder', session.folder);
     }
-    if (session.data.overwrite) {
-      body.set('overwrite', session.data.overwrite);
+    if (session.overwrite) {
+      body.set('overwrite', session.overwrite);
     }
-    if (session.data.notificationUrl) {
-      body.set('notification_url', session.data.notificationUrl);
+    if (session.notificationUrl) {
+      body.set('notification_url', session.notificationUrl);
     }
-    if (session.data.type) {
-      body.set('type', session.data.type);
+    if (session.type) {
+      body.set('type', session.type);
     }
 
     const uploadResponse = await withRequestTimeout(async () => {
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${session.data.cloudName}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${session.cloudName}/image/upload`,
         { method: 'POST', body },
       );
       if (!response.ok) {
@@ -111,12 +111,12 @@ export async function createImageUploadPolicy(file: File, width: number, height:
     }, ImageUploadPolicy>('finalizeImageUpload', {
       timeoutMs: LONG_REQUEST_TIMEOUT_MS,
     });
-    return (await finalize({
+    return await finalize({
       publicId: uploadResponse.public_id ?? '',
       signature: uploadResponse.signature ?? '',
-      uploadId: session.data.uploadId,
+      uploadId: session.uploadId,
       version: uploadResponse.version ?? 0,
-    })).data;
+    });
   } catch (error) {
     throw toReadableUploadError(error);
   }
@@ -177,7 +177,7 @@ export async function resolveUploadImageUrls(uploadIds: string[], options: Resol
       timeoutMs: READ_REQUEST_TIMEOUT_MS,
     });
     const result = await fn({ uploadIds: unresolvedIds });
-    const fetched = result.data;
+    const fetched = result;
     Object.entries(fetched.urls).forEach(([uploadId, url]) => {
       resolvedUploadCache.set(uploadId, {
         expiresAtMs: fetched.expiresAtByUploadId?.[uploadId] ?? fetched.expiresAtMs,

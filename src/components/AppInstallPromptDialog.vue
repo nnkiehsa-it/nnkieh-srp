@@ -14,7 +14,7 @@
         <div class="flex items-start justify-between gap-4 pb-2">
           <div class="flex min-w-0 items-start gap-4">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/60 bg-white/90 shadow-sm dark:border-ink-700/80 dark:bg-ink-900/80" aria-hidden="true">
-              <component :is="heroIconComponent" v-bind="heroIconProps" class="text-current" :class="content.iconToneClass" />
+              <AppIcon :name="content.icon" :size="6" :stroke-width="2.1" class="text-current" :class="content.iconToneClass" />
             </div>
 
             <div class="min-w-0 flex-1">
@@ -104,7 +104,7 @@
           :disabled="installing"
           @click="handlePrimaryAction"
         >
-          <component :is="primaryIconComponent" v-bind="primaryIconProps" class="shrink-0" />
+          <AppIcon v-bind="primaryIconProps" class="shrink-0" />
           {{ content.primaryLabel }}
         </button>
       </div>
@@ -127,7 +127,6 @@ import { computed, ref, toRef } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DialogOverlay from '@/components/ui/DialogOverlay.vue';
-import ShareIcon from '@/components/ui/ShareIcon.vue';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
 import type { AppInstallPromptMode } from '@/composables/useAppInstallPrompt';
@@ -144,7 +143,7 @@ type InstallContent = {
   actionTitle: string;
   badge: string;
   description: string;
-  icon: 'download' | 'link' | 'warning';
+  icon: 'download' | 'share' | 'warning';
   iconToneClass: string;
   notes: string[];
   primaryLabel: string | null;
@@ -208,7 +207,7 @@ const content = computed<InstallContent>(() => {
       description: isNotificationInstall
         ? `${browserName} 無法直接完成安裝。請先用 Safari 開啟並安裝為 App，才能使用通知功能。`
         : `${browserName} 無法直接完成安裝。請先改用 Safari 開啟。`,
-      icon: 'link',
+      icon: 'share',
       iconToneClass: 'text-secondary',
       notes: ['Safari 開啟後，若要使用通知，請記得從主畫面再次開啟平台。'],
       primaryLabel: props.installing ? '複製中...' : '複製網址',
@@ -231,7 +230,7 @@ const content = computed<InstallContent>(() => {
       actionTitle: '照著步驟操作',
       badge: isNotificationInstall ? '先安裝才能開通知' : 'Safari 安裝流程',
       description: '',
-      icon: 'link',
+      icon: 'share',
       iconToneClass: 'text-primary',
       notes: [installDescription, '如果看不到「加入主畫面」，可先到分享選單底部編輯動作後再加入。', '安裝完成後請從桌面圖示重新進入平台。'],
       primaryLabel: null,
@@ -270,18 +269,10 @@ const content = computed<InstallContent>(() => {
   };
 });
 
-const heroIconComponent = computed(() => (content.value.icon === 'link' ? ShareIcon : AppIcon));
-const heroIconProps = computed(() => (content.value.icon === 'link'
-  ? { size: 6 }
-  : { name: content.value.icon, size: 6, strokeWidth: 2.1 }));
-const primaryIconComponent = computed(() => {
-  if (props.mode === 'ios-open-safari' || props.mode === 'ios-install') return ShareIcon;
-  return AppIcon;
-});
 const primaryIconProps = computed(() => {
-  if (props.mode === 'ios-open-safari' || props.mode === 'ios-install') return { size: 4 };
-  if (props.mode === 'native-install') return { name: 'download', size: 4, strokeWidth: 2.2 };
-  return { name: 'close', size: 4, strokeWidth: 2.2 };
+  if (props.mode === 'ios-open-safari' || props.mode === 'ios-install') return { name: 'share' as const, size: 4 };
+  if (props.mode === 'native-install') return { name: 'download' as const, size: 4, strokeWidth: 2.2 };
+  return { name: 'close' as const, size: 4, strokeWidth: 2.2 };
 });
 const isSkipConfirmOpen = ref(false);
 

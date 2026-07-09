@@ -32,7 +32,7 @@ export async function fetchIssueRecordById(issueId: string): Promise<IssueRecord
       timeoutMs: READ_REQUEST_TIMEOUT_MS,
     });
     const result = await fn({ issueId });
-    return normalizeIssueRecord(String(result.data.issue.id ?? issueId), result.data.issue);
+    return normalizeIssueRecord(String(result.issue.id ?? issueId), result.issue);
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new Error('找不到這篇提案。', { cause: error });

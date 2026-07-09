@@ -86,38 +86,12 @@
           </transition>
         </div>
 
-        <!-- 狀態分段切換器 (Segmented Control) -->
-        <div
+        <PillSegmentedControl
           v-if="activeFilter !== 'my-proposals'"
-          class="inline-flex h-10 items-center rounded-full bg-ink-100/80 p-1 dark:bg-ink-800/80 md:h-9 shrink-0 gap-0.5"
-        >
-          <button
-            type="button"
-            class="flex h-full items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-200 select-none"
-            :class="statusTab === 'active'
-              ? 'bg-white text-ink-950 shadow-sm dark:bg-ink-900 dark:text-ink-50'
-              : 'text-ink-500 hover:text-ink-700 dark:text-ink-400 dark:hover:text-ink-200'"
-            title="查看進行中提案"
-            aria-label="查看進行中提案"
-            @click="statusTab !== 'active' && toggleStatusTab()"
-          >
-            <AppIcon name="list" :size="3.5" />
-            <span v-if="statusTab === 'active'">進行中</span>
-          </button>
-          <button
-            type="button"
-            class="flex h-full items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all duration-200 select-none"
-            :class="statusTab === 'closed'
-              ? 'bg-white text-ink-950 shadow-sm dark:bg-ink-900 dark:text-ink-50'
-              : 'text-ink-500 hover:text-ink-700 dark:text-ink-400 dark:hover:text-ink-200'"
-            title="查看已結案提案"
-            aria-label="查看已結案提案"
-            @click="statusTab !== 'closed' && toggleStatusTab()"
-          >
-            <AppIcon name="inbox" :size="3.5" />
-            <span v-if="statusTab === 'closed'">已結案</span>
-          </button>
-        </div>
+          v-model="statusTabModel"
+          :options="statusOptions"
+          class="shrink-0"
+        />
 
         <!-- 排序（圓形 sort 圖示按鈕） -->
         <div class="static md:relative" @click.stop @pointerdown.stop>
@@ -222,6 +196,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
 import { ISSUE_FILTER_OPTIONS } from '@/constants/categories';
 import type { IssueSortOption } from '@/types';
 
@@ -254,6 +229,10 @@ const visibleSortOptions = computed(() =>
 );
 
 const categoryOptions = ISSUE_FILTER_OPTIONS;
+const statusOptions = [
+  { value: 'active' as const, label: '進行中', icon: 'list', title: '查看進行中提案' },
+  { value: 'closed' as const, label: '已結案', icon: 'inbox', title: '查看已結案提案' },
+] as const;
 const isSearchOpen = ref(false);
 const isSortOpen = ref(false);
 const isCategoryOpen = ref(false);
@@ -290,9 +269,10 @@ function selectSort(value: IssueSortOption) {
   emit('update:sortOption', value);
 }
 
-function toggleStatusTab() {
-  emit('update:statusTab', props.statusTab === 'active' ? 'closed' : 'active');
-}
+const statusTabModel = computed({
+  get: () => props.statusTab,
+  set: (value: 'active' | 'closed') => emit('update:statusTab', value),
+});
 
 async function handleCategoryChange(value: string) {
   if (value === props.activeFilter) return;

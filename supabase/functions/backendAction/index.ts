@@ -7,48 +7,27 @@ import {
   errorMessage,
   errorStatus,
   handleCorsPreflight,
-  jsonResponse,
-  publicError,
   readJsonRecord,
-  requireMethod,
 } from "../_shared/http.ts";
-import { handleHealthcheck, requireAdmin, requireAuth } from "./auth.ts";
-import { getPlatformDashboard } from "./dashboard.ts";
-import { handleUserAction, isUserAction } from "./users.ts";
-import { handleUploadAction, isUploadAction } from "./uploads.ts";
-import { handleIssueAction, isIssueAction } from "./issues.ts";
-import { handleAnnouncementAction, isAnnouncementAction } from "./announcements.ts";
-import { handleNotificationAction, isNotificationAction } from "./notifications.ts";
+import { handleHealthcheck, requireAuth } from "./auth.ts";
+import { getBackendActionDefinition, type BackendActionDefinition } from "./action-registry.ts";
 import { claimBackendActionRateLimit, claimBackendHealthcheckRateLimit } from "./rate-limit.ts";
+import { errorResponse, successResponse } from "./response.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 
-const idempotentActions = new Set([
-  "createImageUploadSession",
-  "finalizeImageUpload",
-  "deleteUploadedImage",
-  "createIssue",
-  "moderateIssueStatus",
-  "updateIssueResult",
-  "toggleSupport",
-  "deleteIssue",
-  "createComment",
-  "deleteComment",
-  "createAnnouncement",
-  "updateAnnouncement",
-  "deleteAnnouncement",
-  "createAnnouncementComment",
-  "deleteAnnouncementComment",
-]);
-
 async function runWithIdempotency(
-  action: string,
+  definition: BackendActionDefinition,
   payload: JsonRecord,
   auth: AuthContext,
   supabase: BackendSupabase,
   execute: () => Promise<JsonRecord>,
 ) {
+  const action = definition.name;
   const requestId = asString(payload.requestId);
-  if (!requestId || !idempotentActions.has(action)) {
+  if (definition.requiresRequestId && !requestId) {
+    throw new Error("request-id-required");
+  }
+  if (!requestId || !definition.idempotent) {
     return await execute();
   }
 
@@ -92,35 +71,20 @@ async function runWithIdempotency(
   return response;
 }
 
-async function handleAction(
-  action: string,
-  payload: JsonRecord,
-  auth: AuthContext,
-  supabase: BackendSupabase,
-) {
-  if (isUserAction(action)) return await handleUserAction(action, payload, auth, supabase);
-  if (isUploadAction(action)) return await handleUploadAction(action, payload, auth, supabase);
-  if (isIssueAction(action)) return await handleIssueAction(action, payload, auth, supabase);
-  if (isAnnouncementAction(action)) return await handleAnnouncementAction(action, payload, auth, supabase);
-  if (isNotificationAction(action)) return await handleNotificationAction(action, payload, auth, supabase);
-  if (action === "getPlatformDashboard") {
-    requireAdmin(auth);
-    return await getPlatformDashboard(supabase);
-  }
-  throw new Error(`Unsupported action: ${action}`);
-}
-
 Deno.serve(async (request) => {
   const preflight = handleCorsPreflight(request);
   if (preflight) return preflight;
-
-  const methodFailure = requireMethod(request, "POST");
-  if (methodFailure) return methodFailure;
 
   const requestId = crypto.randomUUID();
   let action = "";
 
   try {
+    if (request.method !== "POST") {
+      return errorResponse(new Error("method-not-allowed"), requestId, {
+        headers: { Allow: "POST" },
+      });
+    }
+
     const body = await readJsonRecord(request);
     action = asString(body.action);
     const payload = asRecord(body.payload);
@@ -133,19 +97,23 @@ Deno.serve(async (request) => {
     );
     if (action === "healthcheck") {
       await claimBackendHealthcheckRateLimit();
-      return jsonResponse(await handleHealthcheck(request, supabase));
+      return successResponse(await handleHealthcheck(request, supabase), requestId);
     }
 
     const auth = await requireAuth(supabase, request);
-    await claimBackendActionRateLimit(auth.uid, action);
+    const definition = getBackendActionDefinition(action);
+    if (!definition) throw new Error(`Unsupported action: ${action}`);
+    if (definition.requiresAdmin && !auth.isAdmin) throw new Error("permission-denied");
+
+    await claimBackendActionRateLimit(auth.uid, definition);
     const data = await runWithIdempotency(
-      action,
+      definition,
       payload,
       auth,
       supabase,
-      () => handleAction(action, payload, auth, supabase),
+      () => definition.handler(action, payload, auth, supabase),
     );
-    return jsonResponse(data);
+    return successResponse(data, requestId);
   } catch (error) {
     const status = errorStatus(error);
     console.error(JSON.stringify({
@@ -155,6 +123,6 @@ Deno.serve(async (request) => {
       stack: error instanceof Error ? error.stack : undefined,
       status,
     }));
-    return jsonResponse({ error: publicError(error), requestId }, { status });
+    return errorResponse(error, requestId);
   }
 });

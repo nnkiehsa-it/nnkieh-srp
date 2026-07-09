@@ -60,19 +60,15 @@
         <MarkdownToolbar
           @command="executeToolbarCommand"
         >
-          <div class="h-4 w-px bg-ink-200 dark:bg-ink-700 mx-1 shrink-0"></div>
-          <button
-            type="button"
-            class="button-toolbar shrink-0"
+          <MarkdownImageToolbarStatus
+            :busy-label="busyLabel"
             :disabled="disabled || uploading || images.length >= maxImages"
-            :title="uploading ? '圖片處理中...' : images.length >= maxImages ? `${maxImagesLabel}最多 ${maxImages} 張圖片` : '加入圖片'"
-            aria-label="插入圖片"
-            @click="fileInputRef?.click()"
-          >
-            <AppIcon name="image" />
-          </button>
-          <span v-if="uploading" class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ busyLabel }}</span>
-          <span v-else class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ images.length }} / {{ maxImages }}</span>
+            :image-count="images.length"
+            :max-images="maxImages"
+            :max-images-label="maxImagesLabel"
+            :uploading="uploading"
+            @pick-image="fileInputRef?.click()"
+          />
         </MarkdownToolbar>
 
         <!-- Textarea input wrapper (relative so popover escapes toolbar overflow-x-auto) -->
@@ -122,35 +118,13 @@
                 @click="handleTextareaCursorChange(block.id)"
                 @keyup="handleTextareaCursorChange(block.id)"
               ></textarea>
-              <div
+              <MarkdownTableBlockCard
                 v-else
-                class="rounded-lg border border-ink-200 bg-ink-50/70 px-3 py-2 dark:border-ink-700 dark:bg-ink-900/60"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-ink-800 dark:text-ink-100">表格區塊</p>
-                    <p class="text-xs text-ink-500 dark:text-ink-400">
-                      {{ block.table.rows.length + 1 }} x {{ block.table.headers.length }}
-                    </p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      class="text-xs text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50"
-                      @click="switchToTableMode(block.id)"
-                    >
-                      編輯表格
-                    </button>
-                    <button
-                      type="button"
-                      class="text-xs text-error hover:opacity-80"
-                      @click="deleteTableBlockFromCard(block.id)"
-                    >
-                      刪除
-                    </button>
-                  </div>
-                </div>
-              </div>
+                :columns="block.table.headers.length"
+                :rows="block.table.rows.length + 1"
+                @delete="deleteTableBlockFromCard(block.id)"
+                @edit="switchToTableMode(block.id)"
+              />
             </template>
           </div>
           <VisualTableEditor
@@ -191,19 +165,15 @@
       <MarkdownToolbar
         @command="executeToolbarCommand"
       >
-        <div class="h-4 w-px bg-ink-200 dark:bg-ink-700 mx-1 shrink-0"></div>
-        <button
-          type="button"
-          class="button-toolbar shrink-0"
+        <MarkdownImageToolbarStatus
+          :busy-label="busyLabel"
           :disabled="disabled || uploading || images.length >= maxImages"
-          :title="uploading ? '圖片處理中...' : images.length >= maxImages ? `${maxImagesLabel}最多 ${maxImages} 張圖片` : '加入圖片'"
-          aria-label="插入圖片"
-          @click="fileInputRef?.click()"
-        >
-          <AppIcon name="image" />
-        </button>
-        <span v-if="uploading" class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ busyLabel }}</span>
-        <span v-else class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ images.length }} / {{ maxImages }}</span>
+          :image-count="images.length"
+          :max-images="maxImages"
+          :max-images-label="maxImagesLabel"
+          :uploading="uploading"
+          @pick-image="fileInputRef?.click()"
+        />
       </MarkdownToolbar>
 
       <!-- Image previews & Textarea Container -->
@@ -254,35 +224,13 @@
               @click="handleTextareaCursorChange(block.id)"
               @keyup="handleTextareaCursorChange(block.id)"
             ></textarea>
-            <div
+            <MarkdownTableBlockCard
               v-else
-              class="rounded-lg border border-ink-200 bg-ink-50/70 px-3 py-2 dark:border-ink-700 dark:bg-ink-900/60"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-ink-800 dark:text-ink-100">表格區塊</p>
-                  <p class="text-xs text-ink-500 dark:text-ink-400">
-                    {{ block.table.rows.length + 1 }} x {{ block.table.headers.length }}
-                  </p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    class="text-xs text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50"
-                    @click="switchToTableMode(block.id)"
-                  >
-                    編輯表格
-                  </button>
-                  <button
-                    type="button"
-                    class="text-xs text-error hover:opacity-80"
-                    @click="deleteTableBlockFromCard(block.id)"
-                  >
-                    刪除
-                  </button>
-                </div>
-              </div>
-            </div>
+              :columns="block.table.headers.length"
+              :rows="block.table.rows.length + 1"
+              @delete="deleteTableBlockFromCard(block.id)"
+              @edit="switchToTableMode(block.id)"
+            />
           </template>
         </div>
         <VisualTableEditor
@@ -327,19 +275,15 @@
         <MarkdownToolbar
           @command="executeToolbarCommand"
         >
-          <div class="h-4 w-px bg-ink-200 dark:bg-ink-700 mx-1 shrink-0"></div>
-          <button
-            type="button"
-            class="button-toolbar shrink-0"
+          <MarkdownImageToolbarStatus
+            :busy-label="busyLabel"
             :disabled="disabled || uploading || images.length >= maxImages"
-            :title="uploading ? '圖片處理中...' : images.length >= maxImages ? `${maxImagesLabel}最多 ${maxImages} 張圖片` : '加入圖片'"
-            aria-label="插入圖片"
-            @click="fileInputRef?.click()"
-          >
-            <AppIcon name="image" />
-          </button>
-          <span v-if="uploading" class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ busyLabel }}</span>
-          <span v-else class="text-xs text-ink-400 select-none shrink-0 ml-1">{{ images.length }} / {{ maxImages }}</span>
+            :image-count="images.length"
+            :max-images="maxImages"
+            :max-images-label="maxImagesLabel"
+            :uploading="uploading"
+            @pick-image="fileInputRef?.click()"
+          />
         </MarkdownToolbar>
 
         <!-- Textarea input container -->
@@ -389,35 +333,13 @@
                 @click="handleTextareaCursorChange(block.id)"
                 @keyup="handleTextareaCursorChange(block.id)"
               ></textarea>
-              <div
+              <MarkdownTableBlockCard
                 v-else
-                class="rounded-lg border border-ink-200 bg-ink-50/70 px-3 py-2 dark:border-ink-700 dark:bg-ink-900/60"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-ink-800 dark:text-ink-100">表格區塊</p>
-                    <p class="text-xs text-ink-500 dark:text-ink-400">
-                      {{ block.table.rows.length + 1 }} x {{ block.table.headers.length }}
-                    </p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      class="text-xs text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50"
-                      @click="switchToTableMode(block.id)"
-                    >
-                      編輯表格
-                    </button>
-                    <button
-                      type="button"
-                      class="text-xs text-error hover:opacity-80"
-                      @click="deleteTableBlockFromCard(block.id)"
-                    >
-                      刪除
-                    </button>
-                  </div>
-                </div>
-              </div>
+                :columns="block.table.headers.length"
+                :rows="block.table.rows.length + 1"
+                @delete="deleteTableBlockFromCard(block.id)"
+                @edit="switchToTableMode(block.id)"
+              />
             </template>
           </div>
           <VisualTableEditor
@@ -465,6 +387,8 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 import VisualTableEditor from './VisualTableEditor.vue';
 import MarkdownToolbar from './MarkdownToolbar.vue';
 import MarkdownImagePreviews from './MarkdownImagePreviews.vue';
+import MarkdownImageToolbarStatus from './MarkdownImageToolbarStatus.vue';
+import MarkdownTableBlockCard from './MarkdownTableBlockCard.vue';
 import TableGridPicker from './TableGridPicker.vue';
 import {
   hasMarkdownTables,

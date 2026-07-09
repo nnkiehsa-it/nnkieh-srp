@@ -58,9 +58,9 @@ export async function fetchPlatformDashboard(): Promise<PlatformDashboardData> {
       timeoutMs: READ_REQUEST_TIMEOUT_MS,
     });
     const result = await fn({});
-    const stats = result.data.stats;
+    const stats = result.stats;
 
-    const operations = result.data.operations;
+    const operations = result.operations;
 
     return {
       stats: {

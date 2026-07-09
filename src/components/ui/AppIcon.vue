@@ -55,6 +55,33 @@
       <path d="M4.5 12a7.5 7.5 0 1 1 3.75 6.5" />
       <path d="M11.5 20.5 L8.25 18.5 L11.5 15.5" />
     </template>
+    <template v-else-if="name === 'restart'">
+      <path d="M7.25 7.5A7 7 0 1 1 5 12.65" />
+      <path d="M7.25 3.75v3.75H3.5" />
+      <path d="M12 8.25v4.25l3 1.75" />
+    </template>
+    <template v-else-if="name === 'changelog'">
+      <path d="M7 4.5h8.5L19 8v11.5H7z" />
+      <path d="M15.5 4.5V8H19" />
+      <path d="M4.5 7.5v12h11" />
+      <path d="M9.5 12h6" />
+      <path d="M9.5 15.5h4" />
+      <path d="M9.5 8.5h2.5" />
+    </template>
+    <template v-else-if="name === 'share'">
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.6 10.5 15.4 6.5" />
+      <path d="M8.6 13.5 15.4 17.5" />
+    </template>
+    <template v-else-if="name === 'trash'">
+      <path d="M4 7h16" />
+      <path d="M9 7V4.75A1.75 1.75 0 0 1 10.75 3h2.5A1.75 1.75 0 0 1 15 4.75V7" />
+      <path d="m6 7 1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </template>
     <template v-else-if="name === 'reply'">
       <path d="M9 7 4 12l5 5" />
       <path d="M5 12h8.5a5.5 5.5 0 0 1 5.5 5.5V18" />
@@ -154,6 +181,7 @@ import { computed } from 'vue';
 export type AppIconName =
   | 'bell'
   | 'chart'
+  | 'changelog'
   | 'chevron-left'
   | 'chevron-right'
   | 'close'
@@ -166,12 +194,15 @@ export type AppIconName =
   | 'lock'
   | 'megaphone'
   | 'refresh'
+  | 'restart'
   | 'reply'
   | 'search'
   | 'send'
   | 'settings'
+  | 'share'
   | 'sort'
   | 'switch-horizontal'
+  | 'trash'
   | 'user'
   | 'warning'
   | 'h1'

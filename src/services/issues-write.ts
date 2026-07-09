@@ -116,7 +116,7 @@ export async function createIssue(
       category: input.category,
       requestId: createRequestId(),
     });
-    return normalizeIssueResponse(result.data.issue);
+    return normalizeIssueResponse(result.issue);
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -129,7 +129,7 @@ export async function moderateIssueStatus(issueId: string, status: IssueStatus, 
       { issue: IssueResponseRecord }
     >('moderateIssueStatus');
     const result = await fn({ issueId, status, reason, requestId: createRequestId() });
-    return normalizeIssueResponse(result.data.issue);
+    return normalizeIssueResponse(result.issue);
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -142,7 +142,7 @@ export async function updateIssueResult(issueId: string, resultContent: string) 
       { issue: IssueResponseRecord }
     >('updateIssueResult');
     const result = await fn({ issueId, resultContent, requestId: createRequestId() });
-    return normalizeIssueResponse(result.data.issue);
+    return normalizeIssueResponse(result.issue);
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -154,7 +154,7 @@ export async function toggleSupport(
   try {
     const fn = invokeBackendAction<{ issueId: string; requestId: string }, SupportResponse>('toggleSupport');
     const result = await fn({ issueId, requestId: createRequestId() });
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -164,7 +164,7 @@ export async function removeSupport(issueId: string) {
   try {
     const fn = invokeBackendAction<{ issueId: string; requestId: string }, SupportResponse>('removeSupport');
     const result = await fn({ issueId, requestId: createRequestId() });
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -176,7 +176,7 @@ export async function deleteIssue(
   try {
     const fn = invokeBackendAction<{ issueId: string; requestId: string }, { success: boolean; issueId: string }>('deleteIssue');
     const result = await fn({ issueId, requestId: createRequestId() });
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -198,7 +198,7 @@ export async function createComment(
       parentCommentId,
       requestId: createRequestId(),
     });
-    return normalizeCommentResponse(result.data.comment);
+    return normalizeCommentResponse(result.comment);
   } catch (error) {
     throw toReadableBackendError(error);
   }

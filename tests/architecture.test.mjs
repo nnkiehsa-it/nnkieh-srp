@@ -111,6 +111,8 @@ test('Supabase schema includes RLS helpers, app tables, and hard-delete support'
 test('backendAction covers frontend actions and Cloudinary direct upload', async () => {
   const backendAction = [
     await read('supabase/functions/backendAction/index.ts'),
+    await read('supabase/functions/backendAction/action-registry.ts'),
+    await read('supabase/functions/backendAction/response.ts'),
     await read('supabase/functions/backendAction/auth.ts'),
     await read('supabase/functions/backendAction/users.ts'),
     await read('supabase/functions/backendAction/uploads.ts'),
@@ -161,17 +163,23 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(backendAction, /x-healthcheck-secret/u);
   assert.match(backendAction, /APP_SUPABASE_SERVICE_ROLE_KEY/u);
   assert.match(backendAction, /requestId/u);
-  assert.match(backendAction, /const idempotentActions = new Set/u);
+  assert.match(backendAction, /backendActionDefinitions/u);
+  assert.match(backendAction, /idempotentWrite/u);
   assert.match(backendAction, /async function runWithIdempotency/u);
   assert.match(backendAction, /claim_idempotency_key/u);
   assert.match(backendAction, /complete_idempotency_key/u);
   assert.match(backendAction, /release_idempotency_key/u);
+  assert.match(backendAction, /successResponse/u);
+  assert.match(backendAction, /errorResponse/u);
+  assert.match(backendAction, /success: true/u);
+  assert.match(backendAction, /success: false/u);
   assert.match(backendAction, /console\.error\(JSON\.stringify/u);
-  assert.match(backendAction, /requireMethod\(request, "POST"\)/u);
+  assert.match(backendAction, /method-not-allowed/u);
   assert.match(backendAction, /readJsonRecord/u);
   assert.match(backendActionService, /auth\?\.currentUser\?\.getIdToken/u);
   assert.match(backendActionService, /Authorization: `Bearer \$\{token\}`/u);
   assert.match(backendActionService, /readSupabaseFunctionError/u);
+  assert.match(backendActionService, /BackendActionEnvelope/u);
   assert.match(supabaseAuthService, /Authorization: `Bearer \$\{token\.token\}`/u);
   assert.match(functionErrorService, /response\.clone\(\)\.json/u);
   assert.match(firebaseAuth, /accounts:lookup/u);
@@ -182,6 +190,53 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(http, /record\.details/u);
   assert.match(http, /request-in-progress/u);
   assert.doesNotMatch(session, /adminEmails/u);
+});
+
+test('backendAction registry owns action metadata and frontend action names', async () => {
+  const registry = await read('supabase/functions/backendAction/action-registry.ts');
+  const frontendContract = await read('src/services/backend-action-contract.ts');
+  const rateLimit = await read('supabase/functions/backendAction/rate-limit.ts');
+  const index = await read('supabase/functions/backendAction/index.ts');
+  const serviceFiles = (await listFiles('src/services'))
+    .filter((file) => !file.pathname.endsWith('/backend-action.ts'));
+  const services = (await Promise.all(serviceFiles.map((file) => readFile(file, 'utf8')))).join('\n');
+
+  const frontendActions = [...services.matchAll(/invokeBackendAction[\s\S]*?\);/gu)]
+    .map((match) => match[0].match(/(?:invokeBackendAction\(|>\()'([^']+)'/u)?.[1])
+    .filter(Boolean)
+    .sort();
+  assert.ok(frontendActions.length > 20);
+  for (const actionName of frontendActions) {
+    assert.match(registry, new RegExp(`["']${actionName}["']`, 'u'));
+    assert.match(frontendContract, new RegExp(`'${actionName}'`, 'u'));
+  }
+
+  const registeredActions = [...registry.matchAll(/(?:action|idempotentWrite)\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"/gu)];
+  assert.ok(registeredActions.length > 20);
+  for (const [, actionName, domain, rateLimitGroup] of registeredActions) {
+    assert.match(frontendContract, new RegExp(`'${actionName}'`, 'u'));
+    assert.match(
+      registry,
+      new RegExp(`\\| "${domain}"`, 'u'),
+      `${actionName} uses an unknown backend action domain`,
+    );
+    assert.match(
+      rateLimit,
+      new RegExp(`definition\\.rateLimitGroup === "${rateLimitGroup}"`, 'u'),
+      `${actionName} uses an unknown rate limit group`,
+    );
+  }
+
+  assert.match(registry, /function idempotentWrite/u);
+  assert.match(registry, /idempotent: true,\s+requiresRequestId: true/u);
+
+  assert.match(index, /getBackendActionDefinition\(action\)/u);
+  assert.match(index, /definition\.requiresAdmin && !auth\.isAdmin/u);
+  assert.match(index, /definition\.requiresRequestId && !requestId/u);
+  assert.match(registry, /requiresAdmin: true/u);
+  assert.doesNotMatch(index, /const idempotentActions = new Set/u);
+  assert.doesNotMatch(rateLimit, /const readActions = new Set/u);
+  assert.doesNotMatch(rateLimit, /backend\.unknown/u);
 });
 
 test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () => {
@@ -282,11 +337,11 @@ test('backend list actions use stable cursor pagination at the service boundary'
   assert.match(backendAction, /if \(action === "listNotifications"\)/u);
   assert.match(backendAction, /rpc\("backend_list_notifications"/u);
   assert.match(backendAction, /cursor_created_at: readCursorDate\(cursor, "createdAtMs", "created_at"\) \|\| null/u);
-  assert.match(issuePages, /normalizeIssueCursor\(result\.data\.cursor\)/u);
-  assert.match(issueComments, /normalizeCommentCursor\(result\.data\.cursor\)/u);
-  assert.match(announcements, /normalizeAnnouncementCursor\(result\.data\.cursor\)/u);
-  assert.match(announcements, /normalizeCommentCursor\(result\.data\.cursor\)/u);
-  assert.match(notifications, /normalizeNotificationCursor\(result\.data\.cursor\)/u);
+  assert.match(issuePages, /normalizeIssueCursor\(result\.cursor\)/u);
+  assert.match(issueComments, /normalizeCommentCursor\(result\.cursor\)/u);
+  assert.match(announcements, /normalizeAnnouncementCursor\(result\.cursor\)/u);
+  assert.match(announcements, /normalizeCommentCursor\(result\.cursor\)/u);
+  assert.match(notifications, /normalizeNotificationCursor\(result\.cursor\)/u);
 });
 
 test('personal notification writes and pushes are scoped to the recipient', async () => {

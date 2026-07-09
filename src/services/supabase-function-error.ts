@@ -29,7 +29,10 @@ export async function readSupabaseFunctionError(result: FunctionErrorResult) {
     const contentType = response.headers.get('content-type') ?? '';
     if (contentType.includes('application/json')) {
       const body = await response.clone().json() as Record<string, unknown>;
-      const message = body.error ?? body.message;
+      const envelopeError = body.error && typeof body.error === 'object'
+        ? body.error as Record<string, unknown>
+        : null;
+      const message = envelopeError?.message ?? body.error ?? body.message;
       return formatFunctionError(message, body.requestId, errorFallback(result.error));
     }
 
