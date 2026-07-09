@@ -194,6 +194,7 @@ export function useAnnouncementComments(
         announcementId: result.announcement_id,
         commentCount: result.comment_count,
       });
+      showToast('留言已刪除。', 'success');
     } catch (caught) {
       error.value = caught instanceof Error ? caught.message : '留言刪除失敗。';
       showToast(error.value, 'error');

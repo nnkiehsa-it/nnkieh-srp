@@ -9,7 +9,7 @@
       :aria-label="announcement.currentUserLiked ? '取消讚' : '讚'"
       @click="emit('toggleLike')"
     >
-      <AppIcon name="heart" :filled="announcement.currentUserLiked" class="text-red-600 dark:text-red-300" />
+      <AppIcon name="thumbs-up" />
     </DetailActionButton>
 
     <DetailActionButton

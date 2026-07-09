@@ -27,6 +27,10 @@
         :fill="filled ? 'currentColor' : 'none'"
       />
     </template>
+    <template v-else-if="name === 'thumbs-up'">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M7 11v8a2 2 0 0 1 -2 2h-2a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1h3a4 4 0 0 0 4 -4v-1a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1 -2 2h-7a3 3 0 0 1 -3 -3" />
+    </template>
     <template v-else-if="name === 'close'">
       <path d="M6 18 18 6" />
       <path d="m6 6 12 12" />
@@ -209,6 +213,7 @@ export type AppIconName =
   | 'share'
   | 'sort'
   | 'switch-horizontal'
+  | 'thumbs-up'
   | 'trash'
   | 'user'
   | 'warning'

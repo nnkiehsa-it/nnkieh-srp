@@ -105,9 +105,18 @@ function compareChangelogEntries(a: ChangelogEntry, b: ChangelogEntry) {
   return getVersionNumber(b.version) - getVersionNumber(a.version);
 }
 
-// Keep other functions unchanged
 function getEntryTime(entry: ChangelogEntry) {
-  return Date.parse(`${entry.date}T${entry.time}:00`);
+  const dateParts = entry.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const timeParts = entry.time.match(/^(\d{2}):(\d{2})$/);
+  if (!dateParts || !timeParts) return 0;
+
+  const [, year, month, day] = dateParts;
+  const [, hour, minute] = timeParts;
+  return Number(year) * 100_000_000
+    + Number(month) * 1_000_000
+    + Number(day) * 10_000
+    + Number(hour) * 100
+    + Number(minute);
 }
 
 function getVersionNumber(version: string) {

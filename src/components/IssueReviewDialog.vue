@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DialogOverlay from '@/components/ui/DialogOverlay.vue';
+import { useToast } from '@/composables/useToast';
 import { moderateIssueStatus } from '@/services/issues';
 import type { IssueRecord } from '@/types';
 
@@ -120,6 +121,7 @@ const reviewDecision = ref<'approved' | 'rejected'>('approved');
 const rejectionReason = ref(props.issue.review_rejection_reason ?? '');
 const saving = ref(false);
 const errorMsg = ref('');
+const { showToast } = useToast();
 
 const primaryButtonLabel = computed(() => {
   if (saving.value) return '儲存中...';
@@ -162,6 +164,7 @@ async function submitReview() {
     if (reviewDecision.value === 'approved') {
       const updated = await moderateIssueStatus(props.issue.id, 'pending');
       emit('success', updated);
+      showToast('提案審核已通過。', 'success');
       emit('close');
     } else {
       const reason = rejectionReason.value.replace(/\s+/g, ' ').trim();
@@ -172,10 +175,12 @@ async function submitReview() {
       }
       const updated = await moderateIssueStatus(props.issue.id, 'review-rejected', reason);
       emit('success', updated);
+      showToast('提案審核已更新。', 'success');
       emit('close');
     }
   } catch (caught) {
     errorMsg.value = caught instanceof Error ? caught.message : '審核處理失敗，請稍後再試。';
+    showToast(errorMsg.value, 'error');
   } finally {
     saving.value = false;
   }

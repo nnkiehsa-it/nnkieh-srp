@@ -207,6 +207,7 @@ export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (i
           ...comment,
           replies: comment.replies.filter((reply) => reply.id !== commentId),
         }));
+      showToast('留言已刪除。', 'success');
     } catch {
       submitError.value = '刪除失敗，請稍後再試。';
       showToast(submitError.value, 'error');
