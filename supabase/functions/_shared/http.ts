@@ -71,7 +71,9 @@ export function errorStatus(error: unknown) {
   if (message === "unauthenticated") return 401;
   if (message === "permission-denied") return 403;
   if (message === "not-found") return 404;
+  if (message === "method-not-allowed") return 405;
   if (message === "missing action" || message.startsWith("Unsupported action:")) return 400;
+  if (message === "unsupported-action") return 400;
   if (message === "invalid-json") return 400;
   if (message === "request-too-large") return 413;
   if (message === "invalid-issue-category" || message === "support-not-available") return 400;
@@ -106,6 +108,7 @@ export function publicError(error: unknown) {
     "invalid-json": "請求格式不正確。",
     "invalid-issue-category": "提案分類不正確。",
     "invalid-status": "提案狀態不正確。",
+    "method-not-allowed": "請求方法不正確。",
     "not-found": "找不到指定內容。",
     "permission-denied": "沒有執行此操作的權限。",
     "request-in-progress": "操作處理中，請稍後再試。",

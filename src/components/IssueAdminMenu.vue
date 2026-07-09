@@ -101,7 +101,7 @@
               class="menu-item menu-item-danger"
               @click.stop="onDeleteClick"
             >
-              <TrashIcon :size="3.5" />
+              <AppIcon name="trash" :size="3" />
               <span>刪除提案</span>
             </button>
           </div>
@@ -136,7 +136,7 @@ import { ISSUE_STATUS_LABELS } from '@/constants/statuses';
 import { useIssueDisplay } from '@/composables/useIssueDisplay';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { useDropdownPosition } from '@/composables/useDropdownPosition';
-import TrashIcon from '@/components/ui/TrashIcon.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 import type { IssueRecord, IssueStatus } from '@/types';
 
 // Shared Dialog Components

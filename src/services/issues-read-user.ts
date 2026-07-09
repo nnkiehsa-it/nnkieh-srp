@@ -20,10 +20,10 @@ export async function fetchUserIssues(
       timeoutMs: READ_REQUEST_TIMEOUT_MS,
     });
     const result = await fn({ cursor, pageSize: options?.pageSize ?? 20, sort: options?.sort ?? 'latest', uid });
-    const issues = result.data.issues.map((issue) => normalizeIssueRecord(String(issue.id ?? ''), issue));
+    const issues = result.issues.map((issue) => normalizeIssueRecord(String(issue.id ?? ''), issue));
     return {
-      cursor: normalizeIssueCursor(result.data.cursor),
-      hasMore: result.data.hasMore,
+      cursor: normalizeIssueCursor(result.cursor),
+      hasMore: result.hasMore,
       issues: withSupportState(issues, options?.supportedIssueIds),
     };
   } catch (error) {

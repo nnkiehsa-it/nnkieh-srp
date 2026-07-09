@@ -65,8 +65,10 @@
 - supabase/migrations/202607080011_issue_result_updated_outbox.sql：讓提案結果更新建立獨立 outbox 事件，供 Notion 同步結果內容與時間欄位。
 - supabase/migrations/202607080012_user_issues_operation_time_sort.sql：讓我的提案讀取依各提案目前操作時間排序，並維持穩定 cursor 分頁。
 - supabase/migrations/202607090001_align_issue_list_sorting.sql：修正提案列表 RPC 的已結案排序，讓已結案分類依結案操作時間分頁與回傳。
-- supabase/functions/backendAction/index.ts：前端受控 action HTTP 入口，集中 CORS、Firebase 驗證、使用者角色查詢、healthcheck、入口限流、action 分派與冪等保護，不直接承載各領域資料流程。
-- supabase/functions/backendAction/rate-limit.ts：受控 action 入口限流分級，依讀取、一般寫入、高風險寫入、管理寫入、圖片 URL 解析與 healthcheck 套用 Upstash 秒級與長視窗固定限制。
+- supabase/functions/backendAction/index.ts：前端受控 action HTTP 入口，集中 CORS、Firebase 驗證、使用者角色查詢、healthcheck、統一 API envelope、入口限流、action 分派與冪等保護，不直接承載各領域資料流程。
+- supabase/functions/backendAction/action-registry.ts：受控 action metadata 來源，集中 action 名稱、domain、handler、限流分級、冪等與 requestId 要求，供 gateway 與架構測試防止清單分散。
+- supabase/functions/backendAction/response.ts：受控 action 統一成功 / 錯誤 envelope helper，保留 requestId、錯誤代碼、公開錯誤訊息與 HTTP 狀態。
+- supabase/functions/backendAction/rate-limit.ts：受控 action 入口限流分級，依 action registry 的讀取、一般寫入、高風險寫入、管理寫入、圖片 URL 解析與 healthcheck metadata 套用 Upstash 秒級與長視窗固定限制。
 - supabase/functions/backendAction/types.ts：受控 action 共用 Supabase client、身份與 JSON record 型別。
 - supabase/functions/backendAction/utils.ts：受控 action 共用 cursor、時間、數值、布林與台北日界限工具。
 - supabase/functions/backendAction/validation.ts：受控 action 共用標題、正文、留言、搜尋與審核原因長度驗證。
@@ -135,11 +137,14 @@
 共用、無業務邏輯、純展示元件，可被任何場景複用：
 
 - LoadingSpinner.vue：可設定尺寸的 loading spinner SVG 元件（雙層環 + 自訂縮放脈動動畫）。
-- AppIcon.vue：共用線性圖示元件，集中 chart、comment、reply、close、edit、image、lock、send、warning、inbox 等常用 UI icon，降低元件內嵌 SVG 重複。
+- AppIcon.vue：共用線性圖示元件，集中 chart、comment、share、trash、changelog、restart、reply、close、edit、image、lock、send、warning、inbox 等常用 UI icon，降低元件內嵌 SVG 重複。
 - EmptyStatePanel.vue：通用空狀態 / 錯誤狀態面板，統一 icon（支援 chart、comment、lock、warning、inbox）、標題、描述與可選重試按鈕，用於看板分頁、公告、留言與 Dashboard。
+- PillSegmentedControl.vue：共用膠囊分段切換元件，提供滑動 active 背板、可選圖示與 active 文字，供提案狀態與手機詳情內容 / 留言切換使用。
 - MarkdownImageEditor.vue：Markdown 文字 + 圖片預覽編輯器展示元件，只處理 toolbar、縮圖、預覽與輸入事件；內建 slash 指令選單與 Markdown 表格 block 邊界控制，上傳與儲存流程仍由各自 composable / parent 控制。
 - MarkdownToolbar.vue：Markdown 編輯器專用格式化工具列，集中粗體、斜體、標題、清單、表格、水平線等功能按鈕。
 - MarkdownImagePreviews.vue：Markdown 編輯器專用圖片縮圖預覽面板，配合響應式佈局調整縮圖顯示大小。
+- MarkdownImageToolbarStatus.vue：Markdown 編輯器工具列的圖片插入按鈕與上傳 / 張數狀態，供分欄、單欄與手機版共用，避免重複 toolbar markup。
+- MarkdownTableBlockCard.vue：Markdown 編輯器文字模式中的表格區塊卡片，集中表格尺寸顯示、編輯與刪除按鈕，供分欄、單欄與手機版共用。
 - TableGridPicker.vue：Word 式表格尺寸選取元件，提供 5x5 的格狀維度選取視覺反饋。
 - VisualTableEditor.vue：Markdown 表格視覺化編輯元件，提供直覺的儲存格文字編輯與實時 Markdown 雙向同步。
 - PageLoadFailure.vue：頁面載入超過五秒或離線時顯示顏文字、網路問題訊息與重新整理按鈕的共用 fallback。
@@ -147,8 +152,6 @@
 - SkeletonAnnouncementList.vue：公告列表載入骨架，比對作者、標題、摘要與互動按鈕排列，降低初次載入版面跳動。
 - SkeletonCommentList.vue：提案與公告留言區共用載入骨架，比對頭像、作者、時間與留言文字排列。
 - SkeletonDashboard.vue：管理員 Dashboard 載入骨架，比對維運狀態卡、維運清單、分類表與成果摘要。
-- TrashIcon.vue：共用無填色垃圾桶圖示。
-- ShareIcon.vue：分享節點圖示，供詳情頁 action row 與 footer 按鈕共用。
 - DetailActionButton.vue：詳情頁底部共用文字動作按鈕，統一分享、讚、編輯與刪除等 action 的 icon + label 呈現。
 - UserAvatar.vue：大頭貼顯示（圖片 / 匿名首字 fallback，支援 sm / md / lg 三種尺寸）。
 - DecorativeGlow.vue：背景裝飾性雙色模糊光暈（emerald + indigo）。
@@ -171,7 +174,6 @@
 - src/components/ConfirmDialog.vue：通用確認對話框，沿用共用 DialogOverlay、提示型文字層級、焦點管理與捲動鎖定。
 - src/components/ToastViewport.vue：全域 toast 顯示容器，統一呈現成功、資訊與錯誤提示，層級高於 modal dialog。
 - src/components/CreateActionMenu.vue：提案與公告共用新增選單，提供提案分類與管理員公告選項，讓桌機控制列與手機底部新增入口共用同一套選擇流程。
-- src/components/SegmentedControl.vue：共用分段選項元件，用於分類、狀態與留言模式切換。
 - src/components/VoteButtons.vue：附議 / 取消附議按鈕展示層，實際 optimistic UI 與附議流程委派給 `useVoteSupport`。
 - src/components/MarkdownRenderer.vue：將 Markdown 渲染為經 DOMPurify 過濾的安全 HTML，圖片支援尺寸屬性、lazy loading 與預留顯示空間以降低 layout shift。
 - src/components/NotificationBell.vue：頁首右上角 App 內通知中心，使用桌機右側 popover 呈現未讀數、分隔線通知清單、通知類型圖示、載入與空狀態、分段載入及打開即已讀行為，並依通知目標路由至提案或公告詳情；推播設定統一由頭像設定面板管理。
@@ -296,7 +298,8 @@
 ## src/services (受控資料服務層)
 
 - src/services/issues.ts：API Gateway 入口，統一 re-export 提案讀寫子服務。
-- src/services/backend-action.ts：Supabase Edge Function `backendAction` 呼叫工具，統一 action/payload 格式、timeout 與 abort signal。
+- src/services/backend-action.ts：Supabase Edge Function `backendAction` 呼叫工具，統一 action/payload envelope、timeout、abort signal 與錯誤追蹤碼解析。
+- src/services/backend-action-contract.ts：前端允許呼叫的 backendAction 名稱 contract，供 TypeScript 與架構測試確認前端 service 呼叫與後端 registry 對齊。
 - src/services/supabase-function-error.ts：Supabase Edge Function 非 2xx 回應解析 helper，優先讀取後端 JSON / text 錯誤內容。
 - src/services/session-role.ts：登入後向後端查詢目前使用者角色，避免前端保存管理員 email 清單。
 - src/services/issues-core.ts：提案 read service 共用匯出入口與單筆提案讀取 helper，集中正式使用的常數、錯誤與正規化工具。
@@ -309,6 +312,7 @@
 - src/services/issues-read-user.ts：使用者提案游標分頁與已附議提案 id 讀取。
 - src/services/issues-read-comments.ts：提案留言讀取、日期與 cursor 正規化。
 - src/services/issues-read-shared.ts：提案 read service 共用 response 型別。
+- src/services/comment-cursor.ts：提案與公告留言共用 cursor 型別與正規化 helper，集中處理 createdAtMs / created_at 格式差異。
 - src/services/issues-write.ts：所有寫入、附議、主留言 / 回覆、提案結果與審核異動，統一呼叫 Supabase 後端安全端點。
 - src/services/notifications.ts：App 內通知來源訂閱、閱讀狀態、單裝置 Web Push token 與通知分類偏好服務；realtime channel 依 broadcast/admin/user 來源或 recipient 過濾 INSERT，並正規化通知與分頁 cursor。
 - src/services/realtime-events.ts：內容 Realtime 事件訂閱服務，集中訂閱 `realtime_events` 並正規化提案、公告、留言、附議與讚數變動事件。

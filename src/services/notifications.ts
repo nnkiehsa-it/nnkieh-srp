@@ -241,9 +241,9 @@ export async function fetchNotificationSourcePage(
     >('listNotifications', { timeoutMs: READ_REQUEST_TIMEOUT_MS });
     const result = await fn({ cursor, pageSize: NOTIFICATION_SOURCE_PAGE_SIZE, source, uid });
     return {
-      cursor: normalizeNotificationCursor(result.data.cursor),
-      hasMore: result.data.hasMore,
-      notifications: result.data.notifications.map((notification) => normalizeNotificationRecord(source, notification)),
+      cursor: normalizeNotificationCursor(result.cursor),
+      hasMore: result.hasMore,
+      notifications: result.notifications.map((notification) => normalizeNotificationRecord(source, notification)),
     };
   } catch (error) {
     throw toReadableBackendError(error);
@@ -287,7 +287,7 @@ async function getNotificationReadState(uid: string): Promise<NotificationReadSt
     timeoutMs: READ_REQUEST_TIMEOUT_MS,
   });
   const result = await fn({ uid });
-  const data = result.data.state;
+  const data = result.state;
   return {
     admin: normalizeDate(data.admin_opened_at_ms ?? data.admin_opened_at),
     broadcast: normalizeDate(data.broadcast_opened_at_ms ?? data.broadcast_opened_at),
@@ -303,7 +303,7 @@ export async function markNotificationsOpened() {
   try {
     const fn = invokeBackendAction<Record<string, never>, { openedAtMs: number; success: boolean }>('markNotificationsOpened');
     const result = await fn({});
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -313,7 +313,7 @@ export async function getPushNotificationPreference(payload: GetPushNotification
   try {
     const fn = invokeBackendAction<GetPushNotificationPreferencePayload, PushNotificationPreference>('getPushNotificationPreference');
     const result = await fn(payload);
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -323,7 +323,7 @@ export async function registerPushToken(payload: RegisterPushTokenPayload) {
   try {
     const fn = invokeBackendAction<RegisterPushTokenPayload, PushNotificationPreference>('registerPushToken');
     const result = await fn(payload);
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -333,7 +333,7 @@ export async function unregisterPushToken(payload: UnregisterPushTokenPayload = 
   try {
     const fn = invokeBackendAction<UnregisterPushTokenPayload, PushNotificationPreference>('unregisterPushToken');
     const result = await fn(payload);
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }
@@ -343,7 +343,7 @@ export async function updatePushNotificationPreferences(payload: UpdatePushNotif
   try {
     const fn = invokeBackendAction<UpdatePushNotificationPreferencesPayload, PushNotificationPreference>('updatePushNotificationPreferences');
     const result = await fn(payload);
-    return result.data;
+    return result;
   } catch (error) {
     throw toReadableBackendError(error);
   }

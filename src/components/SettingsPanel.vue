@@ -119,12 +119,12 @@ const personalNotificationOptions: Array<{
   {
     key: 'comments',
     label: '留言通知',
-    description: '你的提案或公告收到留言時，在站內與推播通知提醒。',
+    description: '你的提案或公告收到留言時的通知。',
   },
   {
     key: 'issueUpdates',
     label: '提案更新',
-    description: '你參與的提案狀態變更、達標或刪除時，在站內與推播通知提醒。',
+    description: '你參與的提案狀態變更、達標或刪除時的通知。',
   },
 ];
 

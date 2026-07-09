@@ -37,7 +37,7 @@
           aria-label="複製分享連結"
           @click="emit('share')"
         >
-          <ShareIcon :size="4" />
+          <AppIcon name="share" />
         </DetailActionButton>
         <DetailActionButton
           v-if="isAdmin && !isClosed"
@@ -58,7 +58,7 @@
           aria-label="刪除提案"
           @click="emit('delete')"
         >
-          <TrashIcon :size="4" />
+          <AppIcon name="trash" />
         </DetailActionButton>
       </div>
     </div>
@@ -70,7 +70,7 @@
         aria-label="複製分享連結"
         @click="emit('share')"
       >
-        <ShareIcon :size="4" />
+        <AppIcon name="share" />
       </DetailActionButton>
       <DetailActionButton
         v-if="isAdmin && !isClosed"
@@ -91,7 +91,7 @@
         aria-label="刪除提案"
         @click="emit('delete')"
       >
-        <TrashIcon :size="4" />
+        <AppIcon name="trash" />
       </DetailActionButton>
     </div>
 
@@ -118,8 +118,6 @@
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue';
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
-import ShareIcon from '@/components/ui/ShareIcon.vue';
-import TrashIcon from '@/components/ui/TrashIcon.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
 import type { IssueOperationTimeItem, IssueRecord } from '@/types';

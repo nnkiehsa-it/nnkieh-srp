@@ -17,7 +17,7 @@ export async function fetchUserAvatarUrls(uids: string[]) {
       { timeoutMs: READ_REQUEST_TIMEOUT_MS },
     );
     const result = await fn({ uids: uniqueUids });
-    return result.data.avatars;
+    return result.avatars;
   } catch (error) {
     throw toReadableBackendError(error);
   }

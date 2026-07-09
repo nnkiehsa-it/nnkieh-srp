@@ -125,7 +125,7 @@
           >
             <span class="flex min-w-0 items-center gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center text-ink-500 dark:text-ink-300">
-                <AppIcon name="refresh" :size="4" :stroke-width="2" />
+                <AppIcon name="changelog" :size="4" :stroke-width="2" />
               </span>
               <span>
                 <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">更新紀錄</span>
@@ -158,7 +158,7 @@
           >
             <span class="flex min-w-0 items-center gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center text-ink-500 dark:text-ink-300">
-                <AppIcon name="refresh" :size="4" :stroke-width="2" />
+                <AppIcon name="restart" :size="4" :stroke-width="2" />
               </span>
               <span>
                 <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">重啟 App</span>

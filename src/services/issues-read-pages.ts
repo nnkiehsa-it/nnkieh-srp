@@ -44,9 +44,9 @@ export async function fetchIssuesPageByStatus(
       uid,
     });
     return {
-      cursor: normalizeIssueCursor(result.data.cursor),
-      hasMore: result.data.hasMore,
-      issues: withSupportState(normalizeIssueList(result.data.issues), options?.supportedIssueIds),
+      cursor: normalizeIssueCursor(result.cursor),
+      hasMore: result.hasMore,
+      issues: withSupportState(normalizeIssueList(result.issues), options?.supportedIssueIds),
     };
   } catch (error) {
     throw toReadableBackendError(error);
@@ -91,8 +91,8 @@ export async function fetchIssuesForTitleSearch(
       uid,
     });
     return {
-      issues: withSupportState(normalizeIssueList(result.data.issues), options?.supportedIssueIds),
-      limited: result.data.limited,
+      issues: withSupportState(normalizeIssueList(result.issues), options?.supportedIssueIds),
+      limited: result.limited,
     };
   } catch (error) {
     throw toReadableBackendError(error);

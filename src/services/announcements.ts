@@ -8,10 +8,11 @@ import { invokeBackendAction } from '@/services/backend-action';
 import { createRequestId } from '@/lib/request-id';
 import { READ_REQUEST_TIMEOUT_MS, RequestFailure } from '@/lib/request';
 import { normalizeDate, toReadableBackendError } from '@/services/issues-core';
+import type { CommentCursor } from './comment-cursor';
+import { normalizeCommentCursor } from './comment-cursor';
 
 const ANNOUNCEMENT_LIMIT = 10;
 export type AnnouncementCursor = { id: string; publishedAtMs: number; sortNumber?: number | null } | null;
-type CommentCursor = { id: string; createdAtMs: number } | null;
 
 function dateFromMs(value: unknown) {
   return typeof value === 'number' ? new Date(value) : normalizeDate(value);
@@ -34,14 +35,6 @@ function normalizeAnnouncementCursor(data: unknown): AnnouncementCursor {
     publishedAtMs,
     sortNumber: typeof record.sortNumber === 'number' ? record.sortNumber : null,
   };
-}
-
-function normalizeCommentCursor(data: unknown): CommentCursor {
-  if (!data || typeof data !== 'object') return null;
-  const record = data as Record<string, unknown>;
-  const id = typeof record.id === 'string' ? record.id : '';
-  const createdAtMs = numberFromDateLike(record.createdAtMs ?? record.created_at);
-  return id && createdAtMs !== null ? { id, createdAtMs } : null;
 }
 
 function normalizeAnnouncementRecord(data: Record<string, unknown>): AnnouncementRecord {
@@ -95,9 +88,9 @@ export async function fetchAnnouncementsPage(
     >('listAnnouncements', { timeoutMs: READ_REQUEST_TIMEOUT_MS });
     const result = await fn({ cursor, pageSize, sort });
     return {
-      announcements: result.data.announcements.map(normalizeAnnouncementRecord),
-      cursor: normalizeAnnouncementCursor(result.data.cursor),
-      hasMore: result.data.hasMore,
+      announcements: result.announcements.map(normalizeAnnouncementRecord),
+      cursor: normalizeAnnouncementCursor(result.cursor),
+      hasMore: result.hasMore,
     };
   } catch (error) {
     throw toReadableBackendError(error);
@@ -113,7 +106,7 @@ export async function fetchAnnouncementRecordById(
       { announcement: Record<string, unknown> }
     >('getAnnouncement', { timeoutMs: READ_REQUEST_TIMEOUT_MS });
     const result = await fn({ announcementId });
-    return normalizeAnnouncementRecord(result.data.announcement);
+    return normalizeAnnouncementRecord(result.announcement);
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
     throw new Error('找不到這則公告。', { cause: error });
@@ -123,7 +116,7 @@ export async function fetchAnnouncementRecordById(
 export async function createAnnouncement(input: AnnouncementInput): Promise<AnnouncementRecord> {
   const fn = invokeBackendAction<AnnouncementInput & { requestId: string }, { announcement: Record<string, unknown> }>('createAnnouncement');
   const result = await fn({ ...input, requestId: createRequestId() });
-  return normalizeAnnouncementRecord(result.data.announcement);
+  return normalizeAnnouncementRecord(result.announcement);
 }
 
 export async function updateAnnouncement(announcementId: string, input: AnnouncementInput) {
@@ -132,19 +125,19 @@ export async function updateAnnouncement(announcementId: string, input: Announce
     { announcement: Record<string, unknown> }
   >('updateAnnouncement');
   const result = await fn({ announcementId, ...input, requestId: createRequestId() });
-  return normalizeAnnouncementRecord(result.data.announcement);
+  return normalizeAnnouncementRecord(result.announcement);
 }
 
 export async function deleteAnnouncement(announcementId: string) {
   const fn = invokeBackendAction<{ announcementId: string; requestId: string }, { success: boolean }>('deleteAnnouncement');
   const result = await fn({ announcementId, requestId: createRequestId() });
-  return result.data;
+  return result;
 }
 
 export async function setAnnouncementLike(announcementId: string, liked: boolean) {
   const fn = invokeBackendAction<{ announcementId: string; liked: boolean }, { liked: boolean; like_count: number }>('setAnnouncementLike');
   const result = await fn({ announcementId, liked });
-  return result.data;
+  return result;
 }
 
 export async function fetchAnnouncementComments(
@@ -161,9 +154,9 @@ export async function fetchAnnouncementComments(
   });
   const result = await fn({ announcementId, cursor });
   return {
-    comments: result.data.comments.map(normalizeAnnouncementComment),
-    cursor: normalizeCommentCursor(result.data.cursor),
-    hasMore: result.data.hasMore,
+    comments: result.comments.map(normalizeAnnouncementComment),
+    cursor: normalizeCommentCursor(result.cursor),
+    hasMore: result.hasMore,
   } satisfies {
     comments: AnnouncementCommentRecord[];
     cursor: CommentCursor;
@@ -178,8 +171,8 @@ export async function createAnnouncementComment(announcementId: string, content:
   >('createAnnouncementComment');
   const result = await fn({ announcementId, content, parentCommentId, requestId: createRequestId() });
   return {
-    comment: normalizeAnnouncementComment(result.data.comment),
-    comment_count: result.data.comment_count,
+    comment: normalizeAnnouncementComment(result.comment),
+    comment_count: result.comment_count,
   };
 }
 
@@ -189,5 +182,5 @@ export async function deleteAnnouncementComment(commentId: string) {
     { success: boolean; announcement_id: string; comment_count: number }
   >('deleteAnnouncementComment');
   const result = await fn({ commentId, requestId: createRequestId() });
-  return result.data;
+  return result;
 }

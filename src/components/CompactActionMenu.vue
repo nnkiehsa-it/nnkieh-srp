@@ -43,7 +43,7 @@
               :disabled="deleteDisabled"
               @click.stop="select('delete')"
             >
-              <TrashIcon :size="3.5" />
+              <AppIcon name="trash" :size="3" />
               <span>{{ deleteLabel }}</span>
             </button>
           </div>
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue';
-import TrashIcon from '@/components/ui/TrashIcon.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 import { useDropdownPosition } from '@/composables/useDropdownPosition';
 
 withDefaults(defineProps<{

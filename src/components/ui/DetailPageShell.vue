@@ -13,14 +13,11 @@
       <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2 pt-1.5">
         <slot name="header" />
       </div>
-      <button
-        type="button"
-        class="button-secondary flex h-8 !min-h-0 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-ink-700 dark:text-ink-200 ml-auto self-center"
-        @click="toggleActiveTab"
-      >
-        <AppIcon :name="activeTab === 'details' ? 'comment' : 'list'" :size="3.5" />
-        <span>{{ activeTab === 'details' ? commentsLabel : detailsLabel }}</span>
-      </button>
+      <PillSegmentedControl
+        v-model="activeTab"
+        :options="tabOptions"
+        class="ml-auto self-center"
+      />
     </header>
 
     <div v-if="isDesktopViewport" class="hidden min-h-0 items-stretch gap-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)] xl:grid-cols-[minmax(0,1fr)_32rem]">
@@ -68,8 +65,8 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import SegmentedControl from '@/components/SegmentedControl.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
 
 type DetailPageTab = 'details' | 'comments';
 
@@ -102,8 +99,8 @@ const isDesktopViewport = ref(
 let desktopMediaQuery: MediaQueryList | null = null;
 
 const tabOptions = computed(() => [
-  { value: 'details', label: props.detailsLabel },
-  { value: 'comments', label: props.commentsLabel },
+  { value: 'details' as const, label: props.detailsLabel, icon: 'list' as const, title: `查看${props.detailsLabel}` },
+  { value: 'comments' as const, label: props.commentsLabel, icon: 'comment' as const, title: `查看${props.commentsLabel}` },
 ]);
 
 watch(
@@ -121,10 +118,6 @@ function setActiveTab(value: string) {
   if (value === 'details' || value === 'comments') {
     activeTab.value = value;
   }
-}
-
-function toggleActiveTab() {
-  activeTab.value = activeTab.value === 'details' ? 'comments' : 'details';
 }
 
 onMounted(() => {

@@ -5,62 +5,12 @@ import {
   utcMinuteWindow,
   utcSecondWindow,
 } from "../_shared/upstash-rate-limit.ts";
+import type { BackendActionDefinition } from "./action-registry.ts";
 
-const readActions = new Set([
-  "getCurrentUserRole",
-  "getUserAvatarUrls",
-  "getIssue",
-  "listIssues",
-  "searchIssues",
-  "listUserIssues",
-  "listComments",
-  "listAnnouncements",
-  "getAnnouncement",
-  "listAnnouncementComments",
-  "listNotifications",
-  "getNotificationReadState",
-  "getPushNotificationPreference",
-  "getPlatformDashboard",
-]);
+export async function claimBackendActionRateLimit(uid: string, definition: BackendActionDefinition) {
+  const action = definition.name;
 
-const generalWriteActions = new Set([
-  "recordPlatformVisit",
-  "markNotificationsOpened",
-  "updatePushNotificationPreferences",
-]);
-
-const uploadResolveActions = new Set([
-  "resolveUploadImageUrls",
-]);
-
-const adminWriteActions = new Set([
-  "moderateIssueStatus",
-  "updateIssueResult",
-  "deleteIssue",
-  "createAnnouncement",
-  "updateAnnouncement",
-  "deleteAnnouncement",
-]);
-
-const sensitiveWriteActions = new Set([
-  "createImageUploadSession",
-  "finalizeImageUpload",
-  "deleteUploadedImage",
-  "createIssue",
-  "toggleSupport",
-  "removeSupport",
-  "createComment",
-  "deleteComment",
-  "setAnnouncementLike",
-  "createAnnouncementComment",
-  "deleteAnnouncementComment",
-  "registerPushToken",
-  "unregisterPushToken",
-  "cacheUserAvatar",
-]);
-
-export async function claimBackendActionRateLimit(uid: string, action: string) {
-  if (readActions.has(action)) {
+  if (definition.rateLimitGroup === "read") {
     await claimFixedWindowRateLimit(
       uid,
       `backend.read.${action}.second`,
@@ -76,7 +26,7 @@ export async function claimBackendActionRateLimit(uid: string, action: string) {
     return;
   }
 
-  if (generalWriteActions.has(action)) {
+  if (definition.rateLimitGroup === "general-write") {
     await claimFixedWindowRateLimit(
       uid,
       `backend.write.${action}.second`,
@@ -92,7 +42,7 @@ export async function claimBackendActionRateLimit(uid: string, action: string) {
     return;
   }
 
-  if (uploadResolveActions.has(action)) {
+  if (definition.rateLimitGroup === "upload-resolve") {
     await claimFixedWindowRateLimit(
       uid,
       `backend.upload-resolve.${action}.second`,
@@ -108,7 +58,7 @@ export async function claimBackendActionRateLimit(uid: string, action: string) {
     return;
   }
 
-  if (adminWriteActions.has(action)) {
+  if (definition.rateLimitGroup === "admin-write") {
     await claimFixedWindowRateLimit(
       uid,
       `backend.admin-write.${action}.second`,
@@ -124,7 +74,7 @@ export async function claimBackendActionRateLimit(uid: string, action: string) {
     return;
   }
 
-  if (sensitiveWriteActions.has(action)) {
+  if (definition.rateLimitGroup === "sensitive-write") {
     await claimFixedWindowRateLimit(
       uid,
       `backend.sensitive-write.${action}.second`,
@@ -139,19 +89,6 @@ export async function claimBackendActionRateLimit(uid: string, action: string) {
     );
     return;
   }
-
-  await claimFixedWindowRateLimit(
-    uid,
-    `backend.unknown.${action || "missing"}.second`,
-    utcSecondWindow(),
-    RATE_LIMITS.backendActionSensitiveWriteSecond,
-  );
-  await claimFixedWindowRateLimit(
-    uid,
-    `backend.unknown.${action || "missing"}`,
-    utcHourWindow(),
-    RATE_LIMITS.backendActionSensitiveWriteHourly,
-  );
 }
 
 export async function claimBackendHealthcheckRateLimit() {

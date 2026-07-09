@@ -21,7 +21,7 @@
       aria-label="複製分享連結"
       @click="emit('share')"
     >
-      <ShareIcon :size="4" />
+      <AppIcon name="share" />
     </DetailActionButton>
 
     <DetailActionButton
@@ -47,15 +47,14 @@
       aria-label="刪除公告"
       @click="emit('delete')"
     >
-      <TrashIcon :size="4" />
+      <AppIcon name="trash" />
     </DetailActionButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
-import ShareIcon from '@/components/ui/ShareIcon.vue';
-import TrashIcon from '@/components/ui/TrashIcon.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 import type { AnnouncementRecord } from '@/types';
 
 defineProps<{

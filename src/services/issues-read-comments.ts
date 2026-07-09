@@ -1,15 +1,11 @@
 import type { CommentRecord } from '@/types';
 import { invokeBackendAction } from './backend-action';
+import type { CommentCursor } from './comment-cursor';
+import { normalizeCommentCursor } from './comment-cursor';
 import { toReadableBackendError } from './issues-core';
 import type { CommentResponseRecord } from './issues-read-shared';
 import { READ_REQUEST_TIMEOUT_MS } from '@/lib/request';
 import { getRouteRequestSignal } from '@/lib/route-request';
-import { normalizeDate } from './issues-core';
-
-interface CommentCursor {
-  id: string;
-  createdAtMs: number;
-}
 
 interface FetchCommentsOptions {
   signal?: AbortSignal | null;
@@ -18,14 +14,6 @@ interface FetchCommentsOptions {
 function getCommentRequestSignal(options?: FetchCommentsOptions) {
   if (options && 'signal' in options) return options.signal ?? undefined;
   return getRouteRequestSignal();
-}
-
-function normalizeCommentCursor(data: unknown): CommentCursor | null {
-  if (!data || typeof data !== 'object') return null;
-  const record = data as Record<string, unknown>;
-  const id = typeof record.id === 'string' ? record.id : '';
-  const createdAt = normalizeDate(record.createdAtMs ?? record.created_at);
-  return id && createdAt ? { id, createdAtMs: createdAt.getTime() } : null;
 }
 
 export async function fetchComments(
@@ -44,7 +32,7 @@ export async function fetchComments(
     const result = await fn({ issueId, cursor });
 
     return {
-      comments: result.data.comments.map((comment) => ({
+      comments: result.comments.map((comment) => ({
         id: comment.id,
         issue_id: comment.issue_id,
         parent_comment_id: comment.parent_comment_id,
@@ -69,8 +57,8 @@ export async function fetchComments(
           replies: [],
         })),
       })),
-      cursor: normalizeCommentCursor(result.data.cursor),
-      hasMore: result.data.hasMore,
+      cursor: normalizeCommentCursor(result.cursor),
+      hasMore: result.hasMore,
     } satisfies { comments: CommentRecord[]; cursor: CommentCursor | null; hasMore: boolean };
   } catch (error) {
     throw toReadableBackendError(error);

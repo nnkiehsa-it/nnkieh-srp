@@ -7,7 +7,7 @@ export async function fetchCurrentUserRole(): Promise<SessionRole> {
   try {
     const fn = invokeBackendAction<Record<string, never>, { role: SessionRole }>('getCurrentUserRole');
     const result = await fn({});
-    return result.data.role === 'admin' ? 'admin' : 'user';
+    return result.role === 'admin' ? 'admin' : 'user';
   } catch (error) {
     throw toReadableBackendError(error);
   }
