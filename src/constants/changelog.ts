@@ -2,6 +2,23 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "改善互動提示與更新紀錄顯示",
+    version: "v2.0.127",
+    date: "2026-07-09",
+    time: "15:33",
+    items: [
+      {
+        title: "統一公告讚按鈕與提案附議按鈕的圖示與狀態樣式。"
+      },
+      {
+        title: "修正更新紀錄排序，避免不同瀏覽環境出現顯示順序錯亂。"
+      },
+      {
+        title: "補齊管理員審核、狀態、結果與留言管理後的操作提示。"
+      }
+    ]
+  },
+  {
     title: "改善公告互動與通知體驗",
     version: "v2.0.126",
     date: "2026-07-09",

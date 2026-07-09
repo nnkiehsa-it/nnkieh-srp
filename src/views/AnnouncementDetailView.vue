@@ -146,6 +146,7 @@ async function handleSave(payload: { title: string; content: string; uploadedIma
   } catch (caught) {
     await Promise.allSettled(payload.uploadedImages.map((image) => deleteUploadedImage(image.storagePath)));
     editorError.value = caught instanceof Error ? caught.message : '公告儲存失敗。';
+    showToast(editorError.value, 'error');
   } finally {
     saving.value = false;
   }

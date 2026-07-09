@@ -91,6 +91,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DialogOverlay from '@/components/ui/DialogOverlay.vue';
+import { useToast } from '@/composables/useToast';
 import { moderateIssueStatus, updateIssueResult } from '@/services/issues';
 import type { IssueRecord, IssueStatus } from '@/types';
 
@@ -157,6 +158,7 @@ const nextStatus = ref<EditableStatus>(initialStatus());
 const resultContent = ref(props.issue.result_content ?? '');
 const saving = ref(false);
 const errorMsg = ref('');
+const { showToast } = useToast();
 const requiresResult = computed(() => nextStatus.value === 'completed' || nextStatus.value === 'infeasible');
 
 const primaryButtonLabel = computed(() => {
@@ -204,6 +206,7 @@ async function save() {
         finalIssue = await updateIssueResult(props.issue.id, '');
       }
       emit('success', finalIssue);
+      showToast('提案狀態已更新。', 'success');
     } else {
       const content = resultContent.value.trim();
       if (!content) {
@@ -214,10 +217,12 @@ async function save() {
       const updated = await moderateIssueStatus(props.issue.id, nextStatus.value);
       const finalIssue = await updateIssueResult(props.issue.id, content);
       emit('success', finalIssue);
+      showToast('提案狀態與結果已更新。', 'success');
     }
     emit('close');
   } catch (caught) {
     errorMsg.value = caught instanceof Error ? caught.message : '更新失敗，請稍後再試。';
+    showToast(errorMsg.value, 'error');
   } finally {
     saving.value = false;
   }
