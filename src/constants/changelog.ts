@@ -2,6 +2,20 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "改善留言與手機導覽顯示",
+    version: "v2.0.140",
+    date: "2026-07-10",
+    time: "14:10",
+    items: [
+      {
+        title: "改善留言新增與刪除後的列表更新，讓主留言與回覆排序維持一致。"
+      },
+      {
+        title: "調整手機版返回標題對齊，提升導覽列顯示穩定性。"
+      }
+    ]
+  },
+  {
     title: "改善我的頁面導覽",
     version: "v2.0.139",
     date: "2026-07-10",

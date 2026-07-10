@@ -21,7 +21,7 @@
           >
             <AppIcon name="chevron-left" :size="5" />
           </button>
-          <h1 class="app-header__title text-ink-950 dark:text-ink-50 flex min-w-0 items-center shrink-0" :aria-label="mobileHeaderTitle">
+          <h1 class="app-header__title flex h-10 min-w-0 shrink-0 items-center text-ink-950 dark:text-ink-50 md:h-auto" :aria-label="mobileHeaderTitle">
             <span class="hidden md:inline-flex"><BrandMark /></span>
             <span class="truncate text-[26px] font-bold tracking-tight md:hidden leading-none">{{ mobileHeaderTitle }}</span>
           </h1>

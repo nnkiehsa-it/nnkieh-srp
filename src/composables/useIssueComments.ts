@@ -79,6 +79,58 @@ export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (i
     }
   }
 
+  function containsComment(commentItems: CommentRecord[], commentId: string) {
+    return commentItems.some((comment) =>
+      comment.id === commentId || comment.replies.some((reply) => reply.id === commentId)
+    );
+  }
+
+  async function reloadLoadedComments(options: { targetCommentId?: string } = {}) {
+    const finalId = issueId.value;
+    if (!finalId) return;
+
+    const targetTopLevelCount = Math.max(comments.value.length, 1);
+    const currentVersion = ++requestVersion;
+    let nextCursor: typeof cursor.value = null;
+    let nextHasMore: boolean;
+    let nextComments: CommentRecord[] = [];
+
+    loading.value = true;
+    error.value = '';
+
+    try {
+      do {
+        const page = await fetchComments(finalId, nextCursor, {
+          signal: nextCursor === null ? createRequestSignal() : null,
+        });
+        if (currentVersion !== requestVersion) return;
+        nextComments = [...nextComments, ...page.comments];
+        nextCursor = page.cursor;
+        nextHasMore = page.hasMore;
+      } while (
+        nextHasMore
+        && nextCursor
+        && (
+          nextComments.length < targetTopLevelCount
+          || Boolean(options.targetCommentId && !containsComment(nextComments, options.targetCommentId))
+        )
+      );
+
+      comments.value = nextComments;
+      cursor.value = nextCursor;
+      hasMore.value = nextHasMore;
+      loaded.value = true;
+    } catch (caught) {
+      if (currentVersion === requestVersion && !isAbortFailure(caught)) {
+        error.value = isOnline.value
+          ? formatRequestError(caught, '留言載入失敗，請稍後再試。')
+          : '目前已離線，請恢復網路連線後重新整理。';
+      }
+    } finally {
+      if (currentVersion === requestVersion) loading.value = false;
+    }
+  }
+
   watch(issueId, (issueIdValue) => {
     clearCommentState();
     void loadComments(issueIdValue);
@@ -162,25 +214,7 @@ export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (i
         { content },
         parentCommentId,
       );
-      if (parentCommentId) {
-        comments.value = comments.value.map((entry) =>
-          entry.id === parentCommentId
-            ? {
-              ...entry,
-              replies: [...entry.replies, comment].sort((left, right) =>
-                (left.created_at?.getTime() ?? 0) - (right.created_at?.getTime() ?? 0)
-              ),
-            }
-            : entry
-        );
-      } else {
-        const commentMap = new Map(comments.value.map((entry) => [entry.id, entry]));
-        commentMap.set(comment.id, comment);
-        comments.value = Array.from(commentMap.values()).sort((left, right) =>
-          (left.created_at?.getTime() ?? Date.now()) - (right.created_at?.getTime() ?? Date.now())
-        );
-      }
-      loaded.value = true;
+      await reloadLoadedComments({ targetCommentId: parentCommentId ?? comment.id });
 
       return true;
     } catch (caught) {
@@ -201,12 +235,7 @@ export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (i
 
     try {
       await deleteComment(commentId);
-      comments.value = comments.value
-        .filter((comment) => comment.id !== commentId)
-        .map((comment) => ({
-          ...comment,
-          replies: comment.replies.filter((reply) => reply.id !== commentId),
-        }));
+      await reloadLoadedComments();
       showToast('留言已刪除。', 'success');
     } catch {
       submitError.value = '刪除失敗，請稍後再試。';
