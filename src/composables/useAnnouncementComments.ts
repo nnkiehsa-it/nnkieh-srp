@@ -88,6 +88,58 @@ export function useAnnouncementComments(
     }
   }
 
+  function containsComment(commentItems: AnnouncementCommentRecord[], commentId: string) {
+    return commentItems.some((comment) =>
+      comment.id === commentId || comment.replies.some((reply) => reply.id === commentId)
+    );
+  }
+
+  async function reloadLoadedComments(options: { targetCommentId?: string } = {}) {
+    const id = announcementId();
+    if (!id) return;
+
+    const targetTopLevelCount = Math.max(comments.value.length, 1);
+    const currentVersion = ++requestVersion;
+    let nextCursor: typeof cursor.value = null;
+    let nextHasMore: boolean;
+    let nextComments: AnnouncementCommentRecord[] = [];
+
+    loading.value = true;
+    error.value = '';
+
+    try {
+      do {
+        const page = await fetchAnnouncementComments(id, nextCursor, {
+          signal: nextCursor === null ? createRequestSignal() : null,
+        });
+        if (currentVersion !== requestVersion) return;
+        nextComments = [...nextComments, ...page.comments];
+        nextCursor = page.cursor;
+        nextHasMore = page.hasMore;
+      } while (
+        nextHasMore
+        && nextCursor
+        && (
+          nextComments.length < targetTopLevelCount
+          || Boolean(options.targetCommentId && !containsComment(nextComments, options.targetCommentId))
+        )
+      );
+
+      comments.value = nextComments;
+      cursor.value = nextCursor;
+      hasMore.value = nextHasMore;
+      loaded.value = true;
+    } catch (caught) {
+      if (currentVersion === requestVersion && !isAbortFailure(caught)) {
+        error.value = isOnline.value
+          ? formatRequestError(caught, '公告留言載入失敗。')
+          : '目前已離線，請恢復網路連線後重新整理。';
+      }
+    } finally {
+      if (currentVersion === requestVersion) loading.value = false;
+    }
+  }
+
   function subscribeCurrentAnnouncementComments() {
     realtimeUnsubscribe?.();
     realtimeUnsubscribe = null;
@@ -146,25 +198,7 @@ export function useAnnouncementComments(
     error.value = '';
     try {
       const result = await createAnnouncementComment(id, content, parentCommentId);
-      if (parentCommentId) {
-        comments.value = comments.value.map((comment) =>
-          comment.id === parentCommentId
-            ? {
-              ...comment,
-              replies: [...comment.replies, result.comment].sort((left, right) =>
-                (left.created_at?.getTime() ?? 0) - (right.created_at?.getTime() ?? 0)
-              ),
-            }
-            : comment
-        );
-      } else {
-        const commentMap = new Map(comments.value.map((comment) => [comment.id, comment]));
-        commentMap.set(result.comment.id, result.comment);
-        comments.value = Array.from(commentMap.values()).sort((left, right) =>
-          (left.created_at?.getTime() ?? Date.now()) - (right.created_at?.getTime() ?? Date.now())
-        );
-      }
-      loaded.value = true;
+      await reloadLoadedComments({ targetCommentId: parentCommentId ?? result.comment.id });
       onCommentCountChanged?.({ announcementId: id, commentCount: result.comment_count });
       return true;
     } catch (caught) {
@@ -184,12 +218,7 @@ export function useAnnouncementComments(
     error.value = '';
     try {
       const result = await deleteAnnouncementComment(commentId);
-      comments.value = comments.value
-        .filter((comment) => comment.id !== commentId)
-        .map((comment) => ({
-          ...comment,
-          replies: comment.replies.filter((reply) => reply.id !== commentId),
-        }));
+      await reloadLoadedComments();
       onCommentCountChanged?.({
         announcementId: result.announcement_id,
         commentCount: result.comment_count,
