@@ -30,7 +30,9 @@
           </svg>
           {{ copied ? '已複製新網址！' : '複製新網址' }}
         </button>
+        <!-- PWA 獨立視窗模式下隱藏「直接前往新網站」按鈕，以引導使用者複製網址於一般瀏覽器開啟 -->
         <a
+          v-if="!isStandalone"
           href="https://nnkieh-novae.vercel.app"
           target="_blank"
           rel="noopener noreferrer"
@@ -48,9 +50,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const copied = ref(false);
+const isStandalone = ref(false);
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    isStandalone.value =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+  }
+});
 
 async function copyUrl() {
   try {
