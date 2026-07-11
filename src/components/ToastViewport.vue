@@ -31,7 +31,7 @@
         >
           <span class="material-symbols-outlined text-[17px] leading-none" aria-hidden="true">close</span>
         </button>
-        <span v-if="toast.kind === 'loading'" class="toast-progress absolute inset-x-0 bottom-0 h-0.5" aria-hidden="true" />
+        <span v-if="toast.kind === 'loading'" class="toast-progress absolute bottom-0 left-0 h-0.5" aria-hidden="true" />
       </div>
     </TransitionGroup>
   </Teleport>
@@ -77,13 +77,15 @@ function toastIcon(kind: ToastKind) {
 }
 
 .toast-progress {
+  width: 42%;
   background: linear-gradient(90deg, transparent, currentColor 40%, currentColor 60%, transparent);
-  animation: toast-progress 1.35s ease-in-out infinite;
-  transform: translateX(-70%);
+  animation: toast-progress 1.6s linear infinite;
+  transform: translateX(-110%);
+  will-change: transform;
 }
 
 @keyframes toast-progress {
-  to { transform: translateX(70%); }
+  to { transform: translateX(350%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

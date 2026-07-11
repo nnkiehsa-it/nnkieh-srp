@@ -22,7 +22,7 @@
 ## Supabase
 
 - `supabase/config.toml` — schema 暴露與 Functions JWT 模式
-- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime／清理）；細節見 git，不逐檔列
+- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime／清理／附件型別修正）；細節見 git，不逐檔列
 - `supabase/functions/backendAction/` — 受控 action 閘道
   - `index.ts` — CORS、驗證、限流、冪等、分派
   - `action-registry.ts` / `response.ts` / `rate-limit.ts` / `types.ts` / `utils.ts` / `validation.ts` / `auth.ts`
