@@ -2,6 +2,16 @@ import type { ChangelogEntry } from '@/types';
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    title: "修正圖片提案發布",
+    version: "v2.0.159",
+    date: "2026-07-11",
+    time: "16:03",
+    items: [
+      { title: "修正加入圖片後可能無法發布提案或內容的問題。" },
+      { title: "改善操作進度提示動畫的連續性。" }
+    ]
+  },
+  {
     title: "修正多圖上傳流程",
     version: "v2.0.158",
     date: "2026-07-11",

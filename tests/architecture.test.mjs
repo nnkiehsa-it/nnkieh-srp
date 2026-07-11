@@ -93,6 +93,7 @@ test('Supabase backend deployment owns database and Edge Functions', async () =>
 test('Supabase schema includes RLS helpers, app tables, and hard-delete support', async () => {
   const migrations = await read('supabase/migrations/202607050001_supabase_baseline.sql');
   const runtimeConstraintMigration = await read('supabase/migrations/202607090003_harden_runtime_data_constraints.sql');
+  const uploadAttachmentUuidFix = await read('supabase/migrations/202607110008_fix_upload_attachment_uuid.sql');
 
   assert.match(migrations, /create schema if not exists app_private/u);
   assert.match(migrations, /create schema if not exists app_api/u);
@@ -128,6 +129,9 @@ test('Supabase schema includes RLS helpers, app tables, and hard-delete support'
   assert.match(runtimeConstraintMigration, /validate constraint issues_status_check/u);
   assert.match(runtimeConstraintMigration, /validate constraint uploads_dimensions_non_negative/u);
   assert.match(runtimeConstraintMigration, /validate constraint announcements_counts_non_negative/u);
+  assert.match(uploadAttachmentUuidFix, /attached_target_id = new\.id/u);
+  assert.match(uploadAttachmentUuidFix, /attached_target_id = old\.id/u);
+  assert.doesNotMatch(uploadAttachmentUuidFix, /attached_target_id = (?:new|old)\.id::text/u);
 });
 
 test('backendAction covers frontend actions and Cloudinary direct upload', async () => {
