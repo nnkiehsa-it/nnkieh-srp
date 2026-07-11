@@ -4,7 +4,6 @@ const {
   maxUploadBytes: maxImageUploadBytes,
   maxSourceBytes: maxImageSourceBytes,
   maxDimension: maxImageDimension,
-  maxPixels: maxImagePixels,
   webpQuality,
   outputScales,
 } = RATE_LIMITS.imageCompression;
@@ -106,9 +105,6 @@ export async function processImageForUpload(file: File): Promise<ProcessedImage>
   const sourceHeight = image.naturalHeight;
   if (!sourceWidth || !sourceHeight) {
     throw new Error('無法讀取圖片尺寸。');
-  }
-  if (sourceWidth * sourceHeight > maxImagePixels) {
-    throw new Error(`[IMG-SOURCE-PIXELS] 圖片解析度過高；dimensions=${sourceWidth}x${sourceHeight}`);
   }
   if (
     file.size <= maxImageUploadBytes

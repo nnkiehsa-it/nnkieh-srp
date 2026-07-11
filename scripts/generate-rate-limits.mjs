@@ -105,7 +105,6 @@ async function readRateLimitsConfig(projectRoot) {
       maxSourceMegabytes: assertPositiveInteger(imageCompression.maxSourceMegabytes, 'imageCompression.maxSourceMegabytes 必須是正整數。'),
       maxSourceBytes: assertPositiveInteger(imageCompression.maxSourceMegabytes, '') * 1024 * 1024,
       maxDimension: assertPositiveInteger(imageCompression.maxDimension, 'imageCompression.maxDimension 必須是正整數。'),
-      maxPixels: assertPositiveInteger(imageCompression.maxPixels, 'imageCompression.maxPixels 必須是正整數。'),
       webpQuality: assertNumberRange(imageCompression.webpQuality, 0.01, 1.0, 'imageCompression.webpQuality 必須在 0.01 與 1.0 之間。'),
       outputScales: Array.isArray(imageCompression.outputScales)
         ? imageCompression.outputScales.map((scale, i) => assertNumberRange(scale, 0.01, 1.0, `imageCompression.outputScales[${i}] 必須在 0.01 與 1.0 之間。`))

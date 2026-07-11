@@ -117,7 +117,6 @@ export const RATE_LIMITS = {
     "maxSourceMegabytes": 20,
     "maxSourceBytes": 20971520,
     "maxDimension": 2000,
-    "maxPixels": 16000000,
     "webpQuality": 0.82,
     "outputScales": [
       1,

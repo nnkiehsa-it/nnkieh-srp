@@ -112,8 +112,12 @@
     "maxUploadKilobytes": 800,
     "maxSourceMegabytes": 20,
     "maxDimension": 2000,
-    "maxPixels": 16000000,
     "webpQuality": 0.82,
-    "outputScales": [1.0, 0.7, 0.5, 0.4]
+    "outputScales": [
+      1.0,
+      0.7,
+      0.5,
+      0.4
+    ]
   }
 }
