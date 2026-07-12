@@ -1,5 +1,27 @@
 <template>
   <section class="mx-auto w-full max-w-7xl space-y-5">
+    <div v-if="isAdmin" class="hidden justify-end md:flex">
+      <CreateActionMenu
+        :can-create-announcement="isAdmin"
+        :default-category="DEFAULT_ISSUE_CATEGORY"
+        default-kind="announcement"
+        @create-announcement="openComposer"
+        @create-issue="handleCreateIssue"
+      >
+        <template #trigger="{ open }">
+          <button
+            type="button"
+            class="button-icon-filled flex !h-9 !w-9 shrink-0 items-center justify-center"
+            title="新增"
+            aria-label="新增"
+            @click="open"
+          >
+            <AppIcon name="plus" :size="4" :stroke-width="2.5" />
+          </button>
+        </template>
+      </CreateActionMenu>
+    </div>
+
     <div>
       <Transition name="panel-switch" mode="out-in">
         <div :key="announcementPanelKey" class="space-y-3">
@@ -83,7 +105,9 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AnnouncementComposerDialog from '@/components/AnnouncementComposerDialog.vue';
 import AnnouncementTable from '@/components/AnnouncementTable.vue';
+import CreateActionMenu from '@/components/CreateActionMenu.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import AppIcon from '@/components/ui/AppIcon.vue';
 import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
 import SkeletonAnnouncementList from '@/components/ui/SkeletonAnnouncementList.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
@@ -91,6 +115,7 @@ import {
   CREATE_ANNOUNCEMENT_QUERY_VALUE,
   CREATE_ENTRY_QUERY_KEY,
   registerCreateAnnouncementHandler,
+  requestCreateIssue,
 } from '@/composables/useCreateEntryActions';
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 import { useAnnouncementManagement } from '@/composables/useAnnouncementManagement';
@@ -99,6 +124,8 @@ import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
 import { resetAppConnection } from '@/lib/reconnect';
 import { useToast } from '@/composables/useToast';
 import { registerActiveNavigationRefreshHandler } from '@/composables/useActiveNavigationRefresh';
+import { DEFAULT_ISSUE_CATEGORY } from '@/constants/categories';
+import type { IssueCategory } from '@/types';
 
 const {
   announcements,
@@ -161,6 +188,10 @@ async function handleManualRefresh() {
   }
 }
 registerActiveNavigationRefreshHandler(handleManualRefresh);
+async function handleCreateIssue(category: IssueCategory) {
+  await requestCreateIssue(router, category);
+}
+
 async function clearCreateQuery() {
   const query = { ...route.query };
   delete query[CREATE_ENTRY_QUERY_KEY];
