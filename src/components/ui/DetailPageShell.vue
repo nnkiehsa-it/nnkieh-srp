@@ -21,13 +21,17 @@
       </header>
 
       <div class="grid min-w-0 flex-1 border-t border-ink-100/70 dark:border-ink-800/70 md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
-        <div class="min-w-0 px-5 py-5 pr-6">
-          <slot name="details" :compact="false" :scroll-content="false" />
-          <slot name="actions" :compact="false" />
+        <div class="flex min-h-0 min-w-0 flex-col px-5 py-5 pr-6">
+          <div class="min-h-0 flex-1 overflow-y-auto pr-1 overscroll-contain">
+            <slot name="details" :compact="false" :scroll-content="false" />
+          </div>
+          <div class="shrink-0 bg-surface dark:bg-surface">
+            <slot name="actions" :compact="false" />
+          </div>
         </div>
 
         <aside
-          class="min-w-0 border-l border-ink-100/70 px-5 py-5 dark:border-ink-800/70"
+          class="flex min-h-0 min-w-0 flex-col border-l border-ink-100/70 px-5 py-5 dark:border-ink-800/70"
           :aria-label="commentsLabel"
         >
           <slot name="comments" :compact-header="false" />
@@ -57,7 +61,6 @@
         <PillSegmentedControl
           v-model="activeTab"
           :options="tabOptions"
-          show-inactive-labels
           class="shrink-0 self-center"
         />
       </header>
@@ -127,8 +130,8 @@ const isDesktopViewport = ref(
 let desktopMediaQuery: MediaQueryList | null = null;
 
 const tabOptions = computed(() => [
-  { value: 'details' as const, label: props.detailsLabel, title: `查看${props.detailsLabel}` },
-  { value: 'comments' as const, label: props.commentsLabel, title: `查看${props.commentsLabel}` },
+  { value: 'details' as const, label: props.detailsLabel, icon: 'list' as const, title: `查看${props.detailsLabel}` },
+  { value: 'comments' as const, label: props.commentsLabel, icon: 'comment' as const, title: `查看${props.commentsLabel}` },
 ]);
 
 watch(

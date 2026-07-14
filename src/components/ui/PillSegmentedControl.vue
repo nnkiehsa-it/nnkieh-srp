@@ -14,7 +14,7 @@
       :key="item.value"
       ref="buttonRefs"
       type="button"
-      class="segmented-control__button relative z-10 flex h-full items-center justify-center gap-1.5 rounded-full text-xs font-semibold select-none"
+      class="segmented-control__button relative z-10 flex h-full items-center justify-center rounded-full text-xs font-semibold select-none"
       :class="modelValue === item.value ? activeClass : inactiveClass"
       :title="item.title ?? item.label"
       :aria-label="item.ariaLabel ?? item.title ?? item.label"
@@ -24,8 +24,10 @@
     >
       <AppIcon v-if="item.icon" :name="item.icon" :size="3.5" />
       <span
-        v-if="showInactiveLabels || modelValue === item.value"
-        class="whitespace-nowrap transition-[opacity,transform,max-width] duration-200"
+        class="inline-block overflow-hidden whitespace-nowrap transition-[opacity,transform,max-width,margin] duration-300 ease-[var(--motion-ease-enter)]"
+        :class="showInactiveLabels || modelValue === item.value
+          ? 'ml-1.5 max-w-28 translate-x-0 opacity-100'
+          : 'ml-0 max-w-0 -translate-x-1 opacity-0'"
       >
         {{ item.label }}
       </span>

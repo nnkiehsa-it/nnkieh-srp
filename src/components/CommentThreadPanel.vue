@@ -1,5 +1,5 @@
 <template>
-  <section class="relative flex min-h-0 flex-col" :class="{ 'h-full': compactHeader }">
+  <section class="relative flex h-full min-h-0 flex-col">
     <div
       class="flex shrink-0 items-center justify-between gap-3 border-b border-ink-100 pb-2 dark:border-ink-800"
       :class="{ 'max-md:hidden': compactHeader }"
@@ -28,8 +28,7 @@
 
     <div
       ref="scrollContainerRef"
-      class="min-h-0 overflow-y-auto py-2 pr-1 overscroll-contain"
-      :class="compactHeader ? 'flex-1' : 'max-h-[32rem]'"
+      class="min-h-0 flex-1 overflow-y-auto py-2 pr-1 overscroll-contain"
     >
       <SkeletonCommentList v-if="visibleLoading" />
 
