@@ -42,12 +42,13 @@
     min-height: var(--control-height);
     border-radius: 9999px;
     padding: 0.625rem 1rem;
-    background-color: rgb(var(--color-danger));
-    color: rgb(var(--color-on-danger));
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-danger));
   }
 
   .button-danger:hover:not(:disabled) {
-    background-color: rgb(var(--color-danger-hover));
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-danger-hover));
   }
 
   .button-toolbar {

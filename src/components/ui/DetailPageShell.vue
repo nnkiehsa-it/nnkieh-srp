@@ -1,6 +1,9 @@
 <template>
   <section class="min-h-0 px-1 pb-3 sm:px-2 sm:pb-5">
-    <article class="panel overflow-visible" :aria-label="detailsLabel">
+    <article
+      class="panel flex min-h-[calc(100dvh-var(--app-header-height)-var(--app-bottom-nav-height)-env(safe-area-inset-top)-1rem)] flex-col overflow-visible md:min-h-[calc(100dvh-2.5rem)]"
+      :aria-label="detailsLabel"
+    >
       <header class="flex items-start gap-3 px-4 py-4 sm:px-5">
         <button
           type="button"
@@ -17,7 +20,7 @@
         </div>
       </header>
 
-      <div class="grid min-w-0 border-t border-ink-100/70 dark:border-ink-800/70 md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
+      <div class="grid min-w-0 flex-1 border-t border-ink-100/70 dark:border-ink-800/70 md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
         <div class="min-w-0 px-4 py-4 sm:px-5 sm:py-5 md:pr-6">
           <slot name="details" :compact="!isDesktopViewport" :scroll-content="false" />
           <slot name="actions" :compact="!isDesktopViewport" />

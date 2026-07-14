@@ -212,15 +212,13 @@
         </div>
       </section>
 
-      <div class="settings-group p-2">
-        <button
-          type="button"
-          class="button-danger w-full"
-          @click="logoutDialogOpen = true"
-        >
-          登出目前帳號
-        </button>
-      </div>
+      <button
+        type="button"
+        class="button-danger w-full"
+        @click="logoutDialogOpen = true"
+      >
+        登出目前帳號
+      </button>
     </div>
   </div>
 
