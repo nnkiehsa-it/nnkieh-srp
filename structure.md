@@ -21,7 +21,7 @@
 ## Supabase
 
 - `supabase/config.toml` — schema 暴露與 Functions JWT 模式
-- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime Broadcast／清理／成本限流硬化、附件型別、圖片網址快取、統一 feed 分頁與集合式留言回覆讀取）；細節見 git，不逐檔列
+- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime Broadcast／清理／成本限流硬化／輸入長度、附件型別、圖片網址快取、統一 feed 分頁與集合式留言回覆讀取）；細節見 git，不逐檔列
 - `supabase/functions/backendAction/` — 受控 action 閘道
   - `index.ts` — CORS、驗證、限流、冪等、分派
   - `action-registry.ts` / `response.ts` / `rate-limit.ts` / `types.ts` / `utils.ts` / `validation.ts` / `auth.ts`
@@ -43,7 +43,7 @@
 - `styles/navigation.css` — 桌面側欄與手機底部導覽
 - `styles/content.css` / `responsive.css` — 列表、設定、統計、Dialog 與跨裝置覆寫
 - `assets/fonts/` — JetBrains Mono 與 Material Symbols 子集
-- `router/index.ts` — 組合 modules、abort 上一頁、session guard
+- `router/index.ts` / `router/route-components.ts` — 組合 modules、abort 上一頁、session guard 與主要頁面 chunk 預載
 - `router/authRoutes.ts` / `issueRoutes.ts` / `announcementRoutes.ts` / `adminRoutes.ts` / `notificationRoutes.ts` / `settingsRoutes.ts`
 - `views/LoginView.vue` — 登入
 - `views/IssueBoardView.vue` — 提案看板
@@ -98,7 +98,7 @@
 ## generated / constants / lib / types
 
 - `generated/issue-categories.ts` — 分類 codegen
-- `constants/app.ts` — Novae 品牌名稱與學校顯示設定
+- `constants/app.ts` / `constants/input-limits.ts` — Novae 品牌名稱、學校顯示設定與前端輸入長度
 - `constants/categories.ts` / `statuses.ts`
 - `lib/` — `firebase`、`firebase-messaging`、`firebase-app-check`、`auth-token`、`supabase`、`request`、`request-id`、`route-request`、`reconnect`、`route`、`page-size`、`format`、`search`、`issue-status`、`issue-timeline`、`issue-sort`、`in-app-browser`、`pwa-install`、`caret`、`markdown-*`、`image-processing`
 - `types/index.ts` / `types/pwa.d.ts`

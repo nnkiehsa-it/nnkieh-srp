@@ -19,20 +19,9 @@
           :alt-text="`${announcement.author_name} 的頭像`"
         />
 
-        <template v-if="compact">
-          <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">
-            {{ announcement.author_name }}
-          </p>
-          <span class="text-ink-300 dark:text-ink-700">&middot;</span>
-          <p class="text-xs font-normal text-ink-500/80 dark:text-ink-400/80">{{ publishedLabel }}</p>
-        </template>
-
-        <div v-else class="min-w-0">
-          <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">
-            {{ announcement.author_name }}
-          </p>
-          <p class="text-xs font-normal text-ink-500/80 dark:text-ink-400/80">發布於 {{ publishedLabel }}</p>
-        </div>
+        <p class="min-w-0 truncate text-sm font-semibold text-ink-900 dark:text-ink-100">
+          {{ announcement.author_name }}
+        </p>
       </div>
     </div>
 
@@ -46,10 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
-import { formatDate } from '@/lib/format';
 import type { AnnouncementRecord } from '@/types';
 
 const props = defineProps<{
@@ -58,5 +45,4 @@ const props = defineProps<{
   scrollContent?: boolean;
 }>();
 
-const publishedLabel = computed(() => formatDate(props.announcement.published_at));
 </script>

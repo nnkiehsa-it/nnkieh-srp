@@ -7,11 +7,16 @@ import {
   validateMarkdownUploadsBeforeCreate,
 } from "./uploads.ts";
 import { asBoolean, asUuid, utcHourWindow } from "./utils.ts";
-import { INPUT_LIMITS, requiredText } from "./validation.ts";
+import { INPUT_LIMITS, requiredMediaContent, requiredText } from "./validation.ts";
 
 async function createAnnouncement(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
   requireAdmin(auth);
-  const content = requiredText(payload.content, "content", INPUT_LIMITS.content);
+  const content = requiredMediaContent(
+    payload.content,
+    "content",
+    INPUT_LIMITS.content,
+    INPUT_LIMITS.contentStorage,
+  );
   await validateMarkdownUploadsBeforeCreate(supabase, auth.uid, content, "announcement");
   const { data, error } = await supabase.schema("app_api").rpc("backend_create_announcement", {
     actor_uid: auth.uid,

@@ -102,12 +102,14 @@ type DetailPageTab = 'details' | 'comments';
 const props = withDefaults(defineProps<{
   backLabel?: string;
   commentsLabel?: string;
+  commentCount?: number;
   detailsLabel: string;
   initialTab?: DetailPageTab;
   showMobileBackButton?: boolean;
 }>(), {
   backLabel: '返回',
   commentsLabel: '討論留言',
+  commentCount: 0,
   initialTab: 'details',
   showMobileBackButton: true,
 });
@@ -131,7 +133,12 @@ let desktopMediaQuery: MediaQueryList | null = null;
 
 const tabOptions = computed(() => [
   { value: 'details' as const, label: props.detailsLabel, icon: 'list' as const, title: `查看${props.detailsLabel}` },
-  { value: 'comments' as const, label: props.commentsLabel, icon: 'comment' as const, title: `查看${props.commentsLabel}` },
+  {
+    value: 'comments' as const,
+    label: `${props.commentCount} 則留言`,
+    icon: 'comment' as const,
+    title: `查看${props.commentsLabel}，共 ${props.commentCount} 則`,
+  },
 ]);
 
 watch(

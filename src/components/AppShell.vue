@@ -4,6 +4,9 @@
     :data-bottom-nav="isAllowedUser ? 'true' : 'false'"
     :data-sidebar-expanded="isSidebarExpanded ? 'true' : 'false'"
     :style="rootStyle"
+    @focusin.capture="handleNavigationIntent"
+    @pointerdown.capture="handleNavigationIntent"
+    @pointerover.capture="handleNavigationIntent"
   >
     <div class="app-background-fill pointer-events-none absolute inset-0"></div>
     <div class="app-background-wash pointer-events-none absolute inset-x-0 top-0 h-80 dark:hidden"></div>
@@ -82,6 +85,7 @@ import { useIssueRouteFilter } from '@/composables/useIssueRouteFilter';
 import { useNotificationBadge } from '@/composables/useNotificationBadge';
 import { useSession } from '@/composables/useSession';
 import type { IssueCategory } from '@/types';
+import { preloadRoutePath } from '@/router/route-components';
 
 const SIDEBAR_EXPANDED_STORAGE_KEY = 'novae:desktop-sidebar-expanded';
 const MOBILE_NAV_HEIGHT = 60;
@@ -163,6 +167,16 @@ async function handleCreateAnnouncement() {
 
 function handleNavigationClick(isActive: boolean) {
   if (isActive) void refreshFromActiveNavigation();
+}
+
+function handleNavigationIntent(event: Event) {
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest<HTMLAnchorElement>('a[href]');
+  if (!link) return;
+
+  const url = new URL(link.href, window.location.origin);
+  if (url.origin !== window.location.origin) return;
+  void preloadRoutePath(url.pathname);
 }
 
 function setSidebarExpanded(expanded: boolean) {

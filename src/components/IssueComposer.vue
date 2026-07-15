@@ -3,7 +3,7 @@
     <section
       id="issue-composer"
       ref="dialogRef"
-      class="panel panel-pad flex h-full w-full flex-col overflow-hidden rounded-none border-none md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none"
+      class="entry-composer panel panel-pad flex h-full w-full flex-col overflow-hidden rounded-none border-none md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none"
       data-dialog-root
       tabindex="-1"
     >
@@ -35,15 +35,15 @@
             v-model="form.title"
             autocomplete="off"
             class="field text-base py-3"
-            maxlength="120"
+            :maxlength="INPUT_LIMITS.title"
             placeholder="為您的提案取個明確的標題..."
             data-autofocus
             :disabled="submitting"
           />
           <div class="flex justify-between items-center text-xs text-ink-500 dark:text-ink-400">
             <span>必填</span>
-            <span class="font-medium" :class="{ 'text-error': form.title.length > 110 }">
-              {{ titleCount }} / 120
+            <span class="font-medium" :class="{ 'text-error': form.title.length > 27 }">
+              {{ titleCount }} / {{ INPUT_LIMITS.title }}
             </span>
           </div>
         </div>
@@ -58,8 +58,8 @@
           :images="editorImages"
           :max-images="RATE_LIMITS.imageUploads.issueMaxImages"
           max-images-label="提案"
-          :max-length="5000"
-          :warning-length="4800"
+          :max-length="INPUT_LIMITS.content"
+          :warning-length="900"
           :preview-content="form.content"
           :uploading="uploading"
           :disabled="submitting"
@@ -112,6 +112,7 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
 import type { IssueRecord, WritableIssueCategory } from '@/types';
 import { RATE_LIMITS } from '@/generated/rate-limits';
+import { INPUT_LIMITS } from '@/constants/input-limits';
 
 const props = defineProps<{
   open: boolean;

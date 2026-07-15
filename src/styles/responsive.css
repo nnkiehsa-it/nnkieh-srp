@@ -1,7 +1,9 @@
 .dialog-overlay {
   box-sizing: border-box;
-  height: auto;
+  height: 100dvh;
   min-height: 0;
+  overflow: hidden;
+  width: 100dvw;
 }
 
 .dialog-overlay::before {
@@ -27,7 +29,7 @@
   min-height: 0;
 }
 
-#issue-composer {
+.entry-composer {
   --dialog-safe-padding: var(--panel-padding);
 }
 
@@ -48,9 +50,16 @@
 
   .dialog-overlay:is([data-padding='none'], [data-padding='responsive']) > [data-dialog-root] {
     background-color: rgb(var(--dialog-page-background));
-    max-height: 100dvh;
-    padding-bottom: 20px;
+    box-sizing: border-box;
+    box-shadow: none;
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    padding-bottom: max(var(--dialog-safe-padding, 1rem), env(safe-area-inset-bottom));
+    padding-left: max(var(--dialog-safe-padding, 1rem), env(safe-area-inset-left));
+    padding-right: max(var(--dialog-safe-padding, 1rem), env(safe-area-inset-right));
     padding-top: max(var(--dialog-safe-padding, 1rem), env(safe-area-inset-top));
+    width: 100%;
   }
 
   .dialog-overlay[data-padding='padded'] {
@@ -106,12 +115,18 @@
 }
 
 .page-content-enter-active {
+  position: relative;
+  z-index: 1;
   transition:
-    opacity var(--motion-duration-panel) var(--motion-ease-enter),
-    transform var(--motion-duration-panel) var(--motion-ease-enter);
+    opacity var(--motion-duration) var(--motion-ease-enter),
+    transform var(--motion-duration) var(--motion-ease-enter);
 }
 
 .page-content-leave-active {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
   transition:
     opacity var(--motion-duration-fast) var(--motion-ease-exit),
     transform var(--motion-duration-fast) var(--motion-ease-exit);
@@ -119,7 +134,7 @@
 
 .page-content-enter-from {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(3px);
 }
 
 .page-content-leave-to {

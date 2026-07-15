@@ -20,24 +20,9 @@
           :alt-text="`${displayAuthorName} 的頭像`"
         />
 
-        <template v-if="compact">
-          <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">
-            {{ displayAuthorName }}
-          </p>
-          <span class="text-ink-300 dark:text-ink-700">&middot;</span>
-          <p class="text-xs font-normal text-ink-500/80 dark:text-ink-400/80">
-            {{ primaryTimeShortText }}
-          </p>
-        </template>
-
-        <div v-else class="min-w-0">
-          <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">
-            {{ displayAuthorName }}
-          </p>
-          <p class="text-xs font-normal text-ink-500/80 dark:text-ink-400/80">
-            {{ primaryTimeLabel }} {{ primaryTimeValueLabel }}
-          </p>
-        </div>
+        <p class="min-w-0 truncate text-sm font-semibold text-ink-900 dark:text-ink-100">
+          {{ displayAuthorName }}
+        </p>
       </div>
     </div>
 
@@ -67,7 +52,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
 import UserAvatar from '@/components/ui/UserAvatar.vue';
 import type { IssueRecord } from '@/types';
@@ -77,11 +61,8 @@ const props = defineProps<{
   displayAuthorName: string;
   displayPhotoUrl: string | null;
   issue: IssueRecord;
-  primaryTimeLabel: string;
-  primaryTimeValueLabel: string;
   scrollContent?: boolean;
   showAuthor: boolean;
 }>();
 
-const primaryTimeShortText = computed(() => `${props.primaryTimeLabel} ${props.primaryTimeValueLabel}`);
 </script>

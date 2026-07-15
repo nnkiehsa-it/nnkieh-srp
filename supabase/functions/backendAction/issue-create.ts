@@ -11,7 +11,7 @@ import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { validateMarkdownUploadsBeforeCreate } from "./uploads.ts";
 import { taipeiDayWindow } from "./utils.ts";
-import { INPUT_LIMITS, requiredText } from "./validation.ts";
+import { INPUT_LIMITS, requiredMediaContent, requiredText } from "./validation.ts";
 
 const PRIVATE_TO_OWNER_CATEGORIES = ISSUE_CATEGORIES
   .filter((categoryConfig) => categoryConfig.readAccess === "owner-admin")
@@ -26,7 +26,12 @@ const AUTHOR_PRIVATE_CATEGORIES = ISSUE_CATEGORIES
 export async function createIssue(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
   await claimFixedWindowRateLimit(auth.uid, "issue.create", taipeiDayWindow(), RATE_LIMITS.issueCreateDaily);
   const title = requiredText(payload.title, "title", INPUT_LIMITS.title);
-  const content = requiredText(payload.content, "content", INPUT_LIMITS.content);
+  const content = requiredMediaContent(
+    payload.content,
+    "content",
+    INPUT_LIMITS.content,
+    INPUT_LIMITS.contentStorage,
+  );
   const category = asString(payload.category, "general");
   if (!isIssueCategory(category)) throw new Error("invalid-issue-category");
   await validateMarkdownUploadsBeforeCreate(supabase, auth.uid, content, "issue");

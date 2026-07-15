@@ -18,15 +18,6 @@
     </div>
 
     <div
-      v-if="compactHeader"
-      class="hidden shrink-0 items-center justify-between gap-3 border-b border-ink-100 pb-2 dark:border-ink-800 max-md:flex"
-    >
-      <span class="tag rounded-full border-none bg-ink-100 px-2.5 py-0.5 text-xs font-semibold dark:bg-ink-800/80">
-        {{ comments.length }} 則留言
-      </span>
-    </div>
-
-    <div
       ref="scrollContainerRef"
       class="min-h-0 flex-1 overflow-y-auto py-2 pr-1 overscroll-contain"
     >
@@ -47,7 +38,6 @@
         v-else-if="loaded && comments.length === 0"
         class="!px-3 !py-7"
         title="目前尚無留言"
-        description="第一則留言會出現在這裡。"
         icon="comment"
       />
 

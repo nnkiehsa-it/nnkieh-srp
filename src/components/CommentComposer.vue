@@ -40,21 +40,16 @@
         />
 
         <textarea
-          v-if="!showPreview"
           :id="`comment-content-${composerId}`"
           ref="commentTextareaRef"
           v-model="commentContent"
           rows="1"
           class="max-h-32 min-h-11 min-w-0 flex-1 resize-none border-none bg-transparent px-1 py-3 font-sans text-base leading-5 text-ink-800 outline-none placeholder:text-ink-400 focus:ring-0 dark:text-ink-100 dark:placeholder:text-ink-500 md:text-sm"
           autocomplete="off"
-          maxlength="2000"
+          :maxlength="INPUT_LIMITS.comment"
           :placeholder="parentCommentId ? '留下你的回覆...' : '分享你的想法…'"
           :disabled="submitting"
         ></textarea>
-        <div v-else class="max-h-32 min-h-11 min-w-0 flex-1 overflow-y-auto px-1 py-2.5 text-sm text-ink-800 dark:text-ink-100">
-          <MarkdownRenderer v-if="contentWithImages.trim()" :content="contentWithImages" />
-          <span v-else class="italic text-ink-400">沒有可預覽的內容</span>
-        </div>
 
         <button
           type="button"
@@ -76,15 +71,6 @@
           @change="handleImagePicked"
         />
         <button
-          type="button"
-          class="button-toolbar h-10 min-h-10 w-10 shrink-0 rounded-full p-0"
-          :title="showPreview ? '繼續編輯' : '預覽留言'"
-          :aria-label="showPreview ? '繼續編輯' : '預覽留言'"
-          @click="showPreview = !showPreview"
-        >
-          <AppIcon :name="showPreview ? 'edit' : 'preview'" />
-        </button>
-        <button
           type="submit"
           class="button-icon-filled h-10 min-h-10 w-10 shrink-0 bg-ink-900 text-white hover:bg-ink-800 dark:bg-ink-100 dark:text-ink-900 dark:hover:bg-ink-200"
           :disabled="submitting || uploading || (!commentContent.trim() && imageUrls.length === 0)"
@@ -104,12 +90,12 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { RATE_LIMITS } from '@/generated/rate-limits';
+import { INPUT_LIMITS } from '@/constants/input-limits';
 
 const props = defineProps<{
   error: string;
@@ -130,11 +116,9 @@ const myPhotoUrl = computed(() => customPhotoUrl.value || user.value?.photoURL |
 const composerId = computed(() => props.issueId ?? props.targetId ?? 'default');
 
 const commentContent = ref('');
-const showPreview = ref(false);
 const {
   fileInputRef: commentFileInputRef,
   handleImagePicked,
-  contentWithImages,
   deleteUploadedImages,
   discardImages,
   imageUrls,
@@ -189,7 +173,6 @@ watch(
       commentContent.value = '';
       resetImages();
       submittedImages.value = [];
-      showPreview.value = false;
     }
     if (!isSubmitting && wasSubmitting && props.error && submittedImages.value.length) {
       deleteUploadedImages(submittedImages.value);

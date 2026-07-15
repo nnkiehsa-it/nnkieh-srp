@@ -850,3 +850,47 @@ test('cost-sensitive hot paths use aggregation, patching, and lazy startup', asy
   assert.match(cleanupMigration, /support\.created/u);
   assert.match(cleanupMigration, /drop column if exists secure_url/u);
 });
+
+test('entry and comment limits are enforced across UI, Edge, and a new migration', async () => {
+  const frontendLimits = await read('src/constants/input-limits.ts');
+  const backendValidation = await read('supabase/functions/backendAction/validation.ts');
+  const databaseLimits = await read('supabase/migrations/202607150002_input_length_limits.sql');
+  const commentComposer = await read('src/components/CommentComposer.vue');
+  const commentItem = await read('src/components/CommentItem.vue');
+  const commentThread = await read('src/components/CommentThreadPanel.vue');
+  const detailShell = await read('src/components/ui/DetailPageShell.vue');
+  const responsiveStyles = await read('src/styles/responsive.css');
+  const baseStyles = await read('src/styles/base.css');
+
+  assert.match(frontendLimits, /title: 30/u);
+  assert.match(frontendLimits, /content: 1_000/u);
+  assert.match(frontendLimits, /comment: 70/u);
+  assert.match(backendValidation, /requiredMediaContent/u);
+  assert.match(databaseLimits, /visible_media_text_length/u);
+  assert.match(databaseLimits, /between 1 and 30/u);
+  assert.match(databaseLimits, /> 1000/u);
+  assert.match(databaseLimits, /> 70/u);
+  assert.doesNotMatch(commentComposer, /MarkdownRenderer|showPreview|預覽留言/u);
+  assert.match(commentItem, /plain-text/u);
+  assert.doesNotMatch(commentThread, /第一則留言會出現在這裡/u);
+  assert.match(detailShell, /label: `\$\{props\.commentCount\} 則留言`/u);
+  assert.match(baseStyles, /padding-bottom: calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
+  assert.match(responsiveStyles, /padding-left: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-left\)\)/u);
+  assert.match(responsiveStyles, /padding-right: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-right\)\)/u);
+});
+
+test('primary navigation preloads route chunks without blocking page transitions', async () => {
+  const app = await read('src/App.vue');
+  const appShell = await read('src/components/AppShell.vue');
+  const routeComponents = await read('src/router/route-components.ts');
+  const responsiveStyles = await read('src/styles/responsive.css');
+
+  assert.doesNotMatch(app, /<Transition name="page-content" mode="out-in">/u);
+  assert.match(app, /requestIdleCallback/u);
+  assert.match(app, /preloadPrimaryRouteComponents/u);
+  assert.match(appShell, /@pointerover\.capture="handleNavigationIntent"/u);
+  assert.match(appShell, /preloadRoutePath/u);
+  assert.match(routeComponents, /preloadRequests/u);
+  assert.match(routeComponents, /for \(const routeName of routeNames\)/u);
+  assert.match(responsiveStyles, /\.page-content-leave-active \{[\s\S]*position: absolute/u);
+});

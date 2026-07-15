@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRef } from 'vue';
+import { toRef, watch } from 'vue';
 import CommentThreadPanel from '@/components/CommentThreadPanel.vue';
 import { useIssueComments } from '@/composables/useIssueComments';
 import type { DiscussionCommentRecord } from '@/types';
@@ -43,6 +43,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  commentCountChanged: [commentCount: number];
   contentUnavailable: [issueId: string];
 }>();
 
@@ -63,6 +64,12 @@ const {
   submitComment,
   submitError,
 } = useIssueComments(toRef(props, 'issueId'), (issueId) => emit('contentUnavailable', issueId));
+
+watch(
+  () => comments.value.length,
+  (commentCount) => emit('commentCountChanged', commentCount),
+  { immediate: true },
+);
 
 async function handleSubmitComment(payload: { content: string; parentCommentId: string | null }) {
   return submitComment(payload.content, payload.parentCommentId);

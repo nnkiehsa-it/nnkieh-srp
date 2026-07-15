@@ -2,7 +2,7 @@
   <DialogOverlay :open="open" @close="handleClose">
     <section
       ref="dialogRef"
-      class="panel panel-pad flex h-full w-full flex-col overflow-hidden rounded-none border-none md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none"
+      class="entry-composer panel panel-pad flex h-full w-full flex-col overflow-hidden rounded-none border-none md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none"
       data-dialog-root
       tabindex="-1"
     >
@@ -34,7 +34,7 @@
             v-model="title"
             autocomplete="off"
             class="field text-base py-3"
-            maxlength="120"
+            :maxlength="INPUT_LIMITS.title"
             placeholder="請輸入公告標題..."
             data-autofocus
             :disabled="submitting"
@@ -42,8 +42,8 @@
           />
           <div class="flex justify-between items-center text-xs text-ink-500 dark:text-ink-400">
             <span>必填</span>
-            <span class="font-medium" :class="{ 'text-error': title.length > 110 }">
-              {{ titleCount }} / 120
+            <span class="font-medium" :class="{ 'text-error': title.length > 27 }">
+              {{ titleCount }} / {{ INPUT_LIMITS.title }}
             </span>
           </div>
         </div>
@@ -58,8 +58,8 @@
           :images="editorImages"
           :max-images="maxImages"
           max-images-label="公告"
-          :max-length="5000"
-          :warning-length="4800"
+          :max-length="INPUT_LIMITS.content"
+          :warning-length="900"
           :preview-content="content"
           :uploading="uploading"
           :disabled="submitting"
@@ -117,6 +117,7 @@ import { useDialogFocus } from '@/composables/useDialogFocus';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import type { UploadedImage } from '@/composables/useImageUpload';
 import { RATE_LIMITS } from '@/generated/rate-limits';
+import { INPUT_LIMITS } from '@/constants/input-limits';
 
 const props = defineProps<{
   error: string;

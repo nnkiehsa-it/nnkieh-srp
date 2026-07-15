@@ -3,6 +3,7 @@
     :initial-tab="initialTab"
     back-label="返回提案列表"
     details-label="提案內容"
+    :comment-count="mobileCommentCount"
     :show-mobile-back-button="false"
     @back="emit('back')"
   >
@@ -28,8 +29,6 @@
         :display-author-name="displayAuthorName"
         :display-photo-url="displayPhotoUrl"
         :issue="issue"
-        :primary-time-label="primaryTimeLabel"
-        :primary-time-value-label="primaryTimeValueLabel"
         :scroll-content="scrollContent"
         :show-author="showAuthor"
       />
@@ -65,6 +64,7 @@
         :focus-comment-id="focusCommentId"
         :issue-id="issue.id"
         class="h-full"
+        @comment-count-changed="mobileCommentCount = $event"
         @content-unavailable="emit('contentUnavailable', $event)"
       />
       <section v-else class="flex h-full min-h-0 flex-col">
@@ -159,6 +159,7 @@ const { isAdmin } = useSession();
 const isReviewDialogOpen = ref(false);
 const isStatusDialogOpen = ref(false);
 const statusDialogInitialAction = ref<'processing' | 'closed'>('processing');
+const mobileCommentCount = ref(0);
 
 const {
   displayAuthorName,

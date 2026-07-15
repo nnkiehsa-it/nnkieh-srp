@@ -32,7 +32,11 @@
               </p>
             </div>
             <div class="comment-content-compact mt-0.5 max-w-none text-sm leading-5 text-ink-800 dark:text-ink-200">
-              <MarkdownMediaContent :content="comment.content" :fallback-alt="`${comment.author_name} 的留言圖片`" />
+              <MarkdownMediaContent
+                :content="comment.content"
+                :fallback-alt="`${comment.author_name} 的留言圖片`"
+                plain-text
+              />
             </div>
           </div>
           <div v-if="(!isReply && canReply) || canDelete" class="-mr-1 flex shrink-0 items-center gap-0.5 self-start">

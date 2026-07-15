@@ -1,10 +1,11 @@
 import type { RouteRecordRaw } from 'vue-router';
+import { loadDashboardView } from '@/router/route-components';
 
 export const adminRoutes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('@/views/DashboardView.vue'),
+    component: loadDashboardView,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
 ];

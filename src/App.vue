@@ -7,20 +7,22 @@
     @retry="reloadApp({ reason: 'restart' })"
   />
   <AppShell v-else>
-    <RouterView v-slot="{ Component, route: viewRoute }">
-      <Transition name="page-content" mode="out-in">
-        <div :key="String(viewRoute.name ?? viewRoute.path)" class="min-h-0 flex-1">
-          <Suspense>
-            <component :is="Component" />
-            <template #fallback>
-              <div class="flex min-h-[40dvh] items-center justify-center" aria-label="正在載入頁面" aria-busy="true">
-                <LoadingSpinner :size="8" />
-              </div>
-            </template>
-          </Suspense>
-        </div>
-      </Transition>
-    </RouterView>
+    <div class="relative flex min-h-0 flex-1">
+      <RouterView v-slot="{ Component, route: viewRoute }">
+        <Transition name="page-content">
+          <div :key="String(viewRoute.name ?? viewRoute.path)" class="min-h-0 flex-1">
+            <Suspense>
+              <component :is="Component" />
+              <template #fallback>
+                <div class="flex min-h-[40dvh] items-center justify-center" aria-label="正在載入頁面" aria-busy="true">
+                  <LoadingSpinner :size="8" />
+                </div>
+              </template>
+            </Suspense>
+          </div>
+        </Transition>
+      </RouterView>
+    </div>
     <ActionFeedbackBar />
     <PushPermissionPromptDialog
       :open="isPushPromptOpen"
@@ -81,8 +83,9 @@ import { useAppUpdate } from '@/composables/useAppUpdate';
 import { usePushPermissionPrompt } from '@/composables/usePushPermissionPrompt';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 import { DEFAULT_ISSUE_ROUTE_FILTER } from '@/constants/categories';
+import { preloadPrimaryRouteComponents } from '@/router/route-components';
 
 const APP_RELEASE_MARKER = '2026-06-27-1516';
 const LAST_APP_VERSION_STORAGE_KEY = 'novae:last-app-version';
@@ -96,7 +99,38 @@ const { canAutoReloadCurrentVersion, reloadApp, reloading, updateAvailable } = u
 const { open: startupGateOpen, stalled: startupGateStalled } = useAppStartupGate();
 const route = useRoute();
 const router = useRouter();
-const { appReady, user } = useSession();
+const { appReady, isAdmin, user } = useSession();
+let routePreloadIdleId: number | null = null;
+let routePreloadTimer = 0;
+const idleWindow = window as unknown as {
+  cancelIdleCallback?: (handle: number) => void;
+  requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+};
+
+function cancelRoutePreload() {
+  if (routePreloadIdleId !== null) {
+    idleWindow.cancelIdleCallback?.(routePreloadIdleId);
+  }
+  window.clearTimeout(routePreloadTimer);
+  routePreloadIdleId = null;
+  routePreloadTimer = 0;
+}
+
+function scheduleRoutePreload() {
+  cancelRoutePreload();
+  if (startupGateOpen.value || !user.value?.uid) return;
+
+  const preload = () => {
+    routePreloadIdleId = null;
+    routePreloadTimer = 0;
+    void preloadPrimaryRouteComponents(isAdmin.value);
+  };
+  if (idleWindow.requestIdleCallback) {
+    routePreloadIdleId = idleWindow.requestIdleCallback(preload, { timeout: 1_200 });
+    return;
+  }
+  routePreloadTimer = window.setTimeout(preload, 250);
+}
 
 const reloadingText = computed(() => {
   return reloading.value === 'restart' ? '正在重啟' : '正在更新';
@@ -223,4 +257,12 @@ watch(
   },
   { immediate: true }
 );
+
+watch(
+  [startupGateOpen, () => user.value?.uid ?? '', isAdmin],
+  scheduleRoutePreload,
+  { immediate: true },
+);
+
+onBeforeUnmount(cancelRoutePreload);
 </script>

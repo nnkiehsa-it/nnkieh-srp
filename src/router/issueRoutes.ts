@@ -1,6 +1,7 @@
 import type { RouteLocationGeneric, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
 import { DEFAULT_ISSUE_ROUTE_FILTER, isIssueRouteFilter, normalizeIssueRouteFilterParam } from '@/constants/categories';
 import { normalizeRouteParam } from '@/lib/route';
+import { loadIssueBoardView, loadIssueDetailView } from '@/router/route-components';
 
 function issueRouteRedirect(to: RouteLocationGeneric) {
   return {
@@ -37,14 +38,14 @@ export const issueRoutes: RouteRecordRaw[] = [
   {
     path: '/issues/:filter',
     name: 'issues',
-    component: () => import('@/views/IssueBoardView.vue'),
+    component: loadIssueBoardView,
     meta: { requiresAuth: true },
     beforeEnter: validateIssueRoute,
   },
   {
     path: '/issues/:filter/:issueId',
     name: 'issue-detail',
-    component: () => import('@/views/IssueDetailView.vue'),
+    component: loadIssueDetailView,
     meta: { requiresAuth: true },
     beforeEnter: validateIssueRoute,
   },

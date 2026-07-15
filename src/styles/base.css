@@ -338,7 +338,8 @@
   }
 
   .app-root[data-bottom-nav='true'] .app-main-content {
-    padding-bottom: var(--app-bottom-nav-height);
+    padding-bottom: calc(var(--app-bottom-nav-height) + 1rem);
+    scroll-padding-bottom: calc(var(--app-bottom-nav-height) + 1rem);
   }
 
   body.dialog-open .app-main-content {

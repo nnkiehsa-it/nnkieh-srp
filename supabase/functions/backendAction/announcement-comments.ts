@@ -4,7 +4,7 @@ import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { validateMarkdownUploadsBeforeCreate } from "./uploads.ts";
 import { asNumber, asUuid, readCursor, readCursorDate, utcHourWindow } from "./utils.ts";
-import { INPUT_LIMITS, requiredText } from "./validation.ts";
+import { INPUT_LIMITS, requiredMediaContent } from "./validation.ts";
 
 async function listAnnouncementComments(payload: JsonRecord, supabase: BackendSupabase) {
   const announcementId = asUuid(payload.announcementId);
@@ -24,7 +24,12 @@ async function createAnnouncementComment(payload: JsonRecord, auth: AuthContext,
   await claimFixedWindowRateLimit(auth.uid, "comment.create", utcHourWindow(), RATE_LIMITS.commentCreateHourly);
   const announcementId = asUuid(payload.announcementId);
   if (!announcementId) throw new Error("not-found");
-  const content = requiredText(payload.content, "comment", INPUT_LIMITS.comment);
+  const content = requiredMediaContent(
+    payload.content,
+    "comment",
+    INPUT_LIMITS.comment,
+    INPUT_LIMITS.commentStorage,
+  );
   const parentCommentId = asUuid(payload.parentCommentId) || null;
   await validateMarkdownUploadsBeforeCreate(supabase, auth.uid, content, "announcement_comment");
   const { data, error } = await supabase.schema("app_api").rpc("backend_create_announcement_comment", {

@@ -1,10 +1,11 @@
 import type { RouteRecordRaw } from 'vue-router';
+import { loadNotificationsView } from '@/router/route-components';
 
 export const notificationRoutes: RouteRecordRaw[] = [
   {
     path: '/notifications',
     name: 'notifications',
-    component: () => import('@/views/NotificationsView.vue'),
+    component: loadNotificationsView,
     meta: {
       requiresAuth: true,
     },

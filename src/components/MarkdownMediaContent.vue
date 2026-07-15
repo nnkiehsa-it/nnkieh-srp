@@ -34,7 +34,8 @@
     </div>
 
     <div v-if="textContent" class="font-sans text-sm font-normal leading-relaxed text-ink-700 dark:text-ink-200 sm:text-base">
-      <MarkdownRenderer :content="textContent" />
+      <p v-if="plainText" class="whitespace-pre-wrap break-words">{{ textContent }}</p>
+      <MarkdownRenderer v-else :content="textContent" />
     </div>
 
     <Teleport to="body">
@@ -75,6 +76,7 @@ import type { MarkdownImageRecord } from '@/types';
 const props = defineProps<{
   content: string;
   fallbackAlt: string;
+  plainText?: boolean;
 }>();
 
 const selectedImage = ref<MarkdownImageRecord | null>(null);
