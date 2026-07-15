@@ -13,6 +13,7 @@ export interface SessionState {
   userRole: 'admin' | 'user';
   roles: RoleCode[];
   permissions: PermissionCode[];
+  managedIssueCategoryIds: string[];
   error: string;
 }
 

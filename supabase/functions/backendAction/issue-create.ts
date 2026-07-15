@@ -58,7 +58,7 @@ export async function createIssue(payload: JsonRecord, auth: AuthContext, supaba
     support_deadline_at: supportDeadlineAt,
     response_deadline_at: responseDeadlineAt,
     author_is_private: issueStoresAuthorPrivately(category),
-    actor_is_admin: auth.isAdmin,
+    actor_is_admin: false,
     private_to_owner_categories: PRIVATE_TO_OWNER_CATEGORIES,
     review_required_categories: REVIEW_REQUIRED_CATEGORIES,
     author_private_categories: AUTHOR_PRIVATE_CATEGORIES,

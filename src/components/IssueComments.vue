@@ -27,12 +27,14 @@ import { toRef, watch } from 'vue';
 import CommentThreadPanel from '@/components/CommentThreadPanel.vue';
 import { useIssueComments } from '@/composables/useIssueComments';
 import type { DiscussionCommentRecord } from '@/types';
+import type { IssueCategory } from '@/generated/issue-categories';
 
 const props = withDefaults(
   defineProps<{
     canCompose?: boolean;
     focusCommentId?: string;
     issueId: string;
+    category: IssueCategory;
     compactHeader?: boolean;
   }>(),
   {
@@ -63,7 +65,7 @@ const {
   loadingMore,
   submitComment,
   submitError,
-} = useIssueComments(toRef(props, 'issueId'), (issueId) => emit('contentUnavailable', issueId));
+} = useIssueComments(toRef(props, 'issueId'), toRef(props, 'category'), (issueId) => emit('contentUnavailable', issueId));
 
 watch(
   () => comments.value.length,

@@ -5,7 +5,7 @@
         <h2 class="shrink-0 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-2xl">{{ boardTitle }}</h2>
 
         <div
-          v-if="mode === 'facility' || activeFilter !== 'my-proposals'"
+          v-if="mode !== 'facility' && activeFilter !== 'my-proposals'"
           class="relative"
           @click.stop
           @pointerdown.stop
@@ -49,7 +49,7 @@
 
       <div class="flex w-full shrink-0 flex-row items-center justify-end gap-1.5 sm:gap-2 md:w-auto">
         <div
-          v-if="mode === 'facility' || activeFilter !== 'my-proposals'"
+          v-if="mode !== 'facility' && activeFilter !== 'my-proposals'"
           class="static mr-auto md:hidden"
           @click.stop
           @pointerdown.stop
@@ -196,7 +196,7 @@ import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
 import SelectionMark from '@/components/ui/SelectionMark.vue';
 import { ISSUE_FILTER_OPTIONS } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
-import type { FacilitySortOption, FacilityStatus, IssueSortOption } from '@/types';
+import type { FacilitySortOption, IssueSortOption } from '@/types';
 
 type BoardSortOption = IssueSortOption | FacilitySortOption;
 
@@ -208,14 +208,12 @@ const props = defineProps<{
   activeFilter: string;
   activeCategoryLabel: string;
   sortOption: BoardSortOption;
-  facilityStatus?: FacilityStatus | '';
 }>();
 
 const emit = defineEmits<{
   'update:statusTab': [value: 'active' | 'closed'];
   'update:searchQuery': [value: string];
   'update:sortOption': [value: BoardSortOption];
-  'update:facilityStatus': [value: FacilityStatus | ''];
 }>();
 
 const issueSortOptions = [
@@ -238,17 +236,12 @@ const visibleSortOptions = computed(() => props.mode === 'facility'
 
 const categoryOptions = ISSUE_FILTER_OPTIONS;
 const boardTitle = computed(() => props.mode === 'facility' ? '設備' : '提案');
-const filterSectionLabel = computed(() => props.mode === 'facility' ? '設備狀態' : '提案分類');
-const filterButtonTitle = computed(() => props.mode === 'facility' ? '篩選設備狀態' : '選擇分類');
+const filterSectionLabel = '提案分類';
+const filterButtonTitle = '選擇分類';
 const searchPlaceholder = computed(() => props.mode === 'facility' ? '搜尋標題或地點...' : '搜尋全站標題...');
-const facilityStatusOptions = computed(() => props.statusTab === 'closed'
-  ? [{ value: '' as const, label: '全部狀態' }, { value: 'completed' as const, label: '已完成' }, { value: 'unable-to-handle' as const, label: '無法處理' }]
-  : [{ value: '' as const, label: '全部狀態' }, { value: 'pending' as const, label: '待受理' }, { value: 'processing' as const, label: '處理中' }]);
-const filterOptions = computed(() => props.mode === 'facility' ? facilityStatusOptions.value : categoryOptions);
-const activeFilterValue = computed(() => props.mode === 'facility' ? props.facilityStatus ?? '' : props.activeFilter);
-const filterLabel = computed(() => props.mode === 'facility'
-  ? facilityStatusOptions.value.find((option) => option.value === (props.facilityStatus ?? ''))?.label ?? '全部狀態'
-  : props.activeCategoryLabel);
+const filterOptions = categoryOptions;
+const activeFilterValue = computed(() => props.activeFilter);
+const filterLabel = computed(() => props.activeCategoryLabel);
 const statusOptions = computed(() => [
   { value: 'active' as const, label: props.mode === 'facility' ? '處理中' : '進行中', icon: 'list' as const, title: `查看${props.mode === 'facility' ? '處理中設備' : '進行中提案'}` },
   { value: 'closed' as const, label: '已結案', icon: 'inbox' as const, title: `查看已結案${boardTitle.value}` },
@@ -298,10 +291,6 @@ const statusTabModel = computed({
 });
 
 async function handleCategoryChange(value: string) {
-  if (props.mode === 'facility') {
-    emit('update:facilityStatus', value as FacilityStatus | '');
-    return;
-  }
   if (value === props.activeFilter) return;
   await router.push({
     name: 'issues',

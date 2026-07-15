@@ -127,7 +127,7 @@ const emit = defineEmits<{
   'toggle-form': [];
 }>();
 
-const { isAdmin } = useSession();
+const { canManageIssueCategory } = useSession();
 const { show, start } = useActionFeedback();
 const router = useRouter();
 const route = useRoute();
@@ -160,6 +160,7 @@ const {
   handleIssueDeleted,
   refreshCurrentData,
 } = useIssueBoardData();
+const isAdmin = computed(() => activeFilter.value !== 'my-proposals' && canManageIssueCategory(activeFilter.value));
 
 const showAuthorCol = computed(() => isAdmin.value || !issueStoresAuthorPrivately(activeFilter.value));
 const contentContextKey = computed(() => [

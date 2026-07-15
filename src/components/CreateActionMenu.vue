@@ -39,15 +39,6 @@
 
       <div class="grid gap-2">
         <button
-          type="button"
-          class="content-trigger flex w-full items-center justify-between gap-3 border-0 bg-ink-50/60 px-3 py-3 text-left shadow-note dark:bg-ink-800/40"
-          :class="{ 'button-toolbar--active': selectedAction.kind === 'facility' }"
-          @click="selectedAction = { kind: 'facility' }"
-        >
-          <span class="text-sm font-semibold text-ink-900 dark:text-ink-100">設備</span>
-          <SelectionMark :selected="selectedAction.kind === 'facility'" />
-        </button>
-        <button
           v-for="option in issueCategoryOptions"
           :key="option.value"
           type="button"
@@ -59,6 +50,16 @@
             <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ option.label }}</span>
           </span>
           <SelectionMark :selected="selectedAction.kind === 'issue' && option.value === selectedAction.category" />
+        </button>
+
+        <button
+          type="button"
+          class="content-trigger flex w-full items-center justify-between gap-3 border-0 bg-ink-50/60 px-3 py-3 text-left shadow-note dark:bg-ink-800/40"
+          :class="{ 'button-toolbar--active': selectedAction.kind === 'facility' }"
+          @click="selectedAction = { kind: 'facility' }"
+        >
+          <span class="text-sm font-semibold text-ink-900 dark:text-ink-100">設備</span>
+          <SelectionMark :selected="selectedAction.kind === 'facility'" />
         </button>
 
         <button

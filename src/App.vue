@@ -9,7 +9,7 @@
   <AppShell v-else>
     <div class="relative flex min-h-0 flex-1">
       <RouterView v-slot="{ Component, route: viewRoute }">
-        <Transition name="page-content">
+        <Transition name="page-content" mode="out-in">
           <div :key="String(viewRoute.name ?? viewRoute.path)" class="min-h-0 flex-1">
             <Suspense>
               <component :is="Component" />

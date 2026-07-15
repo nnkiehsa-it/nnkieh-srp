@@ -17,6 +17,7 @@ export function useAnnouncementComments(
     realtimeEventType: 'announcement_comment_changed',
     abortMessage: '公告留言載入已取消。',
     loadErrorMessage: '公告留言載入失敗。',
+    managerPermission: 'announcement.manage',
     getTargetId: () => announcementId() ?? '',
     fetchPage: (targetId, cursor, options) => fetchAnnouncementComments(targetId, cursor ?? undefined, options),
     create: async (targetId, content, parentCommentId) => {

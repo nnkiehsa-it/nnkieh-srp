@@ -23,9 +23,10 @@ import type { IssueRecord, IssueSortOption } from '@/types';
 import { CONTENT_FEED_PAGE_SIZE } from '@/lib/page-size';
 
 export function useIssueBoardData() {
-  const { user, isAdmin, isAllowedUser, mySupportedIssueIds, roleLoading } = useSession();
+  const { user, canManageIssueCategory, isAllowedUser, mySupportedIssueIds, roleLoading } = useSession();
   const { isOnline } = useNetworkStatus();
   const { activeFilter } = useFilter();
+  const isAdmin = computed(() => activeFilter.value !== 'my-proposals' && canManageIssueCategory(activeFilter.value));
 
   const statusTab = ref<'active' | 'closed'>('active');
   const sortOption = ref<IssueSortOption>('latest');

@@ -6,6 +6,7 @@ import {
 } from "../_shared/issue-categories.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { toMs } from "./utils.ts";
+import { canManageIssueCategory } from "./auth.ts";
 
 export function issueToResponse(issue: JsonRecord): JsonRecord {
   return {
@@ -22,7 +23,7 @@ export function canReadIssue(issue: JsonRecord, auth: AuthContext) {
   const category = asString(issue.category);
   const authorUid = asString(issue.author_uid);
   const status = asString(issue.status);
-  if (auth.isAdmin || authorUid === auth.uid) return true;
+  if (canManageIssueCategory(auth, category) || authorUid === auth.uid) return true;
   if (issueIsPrivateToOwner(category)) return false;
   if (issueRequiresReview(category) && (status === "under-review" || status === "review-rejected")) return false;
   return true;
@@ -32,9 +33,10 @@ export function issueToReadableResponse(issue: JsonRecord, auth: AuthContext): J
   const response = issueToResponse(issue);
   const authorUid = asString(issue.author_uid);
   const isOwnIssue = authorUid === auth.uid;
-  const canManageIssue = auth.isAdmin || isOwnIssue;
+  const actorCanManageCategory = canManageIssueCategory(auth, asString(issue.category));
+  const canManageIssue = actorCanManageCategory || isOwnIssue;
   const canViewAuthor = !issueStoresAuthorPrivately(asString(issue.category))
-    && !auth.isAdmin
+    && !actorCanManageCategory
     && !isOwnIssue
     ? false
     : true;

@@ -603,6 +603,9 @@ test('facilities and author-fixed support use independent atomic storage', async
   const facilityTypes = await read('src/types/index.ts');
   const notion = await read('supabase/functions/_shared/notion.ts');
   const maintenanceCleanup = await read('supabase/functions/maintenanceCleanup/index.ts');
+  const legacyAdminBackfill = await read('supabase/migrations/202607150004_backfill_legacy_platform_admins.sql');
+  const syncUser = await read('supabase/functions/syncUser/index.ts');
+  const supabaseAuth = await read('src/services/supabase-auth.ts');
 
   assert.match(migration, /create table if not exists app_private\.facility_reports/u);
   assert.match(migration, /create table if not exists app_private\.facility_report_affected_users/u);
@@ -621,6 +624,25 @@ test('facilities and author-fixed support use independent atomic storage', async
   assert.match(notion, /if \(!terminal\) return/u);
   assert.match(notion, /"遇到人數"[\s\S]*facility\.affected_count/u);
   assert.match(notion, /\["completed", "infeasible"\]\.includes\(newStatus\)/u);
+  assert.match(legacyAdminBackfill, /from app_private\.user_roles[\s\S]*where role = 'admin'/u);
+  assert.match(legacyAdminBackfill, /'platform-admin'/u);
+  assert.match(syncUser, /legacyRole\?\.role === "admin"/u);
+  assert.doesNotMatch(supabaseAuth, /if \(token\.claims\.role === 'authenticated'\) \{\s*return;/u);
+});
+
+test('proposal manager access is config-driven and category-scoped', async () => {
+  const accessView = await read('src/views/AccessManagementView.vue');
+  const auth = await read('supabase/functions/backendAction/auth.ts');
+  const users = await read('supabase/functions/backendAction/users.ts');
+  const issueRead = await read('supabase/functions/backendAction/issue-read.ts');
+  const migration = await read('supabase/migrations/202607150006_category_scoped_proposal_access.sql');
+
+  assert.match(accessView, /import \{ ISSUE_CATEGORIES \} from '@\/generated\/issue-categories'/u);
+  assert.match(accessView, /v-for="category in ISSUE_CATEGORIES"/u);
+  assert.match(migration, /primary key \(uid, category_id\)/u);
+  assert.match(users, /managedIssueCategoryIds[\s\S]*filter\(isIssueCategory\)/u);
+  assert.match(auth, /canManageIssueCategory/u);
+  assert.match(issueRead, /canManageIssueCategory\(auth, category\)/u);
 });
 
 test('announcement editing is removed across frontend, backend, and database', async () => {
@@ -915,13 +937,13 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(baseStyles, /body\.dialog-open \.action-feedback-viewport \{[\s\S]*top: calc\(env\(safe-area-inset-top\) \+ 6\.75rem\)/u);
 });
 
-test('primary navigation preloads route chunks without blocking page transitions', async () => {
+test('primary navigation preloads route chunks and page transitions do not overlap', async () => {
   const app = await read('src/App.vue');
   const appShell = await read('src/components/AppShell.vue');
   const routeComponents = await read('src/router/route-components.ts');
   const responsiveStyles = await read('src/styles/responsive.css');
 
-  assert.doesNotMatch(app, /<Transition name="page-content" mode="out-in">/u);
+  assert.match(app, /<Transition name="page-content" mode="out-in">/u);
   assert.match(app, /requestIdleCallback/u);
   assert.match(app, /preloadPrimaryRouteComponents/u);
   assert.match(appShell, /@pointerover\.capture="handleNavigationIntent"/u);

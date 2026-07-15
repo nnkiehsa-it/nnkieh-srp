@@ -45,6 +45,8 @@ export interface DiscussionCommentsAdapters<TComment extends DiscussionCommentRe
   /** When true, submit validates login + non-empty content into submitError. */
   validateSubmit?: boolean;
   deletedFeedback?: string;
+  managerPermission: 'announcement.manage' | 'proposal.manage';
+  canManage?: () => boolean;
 }
 
 interface CommentsSnapshot<TComment extends DiscussionCommentRecord> {
@@ -72,7 +74,8 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
   /** Optional external id ref/getter to auto-load + subscribe when it changes. */
   autoTarget?: MaybeRefOrGetter<string>,
 ) {
-  const { isAdmin, user, roleLoading } = useSession();
+  const { can, user, roleLoading } = useSession();
+  const canManageComments = () => adapters.canManage?.() ?? can(adapters.managerPermission);
   const { show, start } = useActionFeedback();
   const { isOnline } = useNetworkStatus();
 
@@ -104,7 +107,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
     return createContentCacheKey([
       adapters.cacheNamespace,
       user.value?.uid ?? '',
-      isAdmin.value ? 'admin' : 'user',
+      canManageComments() ? 'manager' : 'user',
       id,
     ]);
   }
@@ -112,7 +115,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
   function serviceCacheScope() {
     return createContentCacheKey([
       user.value?.uid ?? '',
-      isAdmin.value ? 'admin' : 'user',
+      canManageComments() ? 'manager' : 'user',
     ]);
   }
 
@@ -367,7 +370,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
   }
 
   function canDeleteComment(comment: DiscussionCommentRecord) {
-    return isAdmin.value || comment.author_uid === user.value?.uid;
+    return canManageComments() || comment.author_uid === user.value?.uid;
   }
 
   async function submitComment(content: string, parentCommentId: string | null = null) {

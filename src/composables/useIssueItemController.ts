@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue';
+import { computed, ref, watch, type Ref } from 'vue';
 import { useSession } from '@/composables/useSession';
 import { useIssueDisplay } from '@/composables/useIssueDisplay';
 import { useIssueSupport } from '@/composables/useIssueSupport';
@@ -15,7 +15,8 @@ export function useIssueItemController(
   onIssueUpdated: (issue: IssueRecord) => void,
   onIssueDeleted: (issueId: string) => void,
 ) {
-  const { isAdmin } = useSession();
+  const { canManageIssueCategory } = useSession();
+  const isAdmin = computed(() => canManageIssueCategory(issue.value.category));
   const { show } = useActionFeedback();
   const display = useIssueDisplay(issue);
   const currentUserSupported = ref(Boolean(issue.value.currentUserSupported));

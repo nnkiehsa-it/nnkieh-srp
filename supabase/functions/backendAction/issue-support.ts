@@ -4,6 +4,8 @@ import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { asUuid, utcHourWindow } from "./utils.ts";
+import { canManageIssueCategory } from "./auth.ts";
+import { selectIssue } from "./issue-shared.ts";
 
 const PRIVATE_TO_OWNER_CATEGORIES = ISSUE_CATEGORIES
   .filter((category) => category.readAccess === "owner-admin")
@@ -19,10 +21,11 @@ export async function updateSupport(action: string, payload: JsonRecord, auth: A
   await claimFixedWindowRateLimit(auth.uid, "support.toggle", utcHourWindow(), RATE_LIMITS.supportToggleHourly);
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
+  const storedIssue = await selectIssue(supabase, issueId);
   const { data: issueData, error: issueError } = await supabase.schema("app_api").rpc("backend_get_issue", {
     issue_id: issueId,
     actor_uid: auth.uid,
-    actor_is_admin: auth.isAdmin,
+    actor_is_admin: canManageIssueCategory(auth, asString(storedIssue.category)),
     private_to_owner_categories: PRIVATE_TO_OWNER_CATEGORIES,
     review_required_categories: REVIEW_REQUIRED_CATEGORIES,
     author_private_categories: AUTHOR_PRIVATE_CATEGORIES,

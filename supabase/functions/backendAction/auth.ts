@@ -2,6 +2,7 @@ import { requireEnv } from "../_shared/env.ts";
 import { ensureCloudinaryImageUploadPreset } from "../_shared/cloudinary.ts";
 import { requireVerifiedFirebaseUser } from "../_shared/firebase-auth.ts";
 import { getIssueCategoryIdsByReadAccess } from "../_shared/issue-categories.ts";
+import { ISSUE_CATEGORY_IDS } from "../_shared/issue-categories.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import type { AuthContext, BackendSupabase, PermissionCode } from "./types.ts";
 
@@ -11,6 +12,13 @@ export async function requireAuth(supabase: BackendSupabase, request: Request): 
     .from("user_role_assignments").select("role_code").eq("uid", firebaseUser.uid);
   if (assignmentError) throw assignmentError;
   const roles = (assignments ?? []).map((row) => row.role_code);
+  const isPlatformAdmin = roles.includes("platform-admin");
+  const { data: categoryAssignments, error: categoryAssignmentError } = await supabase.schema("app_private")
+    .from("user_issue_category_assignments").select("category_id").eq("uid", firebaseUser.uid);
+  if (categoryAssignmentError) throw categoryAssignmentError;
+  const managedIssueCategoryIds = isPlatformAdmin
+    ? [...ISSUE_CATEGORY_IDS]
+    : [...new Set((categoryAssignments ?? []).map((row) => row.category_id))];
   let permissions: PermissionCode[] = [];
   if (roles.length > 0) {
     const { data: grants, error: grantError } = await supabase.schema("app_private")
@@ -18,10 +26,14 @@ export async function requireAuth(supabase: BackendSupabase, request: Request): 
     if (grantError) throw grantError;
     permissions = [...new Set((grants ?? []).map((row) => row.permission_code as PermissionCode))];
   }
+  if (managedIssueCategoryIds.length > 0 && !permissions.includes("proposal.manage")) {
+    permissions.push("proposal.manage");
+  }
 
   return {
     email: firebaseUser.email,
-    isAdmin: permissions.includes("proposal.manage"),
+    isAdmin: isPlatformAdmin,
+    managedIssueCategoryIds,
     name: firebaseUser.name,
     photoUrl: firebaseUser.photoUrl,
     permissions,
@@ -30,8 +42,12 @@ export async function requireAuth(supabase: BackendSupabase, request: Request): 
   };
 }
 
-export function requireAdmin(auth: AuthContext) {
-  requirePermission(auth, "proposal.manage");
+export function canManageIssueCategory(auth: AuthContext, categoryId: string) {
+  return auth.isAdmin || auth.managedIssueCategoryIds.includes(categoryId);
+}
+
+export function requireIssueCategoryPermission(auth: AuthContext, categoryId: string) {
+  if (!canManageIssueCategory(auth, categoryId)) throw new Error("permission-denied");
 }
 
 export function hasPermission(auth: AuthContext, permission: PermissionCode) {

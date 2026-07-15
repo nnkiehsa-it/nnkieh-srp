@@ -88,10 +88,13 @@ Deno.serve(async (request) => {
       requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
       { auth: { persistSession: false } },
     );
+    const { data: legacyRole, error: legacyRoleError } = await supabase.schema("app_private")
+      .from("user_roles").select("role").eq("uid", user.uid).maybeSingle();
+    if (legacyRoleError) throw legacyRoleError;
     const { count, error: countError } = await supabase.schema("app_private")
       .from("user_role_assignments").select("uid", { count: "exact", head: true }).eq("role_code", "platform-admin");
     if (countError) throw countError;
-    if ((count ?? 0) === 0 && isAdminEmail(user.email)) {
+    if (legacyRole?.role === "admin" || ((count ?? 0) === 0 && isAdminEmail(user.email))) {
       const { error } = await supabase.schema("app_private").from("user_role_assignments").upsert({
         uid: user.uid, role_code: "platform-admin", granted_by: user.uid,
       }, { onConflict: "uid,role_code" });

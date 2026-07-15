@@ -1,6 +1,6 @@
 import { asRecord, asString } from "../_shared/http.ts";
 import { getIssueCategoryConfigOrDefault, ISSUE_CATEGORIES, issueRequiresReview } from "../_shared/issue-categories.ts";
-import { requireAdmin } from "./auth.ts";
+import { canManageIssueCategory, requireIssueCategoryPermission } from "./auth.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { asUuid } from "./utils.ts";
 import { INPUT_LIMITS, optionalText } from "./validation.ts";
@@ -20,10 +20,10 @@ const AUTHOR_PRIVATE_CATEGORIES = ISSUE_CATEGORIES
   .filter((category) => category.authorStorage === "private")
   .map((category) => category.id);
 
-function issuePolicyParams(auth: AuthContext) {
+function issuePolicyParams(auth: AuthContext, actorCanManage: boolean) {
   return {
     actor_uid: auth.uid,
-    actor_is_admin: auth.isAdmin,
+    actor_is_admin: actorCanManage,
     private_to_owner_categories: PRIVATE_TO_OWNER_CATEGORIES,
     review_required_categories: REVIEW_REQUIRED_CATEGORIES,
     author_private_categories: AUTHOR_PRIVATE_CATEGORIES,
@@ -31,22 +31,27 @@ function issuePolicyParams(auth: AuthContext) {
 }
 
 async function readIssueForAdmin(supabase: BackendSupabase, issueId: string, auth: AuthContext) {
+  const { data: storedIssue, error: storedIssueError } = await supabase.schema("app_private")
+    .from("issues").select("category").eq("id", issueId).maybeSingle();
+  if (storedIssueError) throw storedIssueError;
+  if (!storedIssue) throw new Error("not-found");
+  requireIssueCategoryPermission(auth, storedIssue.category);
   const { data, error } = await supabase.schema("app_api").rpc("backend_get_issue", {
     issue_id: issueId,
-    ...issuePolicyParams(auth),
+    ...issuePolicyParams(auth, true),
   });
   if (error) throw error;
   return asRecord(data);
 }
 
 export async function moderateIssueStatus(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
-  requireAdmin(auth);
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
   const oldIssue = await readIssueForAdmin(supabase, issueId, auth);
   const nextStatus = asString(payload.status, "pending");
   if (!VALID_STATUSES.has(nextStatus)) throw new Error("invalid-status");
   const category = asString(oldIssue.category);
+  requireIssueCategoryPermission(auth, category);
   const oldStatus = asString(oldIssue.status);
   const categoryConfig = getIssueCategoryConfigOrDefault(category);
   const now = new Date();
@@ -75,21 +80,22 @@ export async function moderateIssueStatus(payload: JsonRecord, auth: AuthContext
     review_approved_at: reviewApprovedAt,
     support_deadline_at: supportDeadlineAt,
     response_deadline_at: responseDeadlineAt,
-    ...issuePolicyParams(auth),
+    ...issuePolicyParams(auth, canManageIssueCategory(auth, category)),
   });
   if (error) throw error;
   return { issue: data };
 }
 
 export async function updateIssueResult(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
-  requireAdmin(auth);
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
+  const oldIssue = await readIssueForAdmin(supabase, issueId, auth);
+  const category = asString(oldIssue.category);
   const resultContent = optionalText(payload.resultContent, "issue-result", INPUT_LIMITS.issueResult).trim();
   const { data, error } = await supabase.schema("app_api").rpc("backend_update_issue_result", {
     issue_id: issueId,
     result_content: resultContent || null,
-    ...issuePolicyParams(auth),
+    ...issuePolicyParams(auth, canManageIssueCategory(auth, category)),
   });
   if (error) throw error;
   return { issue: data };

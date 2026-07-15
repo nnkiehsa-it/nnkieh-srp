@@ -4,7 +4,6 @@
       v-model:status-tab="bucket"
       v-model:search-query="query"
       v-model:sort-option="sort"
-      v-model:facility-status="status"
       mode="facility"
       active-filter=""
       active-category-label="設備"
@@ -57,7 +56,7 @@ import type { FacilityRecord, FacilitySummary } from '@/types';
 const route = useRoute();
 const router = useRouter();
 const composerOpen = ref(false);
-const { bucket, error, facilities, hasMore, load, loading, loadingMore, query, sort, status, toggleAffected } = useFacilities();
+const { bucket, error, facilities, hasMore, load, loading, loadingMore, query, sort, toggleAffected } = useFacilities();
 const searchHint = computed(() => query.value.trim() ? `正在搜尋「${query.value.trim()}」` : '可搜尋設備標題或地點。');
 const emptyDescription = computed(() => query.value.trim()
   ? `沒有找到與「${query.value.trim()}」相關的設備。`

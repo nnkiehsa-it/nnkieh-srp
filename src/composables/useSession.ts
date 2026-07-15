@@ -35,6 +35,7 @@ const state = reactive<SessionState>({
   userRole: 'user',
   roles: [],
   permissions: [],
+  managedIssueCategoryIds: [],
   error: '',
 });
 
@@ -166,6 +167,7 @@ async function rejectCurrentUser(reason: string) {
   state.userRole = 'user';
   state.roles = [];
   state.permissions = [];
+  state.managedIssueCategoryIds = [];
   state.roleLoading = false;
   state.error = reason;
   try {
@@ -188,6 +190,7 @@ function acceptCurrentUser(user: NonNullable<SessionState['user']>) {
   state.userRole = 'user';
   state.roles = [];
   state.permissions = [];
+  state.managedIssueCategoryIds = [];
   state.roleLoading = true;
   void refreshVerifiedSession(user, verificationId);
 
@@ -225,12 +228,14 @@ async function refreshVerifiedSession(user: NonNullable<SessionState['user']>, v
     state.userRole = access.role;
     state.roles = access.roles;
     state.permissions = access.permissions;
+    state.managedIssueCategoryIds = access.managedIssueCategoryIds;
   } catch (error) {
     if (!isCurrentVerification(user, verificationId)) return;
     debugLog('background session verification failed', error);
     state.userRole = 'user';
     state.roles = [];
     state.permissions = [];
+    state.managedIssueCategoryIds = [];
   } finally {
     if (isCurrentVerification(user, verificationId)) {
       state.roleLoading = false;
@@ -312,8 +317,10 @@ export function useSession() {
     userRole,
     roles: computed(() => state.roles),
     permissions,
+    managedIssueCategoryIds: computed(() => state.managedIssueCategoryIds),
+    canManageIssueCategory: (categoryId: string) => state.roles.includes('platform-admin') || state.managedIssueCategoryIds.includes(categoryId),
     can: (permission: import('@/services/session-role').PermissionCode) => permissions.value.includes(permission),
-    isAdmin: computed(() => permissions.value.includes('proposal.manage')),
+    isAdmin: computed(() => state.roles.includes('platform-admin')),
     loading: computed(() => state.loading),
     roleLoading: computed(() => state.roleLoading),
     authChecking: computed(() => state.authChecking),

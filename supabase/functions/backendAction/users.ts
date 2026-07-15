@@ -9,6 +9,7 @@ import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { taipeiDayWindow } from "./utils.ts";
 import { requirePermission } from "./auth.ts";
+import { isIssueCategory } from "../_shared/issue-categories.ts";
 
 const ASSIGNABLE_ROLES = new Set(["platform-admin", "proposal-manager", "announcement-manager", "general-affairs"]);
 
@@ -39,7 +40,7 @@ export async function handleUserAction(
   }
 
   if (action === "getCurrentUserRole") {
-    return { role: auth.roles.includes("platform-admin") ? "admin" : "user", roles: auth.roles, permissions: auth.permissions };
+    return { role: auth.roles.includes("platform-admin") ? "admin" : "user", roles: auth.roles, permissions: auth.permissions, managedIssueCategoryIds: auth.managedIssueCategoryIds };
   }
 
   if (action === "listRoleAssignments") {
@@ -55,21 +56,39 @@ export async function handleUserAction(
       ? await supabase.schema("app_private").from("user_role_assignments").select("uid,role_code").in("uid", uids)
       : { data: [], error: null };
     if (assignmentError) throw assignmentError;
+    const { data: categoryAssignments, error: categoryAssignmentError } = uids.length
+      ? await supabase.schema("app_private").from("user_issue_category_assignments").select("uid,category_id").in("uid", uids)
+      : { data: [], error: null };
+    if (categoryAssignmentError) throw categoryAssignmentError;
     const roleMap = new Map<string, string[]>();
     for (const assignment of assignments ?? []) {
       roleMap.set(assignment.uid, [...(roleMap.get(assignment.uid) ?? []), assignment.role_code]);
+    }
+    const categoryMap = new Map<string, string[]>();
+    for (const assignment of categoryAssignments ?? []) {
+      categoryMap.set(assignment.uid, [...(categoryMap.get(assignment.uid) ?? []), assignment.category_id]);
     }
     return { users: (profiles ?? []).map((profile) => ({
       uid: profile.uid, name: profile.display_name ?? "使用者",
       photoUrl: profile.cached_photo_url ?? profile.photo_url ?? null,
       roles: roleMap.get(profile.uid) ?? [],
+      managedIssueCategoryIds: categoryMap.get(profile.uid) ?? [],
     })) };
   }
 
   if (action === "setUserRoles") {
     requirePermission(auth, "role.manage");
     const uid = asString(payload.uid);
-    const roles = [...new Set(Array.isArray(payload.roles) ? payload.roles.map((value) => asString(value)).filter((role) => ASSIGNABLE_ROLES.has(role)) : [])];
+    const requestedRoles = [...new Set(Array.isArray(payload.roles) ? payload.roles.map((value) => asString(value)).filter((role) => ASSIGNABLE_ROLES.has(role) && role !== "proposal-manager") : [])];
+    // The platform administrator is the single highest-level role. Keeping
+    // scoped roles alongside it is redundant and makes later revocation hard
+    // to reason about, so persist only the platform role when it is selected.
+    const roles = requestedRoles.includes("platform-admin") ? ["platform-admin"] : requestedRoles;
+    const managedIssueCategoryIds = roles.includes("platform-admin")
+      ? []
+      : [...new Set(Array.isArray(payload.managedIssueCategoryIds)
+        ? payload.managedIssueCategoryIds.map((value) => asString(value)).filter(isIssueCategory)
+        : [])];
     if (!uid) throw new Error("not-found");
     const { data: currentRows, error: currentError } = await supabase.schema("app_private")
       .from("user_role_assignments").select("role_code").eq("uid", uid);
@@ -100,7 +119,19 @@ export async function handleUserAction(
       ]);
       if (error) throw error;
     }
-    return { success: true, roles };
+    const { error: clearCategoryError } = await supabase.schema("app_private")
+      .from("user_issue_category_assignments").delete().eq("uid", uid);
+    if (clearCategoryError) throw clearCategoryError;
+    if (managedIssueCategoryIds.length > 0) {
+      const { error: categoryInsertError } = await supabase.schema("app_private")
+        .from("user_issue_category_assignments").insert(managedIssueCategoryIds.map((category_id) => ({
+          category_id,
+          granted_by: auth.uid,
+          uid,
+        })));
+      if (categoryInsertError) throw categoryInsertError;
+    }
+    return { success: true, roles, managedIssueCategoryIds };
   }
 
   if (action === "cacheUserAvatar") {

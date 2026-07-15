@@ -30,7 +30,7 @@ export function useIssueRouteDetail(
   const route = useRoute();
   const router = useRouter();
   const { show } = useActionFeedback();
-  const { isAdmin, roleLoading, user } = useSession();
+  const { managedIssueCategoryIds, roleLoading, roles, user } = useSession();
   const { isOnline } = useNetworkStatus();
   const routeIssue = ref<IssueRecord | null>(null);
   const routeIssueLoading = ref(false);
@@ -39,7 +39,7 @@ export function useIssueRouteDetail(
   let realtimeRefreshTimer = 0;
   const detailCacheScope = computed(() => createContentCacheKey([
     user.value?.uid ?? '',
-    isAdmin.value ? 'admin' : 'user',
+    roles.value.includes('platform-admin') ? 'platform-admin' : managedIssueCategoryIds.value.slice().sort().join(','),
   ]));
   function detailCacheKey(issueId: string) {
     return createContentCacheKey(['issue-detail', detailCacheScope.value, issueId]);

@@ -278,6 +278,7 @@ interface AppPrivateTables {
   permissions: Table<{ code: string; label: string }>;
   role_permissions: Table<{ role_code: string; permission_code: string }>;
   user_role_assignments: Table<{ uid: string; role_code: string; granted_by: string; granted_at: string }>;
+  user_issue_category_assignments: Table<{ uid: string; category_id: string; granted_by: string; granted_at: string }>;
   role_assignment_audit: Table<{ id: number; uid: string; role_code: string; operation: string; actor_uid: string; created_at: string }>;
 }
 

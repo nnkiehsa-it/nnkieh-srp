@@ -11,6 +11,8 @@ import {
   readCursorDate,
 } from "./utils.ts";
 import { INPUT_LIMITS, optionalText } from "./validation.ts";
+import { canManageIssueCategory } from "./auth.ts";
+import { selectIssue } from "./issue-shared.ts";
 
 const PRIVATE_TO_OWNER_CATEGORIES = ISSUE_CATEGORIES
   .filter((category) => category.readAccess === "owner-admin")
@@ -31,10 +33,10 @@ function readPageSize(payload: JsonRecord) {
   return Math.min(Math.max(Math.round(asNumber(payload.pageSize, 20)), 1), 50);
 }
 
-function issueReadPolicyParams(auth: AuthContext) {
+function issueReadPolicyParams(auth: AuthContext, actorCanManage = false) {
   return {
     actor_uid: auth.uid,
-    actor_is_admin: auth.isAdmin,
+    actor_is_admin: actorCanManage,
     private_to_owner_categories: PRIVATE_TO_OWNER_CATEGORIES,
     review_required_categories: REVIEW_REQUIRED_CATEGORIES,
     author_private_categories: AUTHOR_PRIVATE_CATEGORIES,
@@ -63,10 +65,12 @@ async function getIssue(
 ) {
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
+  const storedIssue = await selectIssue(supabase, issueId);
+  const actorCanManage = canManageIssueCategory(auth, asString(storedIssue.category));
 
   const { data, error } = await supabase.schema("app_api").rpc("backend_get_issue", {
     issue_id: issueId,
-    ...issueReadPolicyParams(auth),
+    ...issueReadPolicyParams(auth, actorCanManage),
   });
   if (error) throw error;
   return { issue: data };
@@ -98,7 +102,7 @@ async function listIssues(
     cursor_sort_number: Number.isFinite(asNumber(cursor.sort_number, Number.NaN))
       ? asNumber(cursor.sort_number, Number.NaN)
       : null,
-    ...issueReadPolicyParams(auth),
+    ...issueReadPolicyParams(auth, canManageIssueCategory(auth, category)),
   });
   if (error) throw error;
   return compactIssueListResult(data);

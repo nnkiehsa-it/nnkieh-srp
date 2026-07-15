@@ -8,6 +8,7 @@ export interface SessionAccess {
   role: SessionRole;
   roles: RoleCode[];
   permissions: PermissionCode[];
+  managedIssueCategoryIds: string[];
 }
 let cachedSessionRole: SessionRole = 'user';
 
@@ -25,6 +26,7 @@ export async function fetchCurrentUserRole(): Promise<SessionAccess> {
       role: cachedSessionRole,
       roles: Array.isArray(result.roles) ? result.roles : [],
       permissions: Array.isArray(result.permissions) ? result.permissions : [],
+      managedIssueCategoryIds: Array.isArray(result.managedIssueCategoryIds) ? result.managedIssueCategoryIds : [],
     };
   } catch (error) {
     throw toReadableBackendError(error);

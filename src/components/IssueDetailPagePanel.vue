@@ -60,6 +60,7 @@
       <IssueComments
         v-if="commentsEnabled"
         :can-compose="commentsEnabled"
+        :category="issue.category"
         :compact-header="compactHeader"
         :focus-comment-id="focusCommentId"
         :issue-id="issue.id"
@@ -154,7 +155,8 @@ const emit = defineEmits<{
   supported: [payload: { supported: boolean; supportCount: number }];
 }>();
 
-const { isAdmin } = useSession();
+const { canManageIssueCategory } = useSession();
+const isAdmin = computed(() => canManageIssueCategory(props.issue.category));
 
 const isReviewDialogOpen = ref(false);
 const isStatusDialogOpen = ref(false);

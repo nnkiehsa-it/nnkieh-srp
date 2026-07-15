@@ -164,7 +164,8 @@ const isProcessingOrPending = computed(() =>
   props.issue.status === 'processing'
 );
 
-const { isAdmin } = useSession();
+const { canManageIssueCategory } = useSession();
+const isAdmin = computed(() => canManageIssueCategory(props.issue.category));
 const adminStatus = computed(() => props.issue.status);
 const isDropdownOpen = ref(false);
 

@@ -1,9 +1,11 @@
 import { type Ref } from 'vue';
 import { useDiscussionComments } from '@/composables/useDiscussionComments';
+import { useSession } from '@/composables/useSession';
 import { createComment, deleteComment, fetchComments } from '@/services/issues';
 import type { CommentRecord } from '@/types';
 
-export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (issueId: string) => void) {
+export function useIssueComments(issueId: Ref<string>, categoryId: Ref<string>, onContentUnavailable?: (issueId: string) => void) {
+  const { canManageIssueCategory } = useSession();
   const core = useDiscussionComments<CommentRecord>(
     {
       cacheNamespace: 'issue-comments-state',
@@ -11,6 +13,8 @@ export function useIssueComments(issueId: Ref<string>, onContentUnavailable?: (i
       realtimeEventType: 'issue_comment_changed',
       abortMessage: '留言載入已取消。',
       loadErrorMessage: '留言載入失敗，請稍後再試。',
+      managerPermission: 'proposal.manage',
+      canManage: () => canManageIssueCategory(categoryId.value),
       getTargetId: () => issueId.value,
       fetchPage: (targetId, cursor, options) => fetchComments(targetId, cursor, options),
       create: async (targetId, content, parentCommentId) => {
