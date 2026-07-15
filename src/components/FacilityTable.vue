@@ -1,0 +1,28 @@
+<template>
+  <div class="issue-table overflow-visible" role="list" aria-label="設備列表">
+    <SkeletonTable v-if="loading && facilities.length === 0" :show-author="true" :is-admin="false" />
+    <div v-else-if="facilities.length === 0" class="px-4 py-12 text-center text-sm text-ink-500 dark:text-ink-400">沒有符合的設備。</div>
+    <div v-else class="issue-card-grid" role="presentation">
+      <FacilityTableRow
+        v-for="facility in facilities"
+        :key="facility.id"
+        :facility="facility"
+        :highlight-query="highlightQuery"
+        @open-details="emit('open-details', $event)"
+        @toggle-affected="emit('toggle-affected', $event)"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import FacilityTableRow from '@/components/FacilityTableRow.vue';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import type { FacilitySummary } from '@/types';
+
+withDefaults(defineProps<{ facilities: FacilitySummary[]; loading: boolean; highlightQuery?: string }>(), { highlightQuery: '' });
+const emit = defineEmits<{
+  'open-details': [facility: FacilitySummary];
+  'toggle-affected': [facility: FacilitySummary];
+}>();
+</script>

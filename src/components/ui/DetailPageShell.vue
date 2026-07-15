@@ -20,7 +20,10 @@
         </div>
       </header>
 
-      <div class="grid min-w-0 flex-1 border-t border-ink-100/70 dark:border-ink-800/70 md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
+      <div
+        class="grid min-w-0 flex-1 border-t border-ink-100/70 dark:border-ink-800/70"
+        :class="{ 'md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]': showComments }"
+      >
         <div class="flex min-h-0 min-w-0 flex-col px-5 py-5 pr-6">
           <div class="min-h-0 flex-1 overflow-y-auto pr-1 overscroll-contain">
             <slot name="details" :compact="false" :scroll-content="false" />
@@ -31,6 +34,7 @@
         </div>
 
         <aside
+          v-if="showComments"
           class="flex min-h-0 min-w-0 flex-col border-l border-ink-100/70 px-5 py-5 dark:border-ink-800/70"
           :aria-label="commentsLabel"
         >
@@ -59,6 +63,7 @@
           <slot name="header" />
         </div>
         <PillSegmentedControl
+          v-if="showComments"
           v-model="activeTab"
           :options="tabOptions"
           class="shrink-0 self-center"
@@ -67,7 +72,7 @@
 
       <Transition name="panel-switch" mode="out-in">
         <div
-          v-if="activeTab === 'details'"
+          v-if="!showComments || activeTab === 'details'"
           key="details"
           class="flex min-h-0 flex-1 flex-col border-t border-ink-100/70 dark:border-ink-800/70"
         >
@@ -106,12 +111,14 @@ const props = withDefaults(defineProps<{
   detailsLabel: string;
   initialTab?: DetailPageTab;
   showMobileBackButton?: boolean;
+  showComments?: boolean;
 }>(), {
   backLabel: '返回',
   commentsLabel: '討論留言',
   commentCount: 0,
   initialTab: 'details',
   showMobileBackButton: true,
+  showComments: true,
 });
 
 const emit = defineEmits<{

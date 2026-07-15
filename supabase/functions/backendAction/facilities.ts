@@ -101,7 +101,7 @@ export async function listFacilities(payload: JsonRecord, auth: AuthContext, sup
     sort_name: asString(payload.sort) === "most-affected" ? "most-affected" : "latest",
     cursor_created_at: asString(cursor.createdAt) || null,
     cursor_number: cursor.affectedCount === undefined ? null : Math.round(asNumber(cursor.affectedCount, 0)),
-    cursor_id: asUuid(cursor.id),
+    cursor_id: asUuid(cursor.id) || null,
     page_size: Math.round(asNumber(payload.pageSize, 20)),
   });
   if (error) throw error;

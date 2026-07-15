@@ -79,7 +79,7 @@
 - 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`
 - 看板：`IssueBoard`、`BoardControls`、`IssueBoardTable`、`IssueTableRow`、`IssueAdminMenu`、`IssueDetailPagePanel`、`IssueDetailContent`、`IssueDetailSupportFooter`
 - 公告：`AnnouncementTable`、`AnnouncementTableRow`、`AnnouncementDetailPagePanel`、`AnnouncementDetailContent`、`AnnouncementDetailActions`、`CompactActionMenu`
-- 設備：`FacilityComposer`、`FacilityStatusDialog`；列表與詳情頁共用獨立 service/composable，不擴充提案元件
+- 設備：`FacilityComposer`、`FacilityStatusDialog`、`FacilityTable`、`FacilityTableRow`；列表與詳情沿用提案看板、卡片與 `DetailPageShell` 視覺系統，資料流維持獨立 service/composable
 
 ---
 

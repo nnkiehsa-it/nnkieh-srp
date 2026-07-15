@@ -1,5 +1,5 @@
-import { computed, type ComputedRef } from 'vue';
-import type { IssueStatus } from '@/types';
+import { computed, type Ref } from 'vue';
+import type { FacilityStatus, IssueStatus } from '@/types';
 
 type StyleVariant = 'table-row' | 'dialog' | 'dot' | 'button-text';
 
@@ -12,6 +12,7 @@ const variantClasses: Record<StyleVariant, Record<string, string>> = {
     'auto-rejected': 'bg-error-container text-on-error-container',
     'review-rejected': 'bg-error-container text-on-error-container',
     infeasible: 'bg-infeasible-container text-on-infeasible-container',
+    'unable-to-handle': 'bg-infeasible-container text-on-infeasible-container',
     default: 'bg-ink-100 dark:bg-ink-800 text-ink-600 dark:text-ink-300',
   },
   'dialog': {
@@ -22,6 +23,7 @@ const variantClasses: Record<StyleVariant, Record<string, string>> = {
     'auto-rejected': 'bg-error-container text-on-error-container',
     'review-rejected': 'bg-error-container text-on-error-container',
     infeasible: 'bg-infeasible-container text-on-infeasible-container',
+    'unable-to-handle': 'bg-infeasible-container text-on-infeasible-container',
     default: 'bg-ink-100 text-ink-700 dark:text-ink-300 dark:bg-ink-800/70',
   },
   'dot': {
@@ -31,6 +33,7 @@ const variantClasses: Record<StyleVariant, Record<string, string>> = {
     'auto-rejected': 'bg-error',
     'review-rejected': 'bg-error',
     infeasible: 'bg-infeasible',
+    'unable-to-handle': 'bg-infeasible',
     completed: 'bg-success',
     default: 'bg-ink-300',
   },
@@ -41,12 +44,13 @@ const variantClasses: Record<StyleVariant, Record<string, string>> = {
     'auto-rejected': 'text-error',
     'review-rejected': 'text-error',
     infeasible: 'text-infeasible',
+    'unable-to-handle': 'text-infeasible',
     completed: 'text-success',
     default: 'text-ink-500',
   },
 };
 
-export function useStatusStyling(status: ComputedRef<IssueStatus>, variant: StyleVariant = 'table-row') {
+export function useStatusStyling(status: Readonly<Ref<IssueStatus | FacilityStatus>>, variant: StyleVariant = 'table-row') {
   const statusClass = computed(() => {
     const map = variantClasses[variant];
     return map[status.value] || map.default;

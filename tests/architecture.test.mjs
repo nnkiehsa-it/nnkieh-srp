@@ -599,6 +599,7 @@ test('issue cascade deletion keeps dependent triggers parent-safe', async () => 
 test('facilities and author-fixed support use independent atomic storage', async () => {
   const migration = await read('supabase/migrations/202607150003_facilities_rbac.sql');
   const facilityService = await read('src/services/facilities.ts');
+  const facilityAction = await read('supabase/functions/backendAction/facilities.ts');
   const facilityTypes = await read('src/types/index.ts');
   const notion = await read('supabase/functions/_shared/notion.ts');
   const maintenanceCleanup = await read('supabase/functions/maintenanceCleanup/index.ts');
@@ -615,6 +616,7 @@ test('facilities and author-fixed support use independent atomic storage', async
   assert.match(migration, /cron\.unschedule\(jobid\)[\s\S]*srp_notion_support_sync/u);
   assert.doesNotMatch(maintenanceCleanup, /notion_support|syncIssueSupport/u);
   assert.match(facilityService, /invokeBackendAction[\s\S]*listFacilities/u);
+  assert.match(facilityAction, /cursor_id: asUuid\(cursor\.id\) \|\| null/u);
   assert.match(facilityTypes, /export type FacilityStatus = 'pending' \| 'processing' \| 'completed' \| 'unable-to-handle'/u);
   assert.match(notion, /if \(!terminal\) return/u);
   assert.match(notion, /"遇到人數"[\s\S]*facility\.affected_count/u);

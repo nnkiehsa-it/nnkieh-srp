@@ -47,12 +47,12 @@ export function useFacilities() {
     : [{ value: '', label: '全部' }, { value: 'pending', label: '待受理' }, { value: 'processing', label: '處理中' }]);
 
   let searchTimer = 0;
-  watch([bucket, status, sort], () => { cursor.value = null; void load(); });
+  watch([status, sort], () => { cursor.value = null; void load(); });
   watch(query, () => {
     window.clearTimeout(searchTimer);
     searchTimer = window.setTimeout(() => void load(), 300);
   });
-  watch(bucket, () => { status.value = ''; });
+  watch(bucket, () => { status.value = ''; cursor.value = null; void load(); });
   onMounted(() => void load());
 
   return { bucket, error, facilities, hasMore, load, loading, loadingMore, query, sort, status, statusOptions, toggleAffected };

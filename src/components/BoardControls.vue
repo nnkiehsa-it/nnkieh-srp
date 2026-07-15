@@ -2,10 +2,10 @@
   <div class="relative z-20 space-y-3">
     <div class="flex flex-row items-center justify-between gap-3 md:mt-0">
       <div class="hidden min-w-0 flex-row items-center gap-3 sm:gap-4 md:flex md:gap-6">
-        <h2 class="shrink-0 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-2xl">提案</h2>
+        <h2 class="shrink-0 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-2xl">{{ boardTitle }}</h2>
 
         <div
-          v-if="activeFilter !== 'my-proposals'"
+          v-if="mode === 'facility' || activeFilter !== 'my-proposals'"
           class="relative"
           @click.stop
           @pointerdown.stop
@@ -14,12 +14,12 @@
             type="button"
             class="button-toolbar hidden h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-semibold md:flex"
             :class="{ 'button-toolbar--active': isCategoryOpen }"
-            title="選擇分類"
-            aria-label="選擇分類"
+            :title="filterButtonTitle"
+            :aria-label="filterButtonTitle"
             :aria-expanded="isCategoryOpen"
             @click="toggleCategory"
           >
-            <span class="text-sm font-semibold leading-none">{{ activeCategoryLabel }}</span>
+            <span class="text-sm font-semibold leading-none">{{ filterLabel }}</span>
             <AppIcon name="chevron-down" :size="4" />
           </button>
 
@@ -28,18 +28,18 @@
               v-if="isCategoryOpen"
               class="popover-panel popover-panel--section absolute z-[100] mt-2 hidden w-max min-w-[10rem] left-0 right-auto md:block"
             >
-              <div class="popover-section-label mb-1.5 whitespace-nowrap">提案分類</div>
+              <div class="popover-section-label mb-1.5 whitespace-nowrap">{{ filterSectionLabel }}</div>
               <div class="space-y-0.5">
                 <button
-                  v-for="option in categoryOptions"
+                  v-for="option in filterOptions"
                   :key="`desk-${option.value}`"
                   type="button"
                   class="menu-item justify-between gap-4 whitespace-nowrap"
-                  :class="{ 'button-toolbar--active': option.value === activeFilter }"
+                  :class="{ 'button-toolbar--active': option.value === activeFilterValue }"
                   @click="handleCategoryChangeInPopover(option.value)"
                 >
                   <span>{{ option.label }}</span>
-                  <SelectionMark :selected="option.value === activeFilter" />
+                  <SelectionMark :selected="option.value === activeFilterValue" />
                 </button>
               </div>
             </div>
@@ -49,7 +49,7 @@
 
       <div class="flex w-full shrink-0 flex-row items-center justify-end gap-1.5 sm:gap-2 md:w-auto">
         <div
-          v-if="activeFilter !== 'my-proposals'"
+          v-if="mode === 'facility' || activeFilter !== 'my-proposals'"
           class="static mr-auto md:hidden"
           @click.stop
           @pointerdown.stop
@@ -58,12 +58,12 @@
             type="button"
             class="button-toolbar flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold"
             :class="{ 'button-toolbar--active': isCategoryOpen }"
-            title="選擇分類"
-            aria-label="選擇分類"
+            :title="filterButtonTitle"
+            :aria-label="filterButtonTitle"
             :aria-expanded="isCategoryOpen"
             @click="toggleCategory"
           >
-            <span class="text-xs font-semibold leading-none">{{ activeCategoryLabel }}</span>
+            <span class="text-xs font-semibold leading-none">{{ filterLabel }}</span>
             <AppIcon name="chevron-down" :size="4" />
           </button>
 
@@ -72,18 +72,18 @@
               v-if="isCategoryOpen"
               class="popover-panel popover-panel--section absolute z-[100] mt-2 left-4 right-4 w-auto"
             >
-              <div class="popover-section-label mb-1.5">提案分類</div>
+              <div class="popover-section-label mb-1.5">{{ filterSectionLabel }}</div>
               <div class="space-y-0.5">
                 <button
-                  v-for="option in categoryOptions"
+                  v-for="option in filterOptions"
                   :key="`mob-${option.value}`"
                   type="button"
                   class="menu-item justify-between"
-                  :class="{ 'button-toolbar--active': option.value === activeFilter }"
+                  :class="{ 'button-toolbar--active': option.value === activeFilterValue }"
                   @click="handleCategoryChangeInPopover(option.value)"
                 >
                   <span>{{ option.label }}</span>
-                  <SelectionMark :selected="option.value === activeFilter" />
+                  <SelectionMark :selected="option.value === activeFilterValue" />
                 </button>
               </div>
             </div>
@@ -91,7 +91,7 @@
         </div>
 
         <PillSegmentedControl
-          v-if="activeFilter !== 'my-proposals'"
+          v-if="mode === 'facility' || activeFilter !== 'my-proposals'"
           v-model="statusTabModel"
           :options="statusOptions"
           class="shrink-0"
@@ -102,8 +102,8 @@
             type="button"
             class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
             :class="{ 'button-toolbar--active': isSortOpen || sortOption !== 'latest' }"
-            title="排序提案"
-            aria-label="排序提案"
+            :title="`排序${boardTitle}`"
+            :aria-label="`排序${boardTitle}`"
             :aria-expanded="isSortOpen"
             @click="toggleSort"
           >
@@ -138,8 +138,8 @@
             type="button"
             class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
             :class="{ 'button-toolbar--active': isSearchOpen || searchQuery }"
-            title="搜尋提案"
-            aria-label="搜尋提案"
+            :title="`搜尋${boardTitle}`"
+            :aria-label="`搜尋${boardTitle}`"
             :aria-expanded="isSearchOpen"
             @click="toggleSearch"
           >
@@ -158,9 +158,9 @@
                   :value="searchQuery"
                   type="search"
                   autocomplete="off"
-                  aria-label="搜尋提案標題"
+                  :aria-label="`搜尋${boardTitle}標題`"
                   class="field appearance-none !h-8 !py-1 !pl-8 !pr-8 text-xs placeholder:text-ink-400 dark:placeholder:text-ink-500"
-                  placeholder="搜尋全站標題..."
+                  :placeholder="searchPlaceholder"
                   @input="(e) => emit('update:searchQuery', (e.target as HTMLInputElement).value)"
                 />
                 <button
@@ -196,21 +196,26 @@ import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
 import SelectionMark from '@/components/ui/SelectionMark.vue';
 import { ISSUE_FILTER_OPTIONS } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
-import type { IssueSortOption } from '@/types';
+import type { FacilitySortOption, FacilityStatus, IssueSortOption } from '@/types';
+
+type BoardSortOption = IssueSortOption | FacilitySortOption;
 
 const props = defineProps<{
+  mode?: 'issue' | 'facility';
   statusTab: 'active' | 'closed';
   searchQuery: string;
   searchHint: string;
   activeFilter: string;
   activeCategoryLabel: string;
-  sortOption: IssueSortOption;
+  sortOption: BoardSortOption;
+  facilityStatus?: FacilityStatus | '';
 }>();
 
 const emit = defineEmits<{
   'update:statusTab': [value: 'active' | 'closed'];
   'update:searchQuery': [value: string];
-  'update:sortOption': [value: IssueSortOption];
+  'update:sortOption': [value: BoardSortOption];
+  'update:facilityStatus': [value: FacilityStatus | ''];
 }>();
 
 const issueSortOptions = [
@@ -221,17 +226,33 @@ const issueSortOptions = [
 
 const route = useRoute();
 const router = useRouter();
-const visibleSortOptions = computed(() =>
-  props.statusTab === 'closed'
+const facilitySortOptions = [
+  { value: 'latest', label: '最新' },
+  { value: 'most-affected', label: '最多人遇到' },
+] as const;
+const visibleSortOptions = computed(() => props.mode === 'facility'
+  ? facilitySortOptions
+  : props.statusTab === 'closed'
     ? issueSortOptions.filter((option) => option.value === 'latest')
-    : issueSortOptions
-);
+    : issueSortOptions);
 
 const categoryOptions = ISSUE_FILTER_OPTIONS;
-const statusOptions = [
-  { value: 'active' as const, label: '進行中', icon: 'list', title: '查看進行中提案' },
-  { value: 'closed' as const, label: '已結案', icon: 'inbox', title: '查看已結案提案' },
-] as const;
+const boardTitle = computed(() => props.mode === 'facility' ? '設備' : '提案');
+const filterSectionLabel = computed(() => props.mode === 'facility' ? '設備狀態' : '提案分類');
+const filterButtonTitle = computed(() => props.mode === 'facility' ? '篩選設備狀態' : '選擇分類');
+const searchPlaceholder = computed(() => props.mode === 'facility' ? '搜尋標題或地點...' : '搜尋全站標題...');
+const facilityStatusOptions = computed(() => props.statusTab === 'closed'
+  ? [{ value: '' as const, label: '全部狀態' }, { value: 'completed' as const, label: '已完成' }, { value: 'unable-to-handle' as const, label: '無法處理' }]
+  : [{ value: '' as const, label: '全部狀態' }, { value: 'pending' as const, label: '待受理' }, { value: 'processing' as const, label: '處理中' }]);
+const filterOptions = computed(() => props.mode === 'facility' ? facilityStatusOptions.value : categoryOptions);
+const activeFilterValue = computed(() => props.mode === 'facility' ? props.facilityStatus ?? '' : props.activeFilter);
+const filterLabel = computed(() => props.mode === 'facility'
+  ? facilityStatusOptions.value.find((option) => option.value === (props.facilityStatus ?? ''))?.label ?? '全部狀態'
+  : props.activeCategoryLabel);
+const statusOptions = computed(() => [
+  { value: 'active' as const, label: props.mode === 'facility' ? '處理中' : '進行中', icon: 'list' as const, title: `查看${props.mode === 'facility' ? '處理中設備' : '進行中提案'}` },
+  { value: 'closed' as const, label: '已結案', icon: 'inbox' as const, title: `查看已結案${boardTitle.value}` },
+]);
 const isSearchOpen = ref(false);
 const isSortOpen = ref(false);
 const isCategoryOpen = ref(false);
@@ -267,7 +288,7 @@ function toggleCategory() {
   isSearchOpen.value = false;
 }
 
-function selectSort(value: IssueSortOption) {
+function selectSort(value: BoardSortOption) {
   emit('update:sortOption', value);
 }
 
@@ -277,6 +298,10 @@ const statusTabModel = computed({
 });
 
 async function handleCategoryChange(value: string) {
+  if (props.mode === 'facility') {
+    emit('update:facilityStatus', value as FacilityStatus | '');
+    return;
+  }
   if (value === props.activeFilter) return;
   await router.push({
     name: 'issues',
