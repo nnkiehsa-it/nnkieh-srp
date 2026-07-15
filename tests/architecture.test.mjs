@@ -646,7 +646,9 @@ test('proposal manager access is config-driven and category-scoped', async () =>
   assert.match(users, /managedIssueCategoryIds[\s\S]*filter\(isIssueCategory\)/u);
   assert.match(auth, /canManageIssueCategory/u);
   assert.match(issueRead, /canManageIssueCategory\(auth, category\)/u);
-  assert.match(users, /if \(!query\) return \{ users: \[\] \}/u);
+  assert.match(users, /if \(!rawQuery\) return \{ users: \[\] \}/u);
+  assert.match(users, /const rawQuery = asString\(payload\.query\)\.trim\(\)/u);
+  assert.match(users, /rawQuery\.includes\("@"\) \? rawQuery\.toLowerCase\(\) : rawQuery/u);
   assert.match(users, /profilesQuery\.eq\("email", query\)[\s\S]*profilesQuery\.eq\("uid", query\)/u);
   assert.match(lookupMigration, /user_profiles_email_unique_idx/u);
   assert.match(lookupMigration, /backend_update_facility_status\.result_content/u);
@@ -660,9 +662,17 @@ test('facility next actions and account UID use existing detail controls', async
   const settingsView = await read('src/views/SettingsView.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const shareUrl = await read('src/composables/useShareUrl.ts');
+  const proposalFooter = await read('src/components/IssueDetailSupportFooter.vue');
+  const operationTimes = await read('src/components/ui/OperationTimeList.vue');
 
   assert.match(facilityDetail, /DetailActionButton/u);
+  assert.match(facilityDetail, /#actions="\{ compact \}"/u);
+  assert.match(facilityDetail, /:compact="compact"/u);
   assert.match(facilityDetail, /'開始處理'\s*:\s*'完成／無法處理'/u);
+  assert.match(facilityDetail, /待受理時間[\s\S]*開始處理時間[\s\S]*無法處理時間/u);
+  assert.match(facilityDetail, /OperationTimeList/u);
+  assert.match(proposalFooter, /OperationTimeList/u);
+  assert.match(operationTimes, /compact \? `\$\{item\.shortLabel\}：` : `\$\{item\.label\}：`/u);
   assert.doesNotMatch(facilityDetail, />更新狀態</u);
   assert.match(settingsView, /:uid="user\.uid"/u);
   assert.match(settingsPanel, /UID：\{\{ uid \}\}[\s\S]*name="copy"/u);

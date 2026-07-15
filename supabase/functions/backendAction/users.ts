@@ -46,8 +46,9 @@ export async function handleUserAction(
 
   if (action === "listRoleAssignments") {
     requirePermission(auth, "role.manage");
-    const query = asString(payload.query).trim().toLowerCase();
-    if (!query) return { users: [] };
+    const rawQuery = asString(payload.query).trim();
+    if (!rawQuery) return { users: [] };
+    const query = rawQuery.includes("@") ? rawQuery.toLowerCase() : rawQuery;
     let profilesQuery = supabase.schema("app_private").from("user_profiles")
       .select("uid,email,display_name,cached_photo_url,photo_url").limit(1);
     profilesQuery = query.includes("@")

@@ -33,40 +33,48 @@
       </div>
     </template>
 
-    <template #actions>
-      <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-ink-100 pt-3 dark:border-ink-800">
-        <button
-          type="button"
-          class="button-toolbar flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold"
-          :class="{ 'button-toolbar--active': facility.currentUserAffected }"
-          :disabled="facility.isOwnFacility || closed"
-          :title="facility.isOwnFacility ? '作者已自動計入' : '我也遇到'"
-          @click="toggleAffected"
-        >
-          <AppIcon name="hand" :size="4" />
-          <span>{{ facility.affected_count }} 人遇到</span>
-        </button>
-        <div class="ml-auto flex flex-wrap justify-end gap-2">
-          <DetailActionButton
-            v-if="facility.canManageFacility && !closed"
-            :label="nextStatusActionLabel"
-            :title="nextStatusActionLabel"
-            :aria-label="nextStatusActionLabel"
-            @click="statusOpen = true"
+    <template #actions="{ compact }">
+      <div class="mt-4 shrink-0 space-y-3 border-t border-ink-100 pb-1 dark:border-ink-800" :class="compact ? 'px-1 pt-3' : 'pt-3'">
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="button-toolbar flex items-center rounded-full font-semibold"
+            :class="[
+              { 'button-toolbar--active': facility.currentUserAffected },
+              compact ? 'h-8 gap-1 px-2.5 text-xs' : 'h-9 gap-1.5 px-3 text-sm',
+            ]"
+            :disabled="facility.isOwnFacility || closed"
+            :title="facility.isOwnFacility ? '作者已自動計入' : '我也遇到'"
+            @click="toggleAffected"
           >
-            <AppIcon name="edit" />
-          </DetailActionButton>
-          <DetailActionButton
-            v-if="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')"
-            danger
-            label="刪除"
-            title="刪除設備案件"
-            aria-label="刪除設備案件"
-            @click="confirmDelete"
-          >
-            <AppIcon name="trash" />
-          </DetailActionButton>
+            <AppIcon name="hand" :size="compact ? 3.5 : 4" />
+            <span>{{ facility.affected_count }} 人遇到</span>
+          </button>
+          <div class="ml-auto flex flex-wrap justify-end gap-2">
+            <DetailActionButton
+              v-if="facility.canManageFacility && !closed"
+              :label="nextStatusActionLabel"
+              :compact="compact"
+              :title="nextStatusActionLabel"
+              :aria-label="nextStatusActionLabel"
+              @click="statusOpen = true"
+            >
+              <AppIcon name="edit" />
+            </DetailActionButton>
+            <DetailActionButton
+              v-if="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')"
+              danger
+              label="刪除"
+              :compact="compact"
+              title="刪除設備案件"
+              aria-label="刪除設備案件"
+              @click="confirmDelete"
+            >
+              <AppIcon name="trash" />
+            </DetailActionButton>
+          </div>
         </div>
+        <OperationTimeList :items="operationTimeItems" :compact="compact" />
       </div>
     </template>
   </DetailPageShell>
@@ -84,10 +92,11 @@ import DetailPageShell from '@/components/ui/DetailPageShell.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
 import UserAvatar from '@/components/ui/UserAvatar.vue';
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
+import OperationTimeList from '@/components/ui/OperationTimeList.vue';
 import { useFacilityDetail } from '@/composables/useFacilityDetail';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { formatDate } from '@/lib/format';
-import type { FacilityStatus } from '@/types';
+import type { FacilityStatus, OperationTimeListItem } from '@/types';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 
 const router = useRouter();
@@ -99,6 +108,25 @@ const { start } = useActionFeedback();
 const labels: Record<FacilityStatus, string> = { pending: '待受理', processing: '處理中', completed: '已完成', 'unable-to-handle': '無法處理' };
 const closed = computed(() => facility.value ? ['completed', 'unable-to-handle'].includes(facility.value.status) : false);
 const nextStatusActionLabel = computed(() => facility.value?.status === 'pending' ? '開始處理' : '完成／無法處理');
+const operationTimeItems = computed<OperationTimeListItem[]>(() => {
+  if (!facility.value) return [];
+  const items: OperationTimeListItem[] = [];
+  if (facility.value.created_at) {
+    items.push({ label: '待受理時間', shortLabel: '待受理', valueLabel: formatDate(facility.value.created_at) });
+  }
+  if (facility.value.started_at) {
+    items.push({ label: '開始處理時間', shortLabel: '處理', valueLabel: formatDate(facility.value.started_at) });
+  }
+  if (facility.value.closed_at) {
+    const unable = facility.value.status === 'unable-to-handle';
+    items.push({
+      label: unable ? '無法處理時間' : '完成時間',
+      shortLabel: unable ? '無法處理' : '完成',
+      valueLabel: formatDate(facility.value.closed_at),
+    });
+  }
+  return items;
+});
 const status = computed(() => facility.value?.status ?? 'pending');
 const { statusClass } = useStatusStyling(status, 'dialog');
 

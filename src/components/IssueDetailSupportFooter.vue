@@ -96,23 +96,11 @@
       </DetailActionButton>
     </div>
 
-    <div
-      class="flex flex-wrap text-xs text-ink-500 dark:text-ink-400"
-      :class="[
-        compact ? 'gap-x-3 gap-y-1' : 'gap-x-4 gap-y-2',
-        issue.support_enabled ? (compact ? 'mt-2 border-t border-ink-100 pt-2 dark:border-ink-800' : 'mt-3 border-t border-ink-100 pt-3 dark:border-ink-800') : ''
-      ]"
-    >
-      <div
-        v-for="item in operationTimeItems"
-        :key="item.label"
-        class="flex items-center gap-1"
-        :class="{ 'shrink-0': compact }"
-      >
-        <span class="font-semibold text-ink-400">{{ compact ? `${item.shortLabel}：` : `${item.label}：` }}</span>
-        <span class="font-medium text-ink-700 dark:text-ink-300">{{ item.valueLabel }}</span>
-      </div>
-    </div>
+    <OperationTimeList
+      :items="operationTimeItems"
+      :compact="compact"
+      :class="issue.support_enabled ? (compact ? 'mt-2 border-t border-ink-100 pt-2 dark:border-ink-800' : 'mt-3 border-t border-ink-100 pt-3 dark:border-ink-800') : ''"
+    />
   </div>
 </template>
 
@@ -120,6 +108,7 @@
 import { computed, type CSSProperties } from 'vue';
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import OperationTimeList from '@/components/ui/OperationTimeList.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
 import type { IssueOperationTimeItem, IssueRecord } from '@/types';
 

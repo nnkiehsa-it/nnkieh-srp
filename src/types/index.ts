@@ -53,11 +53,14 @@ export interface IssueRecord {
   author_photo_url?: string | null;
 }
 
-export interface IssueOperationTimeItem {
+export interface OperationTimeListItem {
   label: string;
   shortLabel: string;
-  value: Date;
   valueLabel: string;
+}
+
+export interface IssueOperationTimeItem extends OperationTimeListItem {
+  value: Date;
 }
 
 export interface IssueCursor {
