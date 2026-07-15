@@ -883,6 +883,21 @@ test('app updates hand over the service worker with bounded reload recovery', as
   assert.match(realtimeEvents, /event: 'content_changed'/u);
 });
 
+test('Google redirect recovery runs only after an explicit redirect fallback', async () => {
+  const authActions = await read('src/composables/sessionAuthActions.ts');
+  const session = await read('src/composables/useSession.ts');
+
+  assert.match(authActions, /GOOGLE_REDIRECT_PENDING_KEY = 'novae:google-redirect-pending'/u);
+  assert.match(authActions, /markGoogleRedirectPending\(\);[\s\S]*await signInWithRedirect/u);
+  assert.match(authActions, /if \(!hasPendingGoogleRedirect\(\)\) return;/u);
+  assert.match(authActions, /finally \{[\s\S]*clearGoogleRedirectPending\(\);/u);
+  assert.match(authActions, /await firebaseAuth\.authStateReady\(\)/u);
+  assert.match(authActions, /if \(!firebaseAuth\.currentUser && !state\.user\)/u);
+  assert.match(authActions, /登入回復逾時/u);
+  assert.match(session, /recoverPendingGoogleRedirect\(state, firebaseAuth\)/u);
+  assert.doesNotMatch(session, /getRedirectResult/u);
+});
+
 test('push notification registration recovers without overriding an explicit opt-out', async () => {
   const pushNotifications = await read('src/composables/usePushNotifications.ts');
   const pushPrompt = await read('src/composables/usePushPermissionPrompt.ts');

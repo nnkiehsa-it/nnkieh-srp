@@ -1,20 +1,63 @@
 import {
+  getRedirectResult,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
   signOut,
+  type Auth,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth, allowedDomain } from '@/lib/firebase';
 import type { SessionState } from '@/composables/sessionTypes';
-import { withRequestTimeout } from '@/lib/request';
+import { RequestFailure, withRequestTimeout } from '@/lib/request';
 import { debugLog } from '@/composables/sessionDebug';
 
 const LOGIN_ATTEMPT_KEY = 'novae-login-attempts';
+const GOOGLE_REDIRECT_PENDING_KEY = 'novae:google-redirect-pending';
 const LOGIN_ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_ATTEMPT_LIMIT = 30;
 const LOGIN_CLICK_COOLDOWN_MS = 2_000;
+const REDIRECT_RECOVERY_TIMEOUT_MS = 15_000;
 let lastLoginAttemptAt = 0;
+
+function markGoogleRedirectPending() {
+  try {
+    sessionStorage.setItem(GOOGLE_REDIRECT_PENDING_KEY, '1');
+  } catch {
+    // Firebase auth state restoration still handles a successful redirect.
+  }
+}
+
+function hasPendingGoogleRedirect() {
+  try {
+    return sessionStorage.getItem(GOOGLE_REDIRECT_PENDING_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function clearGoogleRedirectPending() {
+  try {
+    sessionStorage.removeItem(GOOGLE_REDIRECT_PENDING_KEY);
+  } catch {
+    // A blocked storage API should not prevent authentication.
+  }
+}
+
+async function getPendingRedirectResult(firebaseAuth: Auth) {
+  let timeoutId = 0;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new RequestFailure('登入回復逾時，請重新整理頁面後再試。', 'timeout'));
+    }, REDIRECT_RECOVERY_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([getRedirectResult(firebaseAuth), timeout]);
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
 
 function claimLoginAttempt() {
   const now = Date.now();
@@ -87,9 +130,11 @@ export async function loginWithGoogle(state: SessionState, options: { selectAcco
   } catch (error) {
     if (shouldFallbackToRedirect(error)) {
       debugLog('popup unavailable, falling back to redirect', error);
+      markGoogleRedirectPending();
       try {
         await signInWithRedirect(firebaseAuth, googleProvider(Boolean(options.selectAccount)));
       } catch (redirectError) {
+        clearGoogleRedirectPending();
         debugLog('redirect login failed', redirectError);
         state.error = getLoginErrorMessage(redirectError);
       }
@@ -103,9 +148,43 @@ export async function loginWithGoogle(state: SessionState, options: { selectAcco
   }
 }
 
-function getLoginErrorMessage(error: unknown) {
+export async function recoverPendingGoogleRedirect(state: SessionState, firebaseAuth: Auth) {
+  if (!hasPendingGoogleRedirect()) return;
+
+  try {
+    const result = await getPendingRedirectResult(firebaseAuth);
+    debugLog('getRedirectResult resolved', result
+      ? {
+          uid: result.user.uid,
+          email: result.user.email ?? '',
+          providerId: result.providerId ?? '',
+        }
+      : null);
+  } catch (error) {
+    debugLog('getRedirectResult failed', error);
+    try {
+      await firebaseAuth.authStateReady();
+    } catch {
+      // The redirect failure below remains the actionable authentication error.
+    }
+    if (!firebaseAuth.currentUser && !state.user) {
+      state.error = getRedirectRecoveryErrorMessage(error);
+    }
+  } finally {
+    clearGoogleRedirectPending();
+  }
+}
+
+function getRedirectRecoveryErrorMessage(error: unknown) {
+  if (error instanceof RequestFailure && error.code === 'timeout') {
+    return '登入回復逾時，請重新整理頁面後再試。';
+  }
+  return getLoginErrorMessage(error, '登入回復失敗，請重新整理頁面後再試。');
+}
+
+function getLoginErrorMessage(error: unknown, fallback = '登入失敗，請稍後再試。') {
   if (!(error instanceof FirebaseError)) {
-    return '登入失敗，請稍後再試。';
+    return fallback;
   }
 
   if (
@@ -137,7 +216,7 @@ function getLoginErrorMessage(error: unknown) {
     return '目前網址尚未允許使用 Google 登入，請聯絡管理員確認設定。';
   }
 
-  return '登入失敗，請稍後再試。';
+  return fallback;
 }
 
 export async function logoutFromFirebase(state: SessionState) {

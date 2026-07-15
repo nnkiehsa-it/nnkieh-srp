@@ -1,9 +1,13 @@
-import { getRedirectResult, onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { computed, reactive } from 'vue';
 import { auth, allowedDomain } from '@/lib/firebase';
 import type { SessionState } from '@/composables/sessionTypes';
 import { debugLog } from '@/composables/sessionDebug';
-import { loginWithGoogle, logoutFromFirebase } from '@/composables/sessionAuthActions';
+import {
+  loginWithGoogle,
+  logoutFromFirebase,
+  recoverPendingGoogleRedirect,
+} from '@/composables/sessionAuthActions';
 import {
   cacheUserAvatarOnLogin,
   clearActiveSessionData,
@@ -83,20 +87,7 @@ function resolveRoleReadyWaiters() {
 }
 
 function observeAuthState(firebaseAuth: NonNullable<typeof auth>) {
-  void withRequestTimeout(() => getRedirectResult(firebaseAuth), { label: '登入回復' })
-    .then((result) => {
-      debugLog('getRedirectResult resolved', result
-        ? {
-            uid: result.user.uid,
-            email: result.user.email ?? '',
-            providerId: result.providerId ?? '',
-          }
-        : null);
-    })
-    .catch((error) => {
-      debugLog('getRedirectResult failed', error);
-      state.error = '登入失敗，請稍後再試。';
-    });
+  void recoverPendingGoogleRedirect(state, firebaseAuth);
 
   onAuthStateChanged(firebaseAuth, async (user) => {
     debugLog('onAuthStateChanged fired', user
