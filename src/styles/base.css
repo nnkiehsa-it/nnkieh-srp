@@ -347,7 +347,14 @@
   }
 
   .action-feedback-viewport {
-    bottom: calc(var(--app-bottom-nav-height) + 0.75rem);
+    left: 0;
+    padding-inline: 1rem;
+    right: 0;
+    top: calc(env(safe-area-inset-top) + var(--app-header-height) + 0.75rem);
+  }
+
+  body.dialog-open .action-feedback-viewport {
+    top: calc(env(safe-area-inset-top) + 6.75rem);
   }
 
   @media (min-width: 640px) {
@@ -416,6 +423,11 @@
   @media (min-width: 768px) {
     .action-feedback-viewport {
       bottom: 1.5rem;
+      left: auto;
+      padding-inline: 0;
+      right: 1.5rem;
+      top: auto;
+      width: min(24rem, calc(100vw - 3rem));
     }
   }
 

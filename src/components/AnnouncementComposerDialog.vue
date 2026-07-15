@@ -25,7 +25,7 @@
       </div>
 
       <!-- Unified Form Layout (Responsive Single Column) -->
-      <form class="flex-1 flex flex-col min-h-0 mt-5 space-y-5 overflow-y-auto md:overflow-hidden pr-1" autocomplete="off" @submit.prevent="submit">
+      <form class="entry-composer__scroll flex-1 flex flex-col min-h-0 mt-5 space-y-5 overflow-y-auto md:overflow-hidden" autocomplete="off" @submit.prevent="submit">
         <!-- Title Field -->
         <div class="space-y-1.5 shrink-0">
           <label for="announcement-title" class="field-label">公告標題</label>

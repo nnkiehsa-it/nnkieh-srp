@@ -859,6 +859,9 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   const commentItem = await read('src/components/CommentItem.vue');
   const commentThread = await read('src/components/CommentThreadPanel.vue');
   const detailShell = await read('src/components/ui/DetailPageShell.vue');
+  const issueComposer = await read('src/components/IssueComposer.vue');
+  const announcementComposer = await read('src/components/AnnouncementComposerDialog.vue');
+  const feedbackBar = await read('src/components/ActionFeedbackBar.vue');
   const responsiveStyles = await read('src/styles/responsive.css');
   const baseStyles = await read('src/styles/base.css');
 
@@ -877,6 +880,11 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(baseStyles, /padding-bottom: calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
   assert.match(responsiveStyles, /padding-left: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-left\)\)/u);
   assert.match(responsiveStyles, /padding-right: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-right\)\)/u);
+  assert.match(issueComposer, /entry-composer__scroll/u);
+  assert.match(announcementComposer, /entry-composer__scroll/u);
+  assert.match(responsiveStyles, /\.entry-composer__scroll \{[\s\S]*margin-inline: -0\.5rem;[\s\S]*padding-inline: 0\.5rem;/u);
+  assert.match(feedbackBar, /w-fit max-w-\[min\(22rem,calc\(100vw-2rem\)\)\]/u);
+  assert.match(baseStyles, /body\.dialog-open \.action-feedback-viewport \{[\s\S]*top: calc\(env\(safe-area-inset-top\) \+ 6\.75rem\)/u);
 });
 
 test('primary navigation preloads route chunks without blocking page transitions', async () => {

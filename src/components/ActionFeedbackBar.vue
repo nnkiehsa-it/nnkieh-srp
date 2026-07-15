@@ -3,12 +3,12 @@
     <Transition name="action-feedback">
       <div
         v-if="feedback"
-        class="action-feedback-viewport pointer-events-none fixed inset-x-3 z-[9999] flex justify-center md:inset-x-auto md:right-6 md:w-[min(24rem,calc(100vw-3rem))] md:justify-end"
+        class="action-feedback-viewport pointer-events-none fixed z-[9999] flex justify-center md:justify-end"
         aria-live="polite"
         aria-atomic="true"
       >
         <div
-          class="action-feedback-card pointer-events-auto flex min-h-14 w-full max-w-md items-center gap-3 rounded-[1.125rem] bg-surface/96 px-3.5 py-3 text-ink-800 shadow-floating backdrop-blur-xl dark:bg-surface/96 dark:text-ink-100"
+          class="action-feedback-card pointer-events-auto flex min-h-14 w-fit max-w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-[1.125rem] bg-surface/96 px-3.5 py-3 text-ink-800 shadow-floating backdrop-blur-xl dark:bg-surface/96 dark:text-ink-100"
           :class="toneClass"
           role="status"
         >
