@@ -43,6 +43,7 @@
       :display-name="user.displayName || '校內使用者'"
       :display-photo-url="displayPhotoUrl"
       :email="user.email || ''"
+      :uid="user.uid"
       :is-admin="isAdmin"
       :can-manage-roles="can('role.manage')"
       :personal-notification-options="personalNotificationOptions"

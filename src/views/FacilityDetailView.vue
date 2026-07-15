@@ -46,9 +46,26 @@
           <AppIcon name="hand" :size="4" />
           <span>{{ facility.affected_count }} 人遇到</span>
         </button>
-        <div class="ml-auto flex gap-2">
-          <button v-if="facility.canManageFacility && !closed" class="button-primary" @click="statusOpen = true">更新狀態</button>
-          <button v-if="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')" class="button-danger" @click="confirmDelete">刪除</button>
+        <div class="ml-auto flex flex-wrap justify-end gap-2">
+          <DetailActionButton
+            v-if="facility.canManageFacility && !closed"
+            :label="nextStatusActionLabel"
+            :title="nextStatusActionLabel"
+            :aria-label="nextStatusActionLabel"
+            @click="statusOpen = true"
+          >
+            <AppIcon name="edit" />
+          </DetailActionButton>
+          <DetailActionButton
+            v-if="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')"
+            danger
+            label="刪除"
+            title="刪除設備案件"
+            aria-label="刪除設備案件"
+            @click="confirmDelete"
+          >
+            <AppIcon name="trash" />
+          </DetailActionButton>
         </div>
       </div>
     </template>
@@ -66,6 +83,7 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 import DetailPageShell from '@/components/ui/DetailPageShell.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
 import UserAvatar from '@/components/ui/UserAvatar.vue';
+import DetailActionButton from '@/components/ui/DetailActionButton.vue';
 import { useFacilityDetail } from '@/composables/useFacilityDetail';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { formatDate } from '@/lib/format';
@@ -80,6 +98,7 @@ const statusError = ref('');
 const { start } = useActionFeedback();
 const labels: Record<FacilityStatus, string> = { pending: '待受理', processing: '處理中', completed: '已完成', 'unable-to-handle': '無法處理' };
 const closed = computed(() => facility.value ? ['completed', 'unable-to-handle'].includes(facility.value.status) : false);
+const nextStatusActionLabel = computed(() => facility.value?.status === 'pending' ? '開始處理' : '完成／無法處理');
 const status = computed(() => facility.value?.status ?? 'pending');
 const { statusClass } = useStatusStyling(status, 'dialog');
 

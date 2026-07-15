@@ -23,6 +23,7 @@ import {
   CircleAlert,
   CircleHelp,
   Code2,
+  Copy,
   Download,
   Eye,
   FileClock,
@@ -70,7 +71,7 @@ export type AppIconName =
   | 'reply' | 'search' | 'send' | 'settings' | 'share' | 'shield-check' | 'sort'
   | 'switch-horizontal' | 'thumbs-up' | 'trash' | 'user' | 'warning'
   | 'h1' | 'h2' | 'list' | 'numlist' | 'plus' | 'quote' | 'code'
-  | 'divider' | 'table';
+  | 'copy' | 'divider' | 'table';
 
 const props = withDefaults(defineProps<{
   detail?: boolean;
@@ -132,6 +133,7 @@ const iconComponents: Record<AppIconName, Component> = {
   plus: Plus,
   quote: Quote,
   code: Code2,
+  copy: Copy,
   divider: Minus,
   table: Table,
 };

@@ -34,6 +34,18 @@
             <p class="truncate text-xs text-ink-500 dark:text-ink-400">
               {{ email }}
             </p>
+            <div class="mt-0.5 flex min-w-0 items-center gap-1">
+              <p class="truncate text-[11px] text-ink-400 dark:text-ink-500">UID：{{ uid }}</p>
+              <button
+                type="button"
+                class="button-toolbar flex h-6 w-6 shrink-0 items-center justify-center rounded-full p-0"
+                title="複製 UID"
+                aria-label="複製 UID"
+                @click="copyUid"
+              >
+                <AppIcon name="copy" :size="3" :stroke-width="2" />
+              </button>
+            </div>
           </div>
           <button
             type="button"
@@ -249,12 +261,15 @@ import {
   SCHOOL_NAME,
 } from '@/constants/app';
 import type { PersonalPushPreferenceKey, PersonalPushPreferences } from '@/services/notifications';
+import { copyText } from '@/composables/useShareUrl';
+import { useActionFeedback } from '@/composables/useActionFeedback';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   contentClass?: string;
   displayName: string;
   displayPhotoUrl: string | null;
   email: string;
+  uid: string;
   isAdmin: boolean;
   canManageRoles: boolean;
   personalNotificationOptions: Array<{
@@ -286,6 +301,16 @@ const emit = defineEmits<{
 }>();
 
 const logoutDialogOpen = ref(false);
+const { show } = useActionFeedback();
+
+async function copyUid() {
+  try {
+    await copyText(props.uid);
+    show('UID 已複製', 'success');
+  } catch {
+    show('無法複製 UID，請稍後再試', 'error');
+  }
+}
 
 function confirmLogout() {
   logoutDialogOpen.value = false;

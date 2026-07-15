@@ -655,6 +655,21 @@ test('proposal manager access is config-driven and category-scoped', async () =>
   assert.match(selectionControl, /button-toolbar--active[\s\S]*SelectionMark/u);
 });
 
+test('facility next actions and account UID use existing detail controls', async () => {
+  const facilityDetail = await read('src/views/FacilityDetailView.vue');
+  const settingsView = await read('src/views/SettingsView.vue');
+  const settingsPanel = await read('src/components/SettingsPanelContent.vue');
+  const shareUrl = await read('src/composables/useShareUrl.ts');
+
+  assert.match(facilityDetail, /DetailActionButton/u);
+  assert.match(facilityDetail, /'開始處理'\s*:\s*'完成／無法處理'/u);
+  assert.doesNotMatch(facilityDetail, />更新狀態</u);
+  assert.match(settingsView, /:uid="user\.uid"/u);
+  assert.match(settingsPanel, /UID：\{\{ uid \}\}[\s\S]*name="copy"/u);
+  assert.match(settingsPanel, /show\('UID 已複製', 'success'\)/u);
+  assert.match(shareUrl, /export async function copyText/u);
+});
+
 test('announcement editing is removed across frontend, backend, and database', async () => {
   const actionContract = await read('src/services/backend-action-contract.ts');
   const announcementService = await read('src/services/announcements.ts');
