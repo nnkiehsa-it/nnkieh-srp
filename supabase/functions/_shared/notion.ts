@@ -28,9 +28,11 @@ const FACILITY_STATUS_LABELS: Record<string, string> = {
 };
 
 type AppSupabase = SupabaseClient<Database>;
+const NOTION_API_VERSION = "2026-03-11";
 const knownSelectOptions = new Set<string>();
 const knownDateProperties = new Set<string>();
 const knownRichTextProperties = new Set<string>();
+let discoveredDataSourceId: Promise<string> | undefined;
 
 function translateStatus(status: string): string {
   return STATUS_LABELS[status] ?? status;
@@ -57,6 +59,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function normalizeNotionId(value: string): string {
+  return value.replaceAll("-", "").toLowerCase();
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -66,13 +72,13 @@ function notionEnabled(): boolean {
   return Boolean(optionalEnv("NOTION_TOKEN") && optionalEnv("NOTION_DATABASE_ID"));
 }
 
-async function callNotionAPI(path: string, method: string, body?: unknown, version?: string): Promise<unknown> {
+async function callNotionAPI(path: string, method: string, body?: unknown): Promise<unknown> {
   const response = await fetch(`https://api.notion.com/v1${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${requireEnv("NOTION_TOKEN")}`,
       "Content-Type": "application/json",
-      "Notion-Version": version || optionalEnv("NOTION_VERSION") || "2022-06-28",
+      "Notion-Version": NOTION_API_VERSION,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(15_000),
@@ -83,13 +89,57 @@ async function callNotionAPI(path: string, method: string, body?: unknown, versi
   return response.status === 204 ? {} : response.json();
 }
 
+async function discoverDataSourceId(): Promise<string> {
+  const configuredId = optionalEnv("NOTION_DATA_SOURCE_ID");
+  if (configuredId) return configuredId;
+
+  const database = await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "GET");
+  const dataSources = isRecord(database) && Array.isArray(database.data_sources)
+    ? database.data_sources.filter(isRecord)
+    : [];
+  const ids = dataSources
+    .map((dataSource) => typeof dataSource.id === "string" ? dataSource.id : "")
+    .filter(Boolean);
+  if (ids.length === 1) return ids[0];
+  if (ids.length === 0) throw new Error("Notion database has no accessible data source");
+  throw new Error(
+    "Notion database has multiple data sources; set NOTION_DATA_SOURCE_ID to select one",
+  );
+}
+
+function getDataSourceId(): Promise<string> {
+  discoveredDataSourceId ??= discoverDataSourceId().catch((error) => {
+    discoveredDataSourceId = undefined;
+    throw error;
+  });
+  return discoveredDataSourceId;
+}
+
+async function retrieveDataSource(): Promise<Record<string, unknown>> {
+  const dataSource = await callNotionAPI(`/data_sources/${await getDataSourceId()}`, "GET");
+  if (!isRecord(dataSource)) throw new Error("Notion data source response is invalid");
+  const parent = dataSource.parent;
+  if (
+    !isRecord(parent) ||
+    typeof parent.database_id !== "string" ||
+    normalizeNotionId(parent.database_id) !== normalizeNotionId(requireEnv("NOTION_DATABASE_ID"))
+  ) {
+    throw new Error("NOTION_DATA_SOURCE_ID does not belong to NOTION_DATABASE_ID");
+  }
+  return dataSource;
+}
+
+async function updateDataSourceProperties(properties: Record<string, unknown>): Promise<void> {
+  await callNotionAPI(`/data_sources/${await getDataSourceId()}`, "PATCH", { properties });
+}
+
 async function ensureSelectOption(propertyName: "分類" | "狀態", label: string): Promise<void> {
   if (!label) return;
   const cacheKey = `${propertyName}:${label}`;
   if (knownSelectOptions.has(cacheKey)) return;
-  const database = await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "GET");
-  if (!isRecord(database) || !isRecord(database.properties)) return;
-  const property = database.properties[propertyName];
+  const dataSource = await retrieveDataSource();
+  if (!isRecord(dataSource.properties)) return;
+  const property = dataSource.properties[propertyName];
   if (!isRecord(property) || property.type !== "select" || !isRecord(property.select)) return;
   const options = Array.isArray(property.select.options) ? property.select.options : [];
   if (options.some((option) => isRecord(option) && option.name === label)) {
@@ -97,21 +147,19 @@ async function ensureSelectOption(propertyName: "分類" | "狀態", label: stri
     return;
   }
 
-  await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "PATCH", {
-    properties: {
-      [propertyName]: {
-        select: {
-          options: [
-            ...options
-              .filter(isRecord)
-              .map((option) => ({
-                name: String(option.name ?? ""),
-                color: typeof option.color === "string" ? option.color : "default",
-              }))
-              .filter((option) => option.name),
-            { name: label, color: "default" },
-          ],
-        },
+  await updateDataSourceProperties({
+    [propertyName]: {
+      select: {
+        options: [
+          ...options
+            .filter(isRecord)
+            .map((option) => ({
+              name: String(option.name ?? ""),
+              color: typeof option.color === "string" ? option.color : "default",
+            }))
+            .filter((option) => option.name),
+          { name: label, color: "default" },
+        ],
       },
     },
   });
@@ -120,34 +168,28 @@ async function ensureSelectOption(propertyName: "分類" | "狀態", label: stri
 
 async function ensureDateProperty(propertyName: string): Promise<void> {
   if (!propertyName || knownDateProperties.has(propertyName)) return;
-  const database = await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "GET");
-  if (!isRecord(database) || !isRecord(database.properties)) return;
-  const property = database.properties[propertyName];
+  const dataSource = await retrieveDataSource();
+  if (!isRecord(dataSource.properties)) return;
+  const property = dataSource.properties[propertyName];
   if (isRecord(property) && property.type === "date") {
     knownDateProperties.add(propertyName);
     return;
   }
 
-  await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "PATCH", {
-    properties: {
-      [propertyName]: { date: {} },
-    },
-  });
+  await updateDataSourceProperties({ [propertyName]: { date: {} } });
   knownDateProperties.add(propertyName);
 }
 
 async function ensureRichTextProperty(propertyName: string): Promise<void> {
   if (!propertyName || knownRichTextProperties.has(propertyName)) return;
-  const database = await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "GET");
-  if (!isRecord(database) || !isRecord(database.properties)) return;
-  const property = database.properties[propertyName];
+  const dataSource = await retrieveDataSource();
+  if (!isRecord(dataSource.properties)) return;
+  const property = dataSource.properties[propertyName];
   if (isRecord(property) && property.type === "rich_text") {
     knownRichTextProperties.add(propertyName);
     return;
   }
-  await callNotionAPI(`/databases/${requireEnv("NOTION_DATABASE_ID")}`, "PATCH", {
-    properties: { [propertyName]: { rich_text: {} } },
-  });
+  await updateDataSourceProperties({ [propertyName]: { rich_text: {} } });
   knownRichTextProperties.add(propertyName);
 }
 
@@ -194,8 +236,6 @@ function appendBlock(pageId: string, content: string): Promise<unknown> {
 }
 
 const UPLOAD_PATTERN = /!\[([^\]]*)\]\(srp-upload:\/\/([0-9a-fA-F-]{36})\)/gu;
-const NOTION_FILE_VERSION = "2026-03-11";
-
 async function uploadImageToNotion(publicId: string, filename: string) {
   const sourceUrl = await createCloudinaryExpiringImageUrl(
     publicId,
@@ -209,7 +249,7 @@ async function uploadImageToNotion(publicId: string, filename: string) {
     headers: {
       Authorization: `Bearer ${requireEnv("NOTION_TOKEN")}`,
       "Content-Type": "application/json",
-      "Notion-Version": NOTION_FILE_VERSION,
+      "Notion-Version": NOTION_API_VERSION,
     },
     body: JSON.stringify({ mode: "single_part", filename, content_type: "image/webp" }),
     signal: AbortSignal.timeout(15_000),
@@ -223,7 +263,7 @@ async function uploadImageToNotion(publicId: string, filename: string) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${requireEnv("NOTION_TOKEN")}`,
-      "Notion-Version": NOTION_FILE_VERSION,
+      "Notion-Version": NOTION_API_VERSION,
     },
     body: form,
     signal: AbortSignal.timeout(30_000),
@@ -285,7 +325,7 @@ async function replaceManagedContent(
   for (let offset = 0; offset < blocks.length; offset += 100) {
     const response = await callNotionAPI(`/blocks/${pageId}/children`, "PATCH", {
       children: blocks.slice(offset, offset + 100),
-    }, NOTION_FILE_VERSION) as { results?: Array<{ id?: string }> };
+    }) as { results?: Array<{ id?: string }> };
     createdIds.push(...(response.results ?? []).map((block) => block.id ?? "").filter(Boolean));
   }
   const { error: updateError } = await supabase.schema("app_private").from("notion_pages")
@@ -329,7 +369,7 @@ async function getOrCreateNotionPage(
   ]);
 
   const result = await callNotionAPI("/pages", "POST", {
-    parent: { database_id: requireEnv("NOTION_DATABASE_ID") },
+    parent: { type: "data_source_id", data_source_id: await getDataSourceId() },
     properties: {
       "名稱": { title: [{ text: { content: title } }] },
       "分類": { select: { name: categoryLabel } },
@@ -362,21 +402,9 @@ async function getOrCreateNotionPage(
 export async function markNotionPageDeleted(pageId: string): Promise<void> {
   if (!notionEnabled()) return;
   await ensureSelectOption("狀態", "已刪除");
-
-  const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${requireEnv("NOTION_TOKEN")}`,
-      "Content-Type": "application/json",
-      "Notion-Version": optionalEnv("NOTION_VERSION") || "2022-06-28",
-    },
-    body: JSON.stringify({ properties: { "狀態": { select: { name: "已刪除" } } } }),
-    signal: AbortSignal.timeout(15_000),
+  await callNotionAPI(`/pages/${pageId}`, "PATCH", {
+    properties: { "狀態": { select: { name: "已刪除" } } },
   });
-
-  if (!response.ok) {
-    throw new Error(`Notion delete mark failed: ${response.status} ${await response.text()}`);
-  }
 }
 
 /**

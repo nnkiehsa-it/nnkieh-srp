@@ -72,6 +72,7 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: |
@@ -109,6 +110,12 @@ jobs:
             exit 1
           fi
 
+          if [ -n "$NOTION_DATA_SOURCE_ID" ] && \
+             { [ -z "$NOTION_TOKEN" ] || [ -z "$NOTION_DATABASE_ID" ]; }; then
+            echo 'NOTION_DATA_SOURCE_ID requires NOTION_TOKEN and NOTION_DATABASE_ID.' >&2
+            exit 1
+          fi
+
       - name: Link Supabase project
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -138,9 +145,10 @@ jobs:
           CLOUDINARY_WEBHOOK_SECRET: ${{ secrets.CLOUDINARY_WEBHOOK_SECRET }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_VERSION: ${{ secrets.NOTION_VERSION }}
           # 提案與設備共用這個 Database，不建立設備專用 secret。
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          # Database 有多個 data source 時必填；單一 data source 可由 API 自動探索。
+          NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: |
@@ -151,8 +159,10 @@ jobs:
             notion_secrets+=(
               "NOTION_TOKEN=$NOTION_TOKEN"
               "NOTION_DATABASE_ID=$NOTION_DATABASE_ID"
-              "NOTION_VERSION=${NOTION_VERSION:-2022-06-28}"
             )
+            if [ -n "$NOTION_DATA_SOURCE_ID" ]; then
+              notion_secrets+=("NOTION_DATA_SOURCE_ID=$NOTION_DATA_SOURCE_ID")
+            fi
           fi
 
           supabase secrets set \

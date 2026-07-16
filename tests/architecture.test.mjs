@@ -353,7 +353,18 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
   assert.match(notion, /"分類": \{ select: \{ name: categoryLabel \} \}/u);
   assert.match(notion, /"狀態": \{ select: \{ name: statusLabel \} \}/u);
   assert.match(notion, /optionalEnv\("NOTION_ENABLED"\) === "false"/u);
+  assert.match(notion, /const NOTION_API_VERSION = "2026-03-11"/u);
+  assert.match(notion, /\/databases\/\$\{requireEnv\("NOTION_DATABASE_ID"\)\}/u);
+  assert.match(notion, /\/data_sources\/\$\{await getDataSourceId\(\)\}/u);
+  assert.match(notion, /parent: \{ type: "data_source_id", data_source_id: await getDataSourceId\(\) \}/u);
+  assert.match(notion, /NOTION_DATA_SOURCE_ID/u);
+  assert.match(notion, /NOTION_DATA_SOURCE_ID does not belong to NOTION_DATABASE_ID/u);
+  assert.doesNotMatch(notion, /callNotionAPI\(`\/databases\/[^`]+`, "PATCH"/u);
+  assert.doesNotMatch(notion, /parent: \{ database_id:/u);
+  assert.doesNotMatch(notion, /2022-06-28/u);
   assert.match(deployBackend, /NOTION_TOKEN and NOTION_DATABASE_ID must either both be set or both be omitted/u);
+  assert.match(deployBackend, /NOTION_DATA_SOURCE_ID/u);
+  assert.match(deployBackend, /NOTION_DATA_SOURCE_ID requires NOTION_TOKEN and NOTION_DATABASE_ID/u);
   assert.match(deployBackend, /NOTION_ENABLED="\$notion_enabled"/u);
   const requiredSecretBlock = deployBackend.slice(
     deployBackend.indexOf('missing=()'),
