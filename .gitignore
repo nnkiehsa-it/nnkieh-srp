@@ -10,3 +10,5 @@ vite.config.d.ts
 temp.jsonl
 .vercel
 .env*
+supabase/.branches/
+supabase/.temp/

@@ -52,6 +52,9 @@ jobs:
           npm run check:edge
           npm run test:architecture
 
+      - name: Verify local database, permissions, and Edge workflows
+        run: npm run verify:integration
+
       - uses: supabase/setup-cli@v1
         with:
           version: 2.109.0

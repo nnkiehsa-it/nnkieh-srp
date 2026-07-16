@@ -32,7 +32,7 @@ Implementation comparison is unavailable without a rendered capture.
 1. Source-only review identified viewport overflow at the route-container level.
 2. An earlier component-level constraint was insufficient because the parent transition flex item could still grow from intrinsic content width.
 3. The shared route wrappers were constrained and architecture assertions were added.
-4. Type checking, linting, production build, unused-symbol checking, Edge checks, and all architecture tests pass.
+4. `npm run verify:local` passes; changes involving backend actions, permissions, RPCs, RLS, migrations, Edge Functions, or workers also pass `npm run verify:integration`.
 5. Post-fix visual evidence remains unavailable because browser preview is disallowed by project instructions.
 
 ## Final result

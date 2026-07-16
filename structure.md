@@ -23,9 +23,10 @@
 ## Supabase
 
 - `supabase/config.toml` — schema 暴露與 Functions JWT 模式
-- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime Broadcast／清理／成本限流硬化／設備與 RBAC／輸入長度、附件型別、圖片網址快取、統一 feed 分頁與集合式留言回覆讀取）；`202607150003_facilities_rbac.sql` 建立設備與 RBAC，`202607150004_backfill_legacy_platform_admins.sql` 承接既有管理員，`202607150005_clarify_role_scopes.sql` 固定平台最高權限，`202607150006_category_scoped_proposal_access.sql` 建立可複選的 config 分類管理權限，`202607150007_access_lookup_and_facility_status.sql` 加入精確帳號查找並修正設備狀態 RPC，`202607160001_configurable_retention_cleanup.sql` 由 config 控制已結案內容與營運資料保留期，`202607160002_content_revisions.sql` 建立提案／公告／設備的批次內容版本，`202607160003_harden_retention_deletion_flow.sql` 以批次 outbox 補齊保留期刪除同步並移除舊 maintenance overload，`202607160005_issue_supporter_notifications.sql` 在提案刪除前保存附議者通知名單，`202607160006_resource_efficiency_hardening.sql` 合併權限查詢、補搜尋／worker 索引、刪除工作去重、Notion 內容 hash 與舊 realtime 儲存清空，細節見 git
+- `supabase/migrations/` — 基線 + 增量 SQL（schema／RLS／RPC／Realtime Broadcast／清理／成本限流硬化／設備與 RBAC／輸入長度、附件型別、圖片網址快取、統一 feed 分頁與集合式留言回覆讀取）；`202607150003_facilities_rbac.sql` 建立設備與 RBAC，`202607150004_backfill_legacy_platform_admins.sql` 承接既有管理員，`202607150005_clarify_role_scopes.sql` 固定平台最高權限，`202607150006_category_scoped_proposal_access.sql` 建立可複選的 config 分類管理權限，`202607150007_access_lookup_and_facility_status.sql` 加入精確帳號查找並修正設備狀態 RPC，`202607160001_configurable_retention_cleanup.sql` 由 config 控制已結案內容與營運資料保留期，`202607160002_content_revisions.sql` 建立提案／公告／設備的批次內容版本，`202607160003_harden_retention_deletion_flow.sql` 以批次 outbox 補齊保留期刪除同步並移除舊 maintenance overload，`202607160005_issue_supporter_notifications.sql` 在提案刪除前保存附議者通知名單，`202607160006_resource_efficiency_hardening.sql` 合併權限查詢、補搜尋／worker 索引、刪除工作去重、Notion 內容 hash 與舊 realtime 儲存清空，`202607160007_fix_expired_support_rejection.sql` 修復附議到期排程仍引用已移除時間欄位的錯誤，細節見 git
 - `supabase/functions/backendAction/` — 受控 action 閘道
-  - `index.ts` — origin 驗證、CORS、Firebase 驗證、冪等、分派；公開限流由 Cloudflare Worker 先處理
+  - `index.ts` — origin 驗證、CORS、Firebase 驗證與分派；公開限流由 Cloudflare Worker 先處理
+  - `execution.ts` — 正式入口與本地整合驗證共用的權限、request ID、冪等執行核心
   - `action-registry.ts` / `response.ts` / `rate-limit.ts` / `types.ts` / `utils.ts` / `validation.ts` / `auth.ts`
   - domains：`users`（session access／角色指派）、`uploads`、`issues`（read/create/moderation/support/delete/comments）、`facilities`（獨立 read/create/affected/status/delete）、`announcements`（read/write/comments）、`notifications`、`dashboard`
   - shared helpers：`issue-shared.ts`、`announcement-shared.ts`
@@ -132,5 +133,7 @@
 
 - `public/` — favicon、PWA icons
 - `scripts/generate-issue-categories.mjs` / `generate-rate-limits.mjs` / `generate-data-retention.mjs` / `generate-backend-actions.mjs` / `issue-category-config.mjs`
+- `scripts/verify-integration-local.mjs` / `verify-integration-local.sh` — Windows 自動轉入 WSL、Linux/CI 直接執行的本地 Supabase 全自動重設、database lint、Edge 啟動、隔離 env 注入與整合驗證入口；缺少 `.env.local` 時使用安全本地預設
 - `tests/architecture.test.mjs` — 靜態架構回歸
-- `.github/workflows/` — `verify-pr`、`deploy-frontend`、`deploy-backend`、`reset-db`、`reset-cloudinary`
+- `tests/integration/` — 全 backend action、管理員／一般／領域與分類權限、冪等、RLS、通知偏好、worker lifecycle 與 Edge HTTP trust boundary；`action-coverage.test.ts` 防止新增 action 未被領域測試引用，精簡 `README.md` 只保留入口，完整維護規則位於官方網站貢獻指南
+- `.github/workflows/` — `verify-pr` 同時執行靜態／build、Cloudflare Worker 與完整本地 Supabase 整合測試；`deploy-backend` 在推送 migration／Edge 前再次執行相同整合驗證；另有 `deploy-frontend`、`reset-db`、`reset-cloudinary`

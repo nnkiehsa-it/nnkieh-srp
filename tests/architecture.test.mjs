@@ -152,6 +152,7 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   const backendAction = [
     await read('supabase/functions/backendAction/index.ts'),
     await read('supabase/functions/backendAction/action-registry.ts'),
+    await read('supabase/functions/backendAction/execution.ts'),
     await read('supabase/functions/backendAction/response.ts'),
     await read('supabase/functions/backendAction/auth.ts'),
     await read('supabase/functions/backendAction/users.ts'),
@@ -261,6 +262,7 @@ test('backendAction registry owns action metadata and frontend action names', as
   const workerPolicies = JSON.parse(await read('config/backend-actions.config.json'));
   const workerRateLimit = await read('cloudflare/src/rate-limit.ts');
   const index = await read('supabase/functions/backendAction/index.ts');
+  const execution = await read('supabase/functions/backendAction/execution.ts');
   const serviceFiles = (await listFiles('src/services'))
     .filter((file) => !file.pathname.endsWith('/backend-action.ts'));
   const services = (await Promise.all(serviceFiles.map((file) => readFile(file, 'utf8')))).join('\n');
@@ -293,12 +295,13 @@ test('backendAction registry owns action metadata and frontend action names', as
   assert.match(registry, /idempotent: true,\s+requiresRequestId: true/u);
 
   assert.match(index, /getBackendActionDefinition\(action\)/u);
-  assert.match(index, /definition\.requiredPermission && !hasPermission\(auth, definition\.requiredPermission\)/u);
-  assert.match(index, /definition\.requiresRequestId && !requestId/u);
+  assert.match(index, /executeBackendAction\(definition, payload, auth, supabase\)/u);
+  assert.match(execution, /definition\.requiredPermission && !hasPermission\(auth, definition\.requiredPermission\)/u);
+  assert.match(execution, /definition\.requiresRequestId && !requestId/u);
   assert.match(registry, /requiredPermission: "facility\.manage"/u);
   assert.match(registry, /requiredPermission: "role\.manage"/u);
   assert.doesNotMatch(registry, /requiresAdmin/u);
-  assert.doesNotMatch(index, /const idempotentActions = new Set/u);
+  assert.doesNotMatch(`${index}\n${execution}`, /const idempotentActions = new Set/u);
   assert.doesNotMatch(workerRateLimit, /const readActions = new Set/u);
   assert.doesNotMatch(workerRateLimit, /backend\.unknown/u);
 });
@@ -1231,4 +1234,23 @@ test('authenticated route pages share one content width and AppShell owns horizo
   assert.doesNotMatch(routePages[4], /overflow-x-hidden/u);
   assert.doesNotMatch(routePages[5], /space-y-5 px-2/u);
   assert.doesNotMatch(routePages[7], /px-1|sm:px-2/u);
+});
+
+test('pull requests and backend deployments retain the local integration gate', async () => {
+  const packageJson = JSON.parse(await read('package.json'));
+  const verifyPr = await read('.github/workflows/verify-pr.yml');
+  const deployBackend = await read('.github/workflows/deploy-backend.yml');
+  const agents = await read('AGENTS.md');
+
+  assert.equal(
+    packageJson.scripts['verify:all'],
+    'npm run verify:local && npm run verify:integration',
+  );
+  assert.match(verifyPr, /Full local backend integration[\s\S]*npm run verify:integration/u);
+  assert.match(verifyPr, /Check Cloudflare Worker[\s\S]*npm run check:worker/u);
+  assert.match(
+    deployBackend,
+    /Verify local database, permissions, and Edge workflows[\s\S]*npm run verify:integration/u,
+  );
+  assert.match(agents, /新增 backend action 必須在 `tests\/integration\/`/u);
 });

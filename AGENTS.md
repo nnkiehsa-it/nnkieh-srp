@@ -58,6 +58,9 @@
 
 ## 驗證
 
-前端：`npm run typecheck` → `lint` → `build`（重構後加 `check:unused`）。
-後端／migration／Edge 型別：`check:edge` + `test:architecture`。
+一般前端／重構：`npm run verify:local`。
+後端 action、權限、RPC、RLS、migration、worker：加跑 `npm run verify:integration`；Windows 入口會自動轉入 WSL，不手動維護第二套 Windows 流程。
+大型變更／交付前：`npm run verify:all`。
+新增 backend action 必須在 `tests/integration/` 加入有 assertion 的成功與拒絕案例；角色／scope 變更至少驗證 allowed、denied、跨 scope。`action-coverage.test.ts` 只作漏測防線，不得用無 assertion 呼叫敷衍。
+完整增補規則見[官方貢獻指南](https://tavricccc.github.io/novae-website/docs/contributing.html)。
 失敗與 warning 能修就修，否則在報告說明。

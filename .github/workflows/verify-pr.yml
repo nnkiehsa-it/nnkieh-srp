@@ -67,5 +67,11 @@ jobs:
       - name: Check Edge Functions
         run: npm run check:edge
 
+      - name: Check Cloudflare Worker
+        run: npm run check:worker
+
       - name: Audit frontend dependencies
         run: npm audit --audit-level=moderate
+
+      - name: Full local backend integration
+        run: npm run verify:integration

@@ -10,68 +10,11 @@ import {
   readJsonRecord,
 } from "../_shared/http.ts";
 import { handleHealthcheck, requireAuth } from "./auth.ts";
-import { getBackendActionDefinition, type BackendActionDefinition } from "./action-registry.ts";
+import { getBackendActionDefinition } from "./action-registry.ts";
 import { claimBackendHealthcheckRateLimit } from "./rate-limit.ts";
 import { errorResponse, successResponse } from "./response.ts";
-import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
-import { hasPermission } from "./auth.ts";
 import { requireOriginSecret } from "../_shared/origin.ts";
-
-async function runWithIdempotency(
-  definition: BackendActionDefinition,
-  payload: JsonRecord,
-  auth: AuthContext,
-  supabase: BackendSupabase,
-  execute: () => Promise<JsonRecord>,
-) {
-  const action = definition.name;
-  const requestId = asString(payload.requestId);
-  if (definition.requiresRequestId && !requestId) {
-    throw new Error("request-id-required");
-  }
-  if (!requestId || !definition.idempotent) {
-    return await execute();
-  }
-
-  const { data: claimData, error: claimError } = await supabase
-    .schema("app_api")
-    .rpc("claim_idempotency_key", {
-      action_name: action,
-      actor_uid: auth.uid,
-      request_id: requestId,
-    })
-    .single();
-  if (claimError) throw claimError;
-
-  const claim = asRecord(claimData);
-  if (claim.completed === true) return asRecord(claim.response);
-  if (claim.claimed !== true) throw new Error("request-in-progress");
-
-  let response: JsonRecord;
-  try {
-    response = await execute();
-  } catch (error) {
-    await supabase
-      .schema("app_api")
-      .rpc("release_idempotency_key", {
-        action_name: action,
-        actor_uid: auth.uid,
-        request_id: requestId,
-      });
-    throw error;
-  }
-
-  const { error: completeError } = await supabase
-    .schema("app_api")
-    .rpc("complete_idempotency_key", {
-      action_name: action,
-      action_response: response,
-      actor_uid: auth.uid,
-      request_id: requestId,
-    });
-  if (completeError) throw completeError;
-  return response;
-}
+import { executeBackendAction } from "./execution.ts";
 
 Deno.serve(async (request) => {
   const originFailure = requireOriginSecret(request);
@@ -107,14 +50,7 @@ Deno.serve(async (request) => {
     const definition = getBackendActionDefinition(action);
     if (!definition) throw new Error(`Unsupported action: ${action}`);
     const auth = await requireAuth(supabase, request);
-    if (definition.requiredPermission && !hasPermission(auth, definition.requiredPermission)) throw new Error("permission-denied");
-    const data = await runWithIdempotency(
-      definition,
-      payload,
-      auth,
-      supabase,
-      () => definition.handler(action, payload, auth, supabase),
-    );
+    const data = await executeBackendAction(definition, payload, auth, supabase);
     return successResponse(data, requestId);
   } catch (error) {
     const status = errorStatus(error);

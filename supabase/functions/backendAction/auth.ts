@@ -7,8 +7,17 @@ import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import type { AuthContext, BackendSupabase, PermissionCode } from "./types.ts";
 import { edgeFunctionUrl } from "../_shared/origin.ts";
 
-export async function requireAuth(supabase: BackendSupabase, request: Request): Promise<AuthContext> {
-  const firebaseUser = await requireVerifiedFirebaseUser(request);
+interface AuthIdentity {
+  email: string;
+  name: string;
+  photoUrl: string | null;
+  uid: string;
+}
+
+export async function resolveAuthContext(
+  supabase: BackendSupabase,
+  firebaseUser: AuthIdentity,
+): Promise<AuthContext> {
   const { data, error } = await supabase.schema("app_api")
     .rpc("backend_get_access_context", { actor_uid: firebaseUser.uid });
   if (error) throw error;
@@ -44,6 +53,10 @@ export async function requireAuth(supabase: BackendSupabase, request: Request): 
     roles,
     uid: firebaseUser.uid,
   };
+}
+
+export async function requireAuth(supabase: BackendSupabase, request: Request): Promise<AuthContext> {
+  return await resolveAuthContext(supabase, await requireVerifiedFirebaseUser(request));
 }
 
 export function canManageIssueCategory(auth: AuthContext, categoryId: string) {
