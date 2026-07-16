@@ -25,7 +25,7 @@
         :class="{ 'md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]': showComments }"
       >
         <div class="flex min-h-0 min-w-0 flex-col px-5 py-5 pr-6">
-          <div class="min-h-0 flex-1 overflow-y-auto pr-1 overscroll-contain">
+          <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1 overscroll-contain">
             <slot name="details" :compact="false" :scroll-content="false" />
           </div>
           <div class="shrink-0 bg-surface dark:bg-surface">
@@ -76,7 +76,7 @@
           key="details"
           class="flex min-h-0 flex-1 flex-col border-t border-ink-100/70 dark:border-ink-800/70"
         >
-          <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 overscroll-contain">
+          <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 overscroll-contain">
             <slot name="details" :compact="true" :scroll-content="false" />
           </div>
           <div class="shrink-0 bg-surface px-4 pb-4 dark:bg-surface">

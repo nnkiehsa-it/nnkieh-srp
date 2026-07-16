@@ -45,7 +45,7 @@
       @click="closeSidebar"
     ></button>
 
-    <div ref="mainContentRef" class="app-main-content relative flex flex-1 flex-col overflow-y-auto overscroll-contain">
+    <div ref="mainContentRef" class="app-main-content relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain">
       <main class="min-h-0 flex-1 px-4 sm:px-6 lg:px-8"><slot /></main>
     </div>
 
