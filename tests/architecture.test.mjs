@@ -1139,10 +1139,11 @@ test('navigation and contextual creation share the same responsive information a
   assert.ok(desktopSidebar.indexOf('to="/notifications"') < desktopSidebar.indexOf('to="/settings"'));
   assert.match(boardControls, /v-if="createLabel"[\s\S]*name="plus"/u);
   assert.ok(boardControls.indexOf('name="search"') < boardControls.indexOf('v-if="createLabel"'));
-  assert.match(boardControls, /class="button-contextual/u);
+  assert.match(boardControls, /class="button-contextual h-8 w-8 min-w-8[\s\S]*name="plus"/u);
+  assert.doesNotMatch(boardControls, /<span class="truncate">\{\{ createLabel \}\}<\/span>/u);
   assert.match(issueBoard, /`新增到\$\{activeCategoryLabel\.value\}`/u);
   assert.match(facilitiesView, /create-label="新增設備"[\s\S]*@create="composerOpen = true"/u);
-  assert.match(announcementsView, /v-if="isAdmin"[\s\S]*新增公告/u);
+  assert.match(announcementsView, /v-if="isAdmin"[\s\S]*aria-label="新增公告"/u);
   assert.match(issueComposer, /class="button-dialog-close/u);
   assert.match(issueComposer, /type="submit" class="button-contextual/u);
   assert.match(controls, /\.button-contextual \{[\s\S]*bg-surface[\s\S]*box-shadow: var\(--shadow-card\)/u);

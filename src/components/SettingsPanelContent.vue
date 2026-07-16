@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-0 flex-col overflow-hidden" :class="contentClass">
+  <div class="flex min-h-0 min-w-0 w-full max-w-full flex-col overflow-hidden" :class="contentClass">
     <div
       v-if="!flat"
       class="flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 dark:border-ink-700"
@@ -20,12 +20,12 @@
       </button>
     </div>
 
-    <div class="settings-scroll min-h-0 overflow-y-auto" :class="{ 'settings-scroll--flat': flat }">
+    <div class="settings-scroll min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto" :class="{ 'settings-scroll--flat': flat }">
       <section aria-label="目前帳號" class="settings-group py-4">
         <p v-if="SCHOOL_NAME" class="mb-3 text-xs font-semibold text-ink-500 dark:text-ink-400">
           {{ SCHOOL_NAME }}
         </p>
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 max-w-full items-center gap-3">
           <UserAvatar :photo-url="displayPhotoUrl" :name="displayName || 'U'" size="md" alt-text="使用者頭像" class="h-10 w-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-semibold text-ink-950 dark:text-ink-50">
@@ -66,7 +66,7 @@
           :disabled="pushLoading || !pushActionLabel"
           @click="emit('togglePush')"
         >
-          <span class="min-w-0">
+          <span class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-ink-950 dark:text-ink-50">推播通知</p>
             <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ pushStatusDescription }}</p>
             <p v-if="pushError" class="mt-1 text-xs leading-5 text-error">{{ pushError }}</p>
@@ -95,7 +95,7 @@
             :disabled="pushLoading"
             @click="emit('setPreference', option.key, !personalPreferences[option.key])"
           >
-            <span class="min-w-0">
+            <span class="min-w-0 flex-1">
               <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ option.label }}</span>
               <span class="mt-0.5 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ option.description }}</span>
             </span>

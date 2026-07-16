@@ -5,11 +5,12 @@
       <button
         v-if="isAdmin"
         type="button"
-        class="button-contextual min-w-0 px-3"
+        class="button-contextual h-8 w-8 min-w-8 shrink-0 p-0"
+        aria-label="新增公告"
+        title="新增公告"
         @click="openComposer"
       >
         <AppIcon name="plus" :size="4" />
-        <span class="truncate">新增公告</span>
       </button>
     </div>
 

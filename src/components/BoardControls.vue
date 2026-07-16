@@ -112,13 +112,12 @@
         <button
           v-if="createLabel"
           type="button"
-          class="button-contextual min-w-0 max-w-[9.5rem] shrink px-3 text-xs md:max-w-none"
+          class="button-contextual h-8 w-8 min-w-8 shrink-0 p-0"
           :aria-label="createLabel"
           :title="createLabel"
           @click="$emit('create')"
         >
           <AppIcon name="plus" :size="4" :stroke-width="2.4" />
-          <span class="truncate">{{ createLabel }}</span>
         </button>
       </div>
     </div>

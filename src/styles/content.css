@@ -47,7 +47,7 @@
   }
 
   .settings-group {
-    @apply overflow-hidden rounded-[var(--radius-outer)] border-0 bg-surface px-4 shadow-elevated dark:bg-surface;
+    @apply min-w-0 max-w-full overflow-hidden rounded-[var(--radius-outer)] border-0 bg-surface px-4 shadow-elevated dark:bg-surface;
   }
 
   .notification-group-card {
@@ -64,7 +64,16 @@
   }
 
   .settings-row {
-    @apply flex w-full items-center justify-between gap-4 border-b border-ink-200/35 py-4 text-left last:border-b-0 hover:bg-ink-50/70 focus-visible:bg-ink-50/70 dark:border-ink-700/30 dark:hover:bg-ink-800/35 dark:focus-visible:bg-ink-800/35;
+    @apply flex min-w-0 max-w-full w-full items-center justify-between gap-4 border-b border-ink-200/35 py-4 text-left last:border-b-0 hover:bg-ink-50/70 focus-visible:bg-ink-50/70 dark:border-ink-700/30 dark:hover:bg-ink-800/35 dark:focus-visible:bg-ink-800/35;
+  }
+
+  .settings-row > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .settings-row > :last-child {
+    flex-shrink: 0;
   }
 
   .dashboard-surface {

@@ -29,12 +29,15 @@ Implementation comparison is unavailable without a rendered capture.
 - P2: Moved contextual create controls to the far-right end of the action bar.
 - P2: Replaced composer close and confirmation controls with surface-colored, card-shadow controls.
 - P2: Split the settings page into a common feature group and a lower-frequency resource group.
+- P2: Simplified contextual create controls to icon-only circular buttons while preserving accessible labels and tooltips.
+- P1: Constrained the mobile settings page, scroll container, cards, and row children to the viewport width; flexible text columns now shrink instead of expanding the page.
 
 ## Comparison history
 
 1. Source-only review identified the clipping, density, ordering, grouping, and color mismatches above.
 2. Code changes and architecture assertions were added. Type checking, linting, production build, unused-symbol checking, and architecture tests pass.
 3. Post-fix visual evidence is unavailable because browser preview is disallowed by project instructions.
+4. A follow-up pass simplified create controls and hardened the mobile settings width calculation. Static verification remains green, but rendered comparison is still unavailable.
 
 ## Final result
 
