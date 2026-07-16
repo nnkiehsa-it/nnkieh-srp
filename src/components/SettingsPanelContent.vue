@@ -23,7 +23,12 @@
       </button>
     </div>
 
-    <div class="settings-scroll min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto" :class="{ 'settings-scroll--flat': flat }">
+    <div
+      class="settings-scroll min-h-0 min-w-0 w-full max-w-full"
+      :class="flat
+        ? 'settings-scroll--flat overflow-visible'
+        : 'overflow-x-hidden overflow-y-auto'"
+    >
       <section aria-label="目前帳號" class="settings-group py-4">
         <p v-if="SCHOOL_NAME" class="mb-3 text-xs font-semibold text-ink-500 dark:text-ink-400">
           {{ SCHOOL_NAME }}

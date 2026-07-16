@@ -1224,6 +1224,8 @@ test('authenticated route pages share one content width and AppShell owns horizo
     .forEach((page) => assert.match(page, /class="[^"]*route-page-surface-inset/u));
   assert.match(contentStyles, /\.settings-scroll--flat \{[\s\S]*@apply overflow-visible px-0 py-3/u);
   assert.match(settingsPanel, /flat \? 'settings-panel--flat overflow-visible' : 'overflow-hidden'/u);
+  assert.match(settingsPanel, /flat[\s\S]*\? 'settings-scroll--flat overflow-visible'[\s\S]*: 'overflow-x-hidden overflow-y-auto'/u);
+  assert.doesNotMatch(settingsPanel, /settings-scroll min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto/u);
   assert.doesNotMatch(routePages[3], /px-0\.5|sm:px-1/u);
   assert.doesNotMatch(routePages[4], /:class="\{ 'px-1': true \}"/u);
   assert.doesNotMatch(routePages[4], /overflow-x-hidden/u);
