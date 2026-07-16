@@ -9,9 +9,8 @@ import {
 import { requireEnv } from "../_shared/env.ts";
 import { asString } from "../_shared/http.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimitUnits } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
-import { asNumber, taipeiDayWindow } from "./utils.ts";
+import { asNumber } from "./utils.ts";
 import { canReadIssue } from "./issue-shared.ts";
 import { issueIsPrivateToOwner, issueRequiresReview } from "../_shared/issue-categories.ts";
 
@@ -209,13 +208,6 @@ export async function handleUploadAction(
         throw new Error("upload-validation-failed");
       }
     }
-    await claimFixedWindowRateLimitUnits(
-      auth.uid,
-      "image_upload.create",
-      taipeiDayWindow(),
-      RATE_LIMITS.imageUploadDaily,
-      images.length,
-    );
     const sessions = await Promise.all(images.map((image) =>
       handleUploadAction("internal:create-upload-session", image, auth, supabase)
     ));
@@ -265,7 +257,7 @@ export async function handleUploadAction(
     const timestamp = Math.floor(Date.now() / 1000);
     const folder = `srp/${auth.uid}`;
     const publicId = uploadId;
-    const notificationUrl = `${requireEnv("SUPABASE_URL").replace(/\/+$/u, "")}/functions/v1/cloudinaryWebhook`;
+    const notificationUrl = `${requireEnv("CLOUDFLARE_WORKER_URL").replace(/\/+$/u, "")}/v1/webhooks/cloudinary`;
     const params = {
       allowed_formats: "webp",
       folder,

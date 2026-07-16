@@ -147,6 +147,7 @@ try {
   const outputPaths = [
     path.join(projectRoot, 'src', 'generated', 'rate-limits.ts'),
     path.join(projectRoot, 'supabase', 'functions', '_shared', 'rate-limits.ts'),
+    path.join(projectRoot, 'cloudflare', 'generated', 'rate-limits.ts'),
   ];
 
   await Promise.all(outputPaths.map(async (outputPath) => {

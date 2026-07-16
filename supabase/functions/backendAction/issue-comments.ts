@@ -1,10 +1,8 @@
 import { asRecord, asString } from "../_shared/http.ts";
 import { ISSUE_CATEGORIES } from "../_shared/issue-categories.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { validateMarkdownUploadsBeforeCreate } from "./uploads.ts";
-import { asNumber, asUuid, readCursor, readCursorDate, utcHourWindow } from "./utils.ts";
+import { asNumber, asUuid, readCursor, readCursorDate } from "./utils.ts";
 import { INPUT_LIMITS, requiredMediaContent } from "./validation.ts";
 import { canManageIssueCategory } from "./auth.ts";
 import { selectIssue } from "./issue-shared.ts";
@@ -46,7 +44,6 @@ async function listComments(payload: JsonRecord, auth: AuthContext, supabase: Ba
 }
 
 async function createComment(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
-  await claimFixedWindowRateLimit(auth.uid, "comment.create", utcHourWindow(), RATE_LIMITS.commentCreateHourly);
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
   const issue = await selectIssue(supabase, issueId);

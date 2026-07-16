@@ -4,10 +4,7 @@ import {
   uploadCloudinaryAuthenticatedImage,
 } from "../_shared/cloudinary.ts";
 import { asString } from "../_shared/http.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
-import { taipeiDayWindow } from "./utils.ts";
 import { requirePermission } from "./auth.ts";
 import { isIssueCategory } from "../_shared/issue-categories.ts";
 
@@ -159,7 +156,6 @@ export async function handleUserAction(
       return { photoUrl: existing.cached_photo_url };
     }
 
-    await claimFixedWindowRateLimit(auth.uid, "avatar.cache", taipeiDayWindow(), RATE_LIMITS.avatarCacheDaily);
 
     const imageResponse = await fetch(sourceUrl, {
       redirect: "error",

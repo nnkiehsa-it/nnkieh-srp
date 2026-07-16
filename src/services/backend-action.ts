@@ -1,9 +1,8 @@
-import { getSupabaseClient } from '@/lib/supabase';
 import { withRequestTimeout } from '@/lib/request';
 import { getFirebaseIdToken } from '@/lib/auth-token';
-import { readSupabaseFunctionError } from '@/services/supabase-function-error';
 import type { BackendActionName } from '@/services/backend-action-contract';
 import { auth } from '@/lib/firebase';
+import { apiGatewayUrl } from '@/lib/api-gateway';
 
 interface BackendActionSuccessEnvelope<TResponse> {
   data: TResponse;
@@ -63,8 +62,6 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
   name: BackendActionName,
   options: { signal?: AbortSignal; timeoutMs?: number } = {},
 ) {
-  const client = getSupabaseClient();
-
   return (initialPayload: TRequest): Promise<TResponse> => {
     const stableOperation = withStableRequestId(name, initialPayload);
     return withRequestTimeout(async (signal) => {
@@ -74,27 +71,34 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
         throw new Error('請先登入後再操作。');
       }
 
-      const result = await client.functions.invoke<BackendActionEnvelope<TResponse>>('backendAction', {
-        body: { action: name, payload: stableOperation.payload },
+      const response = await fetch(apiGatewayUrl('/v1/actions'), {
+        method: 'POST',
+        body: JSON.stringify({ action: name, payload: stableOperation.payload }),
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         signal,
       });
       if (auth?.currentUser?.uid !== requestUid) {
         throw new Error('登入狀態已變更，已忽略先前的回應。');
       }
-      if (result.error) {
-        throw new Error(await readSupabaseFunctionError(result));
+      let envelope: BackendActionEnvelope<TResponse> | null = null;
+      try {
+        envelope = await response.json() as BackendActionEnvelope<TResponse>;
+      } catch {
+        // The response status below supplies the useful fallback.
       }
-      if (result.data === null) {
+      if (!envelope) {
         throw new Error('服務沒有回傳資料。');
       }
-      if (result.data.success !== true) {
-        throw new Error(formatEnvelopeError(result.data));
+      if (!response.ok || envelope.success !== true) {
+        throw new Error(envelope.success === false
+          ? formatEnvelopeError(envelope)
+          : `服務暫時無法處理請求（${response.status}）。`);
       }
       if (stableOperation.storageKey) sessionStorage.removeItem(stableOperation.storageKey);
-      return result.data.data;
+      return envelope.data;
     },
     { label: name, signal: options.signal, timeoutMs: options.timeoutMs },
   );

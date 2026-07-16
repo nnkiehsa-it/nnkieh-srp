@@ -13,23 +13,15 @@ import {
 } from "../_shared/http.ts";
 import { verifyCloudinarySignature } from "../_shared/webhook.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import {
-  claimFixedWindowRateLimits,
-  requestRateLimitIdentifier,
-  utcMinuteWindow,
-  utcSecondWindow,
-} from "../_shared/upstash-rate-limit.ts";
+import { requireOriginSecret } from "../_shared/origin.ts";
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const methodFailure = requireMethod(request, "POST");
   if (methodFailure) return methodFailure;
 
   try {
-    const ingressIdentifier = requestRateLimitIdentifier(request);
-    await claimFixedWindowRateLimits([
-      { identifier: ingressIdentifier, actionName: "cloudinary.webhook.ingress.second", window: utcSecondWindow(), config: RATE_LIMITS.cloudinaryWebhookSecond },
-      { identifier: ingressIdentifier, actionName: "cloudinary.webhook.ingress", window: utcMinuteWindow(), config: RATE_LIMITS.cloudinaryWebhookMinute },
-    ]);
     const rawBody = await readRequestText(request, MAX_WEBHOOK_BODY_BYTES);
     const signatureFailure = await verifyCloudinarySignature(request, rawBody);
     if (signatureFailure) return signatureFailure;
@@ -44,10 +36,6 @@ Deno.serve(async (request) => {
     if (!publicId) {
       return textResponse("Missing public_id", { status: 400 });
     }
-    await claimFixedWindowRateLimits([
-      { identifier: "global", actionName: "cloudinary.webhook.second", window: utcSecondWindow(), config: RATE_LIMITS.cloudinaryWebhookSecond },
-      { identifier: "global", actionName: "cloudinary.webhook", window: utcMinuteWindow(), config: RATE_LIMITS.cloudinaryWebhookMinute },
-    ]);
     const format = String(payload.format ?? "").toLowerCase();
     const resourceType = String(payload.resource_type ?? "");
     const deliveryType = String(payload.type ?? "");

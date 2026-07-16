@@ -1,9 +1,7 @@
 import { asRecord, asString } from "../_shared/http.ts";
 import { getIssueCategoryConfigOrDefault, ISSUE_CATEGORIES, issueAllowsSupport } from "../_shared/issue-categories.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
-import { asUuid, utcHourWindow } from "./utils.ts";
+import { asUuid } from "./utils.ts";
 import { canManageIssueCategory } from "./auth.ts";
 import { selectIssue } from "./issue-shared.ts";
 
@@ -18,7 +16,6 @@ const AUTHOR_PRIVATE_CATEGORIES = ISSUE_CATEGORIES
   .map((category) => category.id);
 
 export async function updateSupport(action: string, payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
-  await claimFixedWindowRateLimit(auth.uid, "support.toggle", utcHourWindow(), RATE_LIMITS.supportToggleHourly);
   const issueId = asUuid(payload.issueId);
   if (!issueId) throw new Error("not-found");
   const storedIssue = await selectIssue(supabase, issueId);

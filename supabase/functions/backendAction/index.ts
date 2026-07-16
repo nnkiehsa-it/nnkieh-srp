@@ -11,10 +11,11 @@ import {
 } from "../_shared/http.ts";
 import { handleHealthcheck, requireAuth } from "./auth.ts";
 import { getBackendActionDefinition, type BackendActionDefinition } from "./action-registry.ts";
-import { claimBackendActionRateLimit, claimBackendHealthcheckRateLimit } from "./rate-limit.ts";
+import { claimBackendHealthcheckRateLimit } from "./rate-limit.ts";
 import { errorResponse, successResponse } from "./response.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { hasPermission } from "./auth.ts";
+import { requireOriginSecret } from "../_shared/origin.ts";
 
 async function runWithIdempotency(
   definition: BackendActionDefinition,
@@ -73,6 +74,8 @@ async function runWithIdempotency(
 }
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const preflight = handleCorsPreflight(request);
   if (preflight) return preflight;
 
@@ -104,7 +107,6 @@ Deno.serve(async (request) => {
     const definition = getBackendActionDefinition(action);
     if (!definition) throw new Error(`Unsupported action: ${action}`);
     const auth = await requireAuth(supabase, request);
-    await claimBackendActionRateLimit(auth.uid, definition);
     if (definition.requiredPermission && !hasPermission(auth, definition.requiredPermission)) throw new Error("permission-denied");
     const data = await runWithIdempotency(
       definition,

@@ -1,12 +1,10 @@
 import { asRecord } from "../_shared/http.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import { requirePermission } from "./auth.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import {
   validateMarkdownUploadsBeforeCreate,
 } from "./uploads.ts";
-import { asBoolean, asUuid, utcHourWindow } from "./utils.ts";
+import { asBoolean, asUuid } from "./utils.ts";
 import { INPUT_LIMITS, requiredMediaContent, requiredText } from "./validation.ts";
 
 async function createAnnouncement(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
@@ -42,7 +40,6 @@ async function deleteAnnouncement(payload: JsonRecord, auth: AuthContext, supaba
 }
 
 async function setAnnouncementLike(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
-  await claimFixedWindowRateLimit(auth.uid, "announcement.like", utcHourWindow(), RATE_LIMITS.announcementLikeHourly);
   const announcementId = asUuid(payload.announcementId);
   if (!announcementId) throw new Error("not-found");
   const liked = asBoolean(payload.liked);

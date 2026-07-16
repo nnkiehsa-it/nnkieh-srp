@@ -7,8 +7,11 @@ import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { DATA_RETENTION } from "../_shared/data-retention.ts";
 import { claimFixedWindowRateLimits, utcMinuteWindow, utcSecondWindow } from "../_shared/upstash-rate-limit.ts";
 import { requireBearerSecret } from "../_shared/webhook.ts";
+import { edgeFunctionUrl, requireOriginSecret } from "../_shared/origin.ts";
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const methodFailure = requireMethod(request, "POST");
   if (methodFailure) return methodFailure;
 
@@ -33,16 +36,20 @@ Deno.serve(async (request) => {
       });
     if (error) throw error;
 
-    const baseUrl = requireEnv("SUPABASE_URL").replace(/\/+$/u, "");
     const authorization = `Bearer ${requireEnv("WEBHOOK_SECRET")}`;
-    const workerResults = await Promise.all(["processDeletionJobs", "outboxWorker"].map(async (functionName) => {
-      const response = await fetch(`${baseUrl}/functions/v1/${functionName}`, {
+    const originSecret = requireEnv("EDGE_ORIGIN_SECRET");
+    const workers = [
+      { name: "processDeletionJobs", url: edgeFunctionUrl("delete") },
+      { name: "outboxWorker", url: edgeFunctionUrl("outbox") },
+    ];
+    const workerResults = await Promise.all(workers.map(async ({ name, url }) => {
+      const response = await fetch(url, {
         method: "POST",
-        headers: { authorization, "content-type": "application/json" },
+        headers: { authorization, "content-type": "application/json", "x-novae-origin-secret": originSecret },
         body: JSON.stringify({ signal: "daily_maintenance" }),
         signal: AbortSignal.timeout(30_000),
       });
-      if (!response.ok) throw new Error(`${functionName}-failed`);
+      if (!response.ok) throw new Error(`${name}-failed`);
       return await response.json();
     }));
 

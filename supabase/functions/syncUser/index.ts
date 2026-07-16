@@ -4,14 +4,7 @@ import { requireEnv } from "../_shared/env.ts";
 import { requireEligibleFirebaseUser } from "../_shared/firebase-auth.ts";
 import { getGoogleAccessToken } from "../_shared/google-oauth.ts";
 import { errorMessage, errorStatus, handleCorsPreflight, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import {
-  claimFixedWindowRateLimit,
-  claimFixedWindowRateLimits,
-  requestRateLimitIdentifier,
-  utcHourWindow,
-  utcSecondWindow,
-} from "../_shared/upstash-rate-limit.ts";
+import { requireOriginSecret } from "../_shared/origin.ts";
 
 function parseCustomAttributes(value: string) {
   try {
@@ -31,6 +24,8 @@ function isAdminEmail(email: string) {
 }
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const preflight = handleCorsPreflight(request);
   if (preflight) return preflight;
 
@@ -39,23 +34,7 @@ Deno.serve(async (request) => {
 
   try {
     const projectId = requireEnv("FIREBASE_PROJECT_ID");
-    const ingressIdentifier = requestRateLimitIdentifier(request);
-    await claimFixedWindowRateLimits([
-      {
-        identifier: ingressIdentifier,
-        actionName: "auth.sync.ingress.second",
-        window: utcSecondWindow(),
-        config: RATE_LIMITS.loginSyncIngressSecond,
-      },
-      {
-        identifier: ingressIdentifier,
-        actionName: "auth.sync.ingress",
-        window: utcHourWindow(),
-        config: RATE_LIMITS.loginSyncIngressHourly,
-      },
-    ]);
     const user = await requireEligibleFirebaseUser(request);
-    await claimFixedWindowRateLimit(user.uid, "auth.sync", utcHourWindow(), RATE_LIMITS.loginSyncHourly);
 
     const accessToken = await getGoogleAccessToken([
       "https://www.googleapis.com/auth/identitytoolkit",

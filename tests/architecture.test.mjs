@@ -80,13 +80,17 @@ test('Supabase backend deployment owns database and Edge Functions', async () =>
   assert.match(workflow, /npm ci --prefer-offline/u);
   assert.match(workflow, /npm run test:architecture/u);
   assert.match(workflow, /supabase db push/u);
-  assert.match(workflow, /supabase functions deploy backendAction/u);
-  assert.match(workflow, /Smoke test backendAction deployment/u);
+  assert.match(workflow, /prepare-edge-functions\.mjs prepare/u);
+  assert.match(workflow, /supabase functions deploy \$names --no-verify-jwt/u);
+  assert.match(workflow, /Deploy Cloudflare API Gateway/u);
+  assert.match(workflow, /wrangler@4\.111\.0 secret bulk/u);
+  assert.match(workflow, /wrangler@4\.111\.0 deploy/u);
+  assert.match(workflow, /Smoke test API origin deployment/u);
   assert.match(workflow, /x-healthcheck-secret/u);
-  assert.match(workflow, /supabase functions deploy outboxWorker/u);
-  assert.match(workflow, /supabase functions deploy maintenanceCleanup/u);
+  assert.match(workflow, /x-novae-origin-secret/u);
+  assert.match(workflow, /EDGE_FUNCTION_NAMESPACE/u);
   assert.match(workflow, /Run maintenance cleanup/u);
-  assert.match(workflow, /functions\/v1\/maintenanceCleanup/u);
+  assert.match(workflow, /EDGE_FUNCTION_NAMESPACE\}-maintenance/u);
   assert.match(workflow, /SUPABASE_ACCESS_TOKEN/u);
   assert.match(workflow, /CLOUDINARY_API_SECRET/u);
   assert.match(workflow, /APP_SUPABASE_SERVICE_ROLE_KEY/u);
@@ -169,7 +173,8 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   const announcementLikeFixMigration = await read('supabase/migrations/202607090004_fix_announcement_like_ambiguity.sql');
   const backendActionService = await read('src/services/backend-action.ts');
   const supabaseAuthService = await read('src/services/supabase-auth.ts');
-  const functionErrorService = await read('src/services/supabase-function-error.ts');
+  const apiGateway = await read('src/lib/api-gateway.ts');
+  const originGate = await read('supabase/functions/_shared/origin.ts');
   const session = await read('src/composables/useSession.ts');
 
   for (const action of [
@@ -219,13 +224,17 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(backendAction, /readJsonRecord/u);
   assert.match(backendActionService, /getFirebaseIdToken/u);
   assert.match(backendActionService, /Authorization: `Bearer \$\{token\}`/u);
-  assert.match(backendActionService, /readSupabaseFunctionError/u);
+  assert.match(backendActionService, /apiGatewayUrl\('\/v1\/actions'\)/u);
+  assert.doesNotMatch(backendActionService, /functions\.invoke/u);
   assert.match(backendActionService, /BackendActionEnvelope/u);
   assert.match(announcementsService, /setAnnouncementLike[\s\S]*requestId: createRequestId\(\)/u);
   assert.match(announcementLikeFixMigration, /on conflict on constraint announcement_likes_pkey/u);
   assert.match(announcementLikeFixMigration, /announcement_likes\.uid = backend_set_announcement_like\.actor_uid/u);
   assert.match(supabaseAuthService, /Authorization: `Bearer \$\{token\.token\}`/u);
-  assert.match(functionErrorService, /response\.clone\(\)\.json/u);
+  assert.match(supabaseAuthService, /apiGatewayUrl\('\/v1\/auth\/sync'\)/u);
+  assert.match(apiGateway, /VITE_API_BASE_URL/u);
+  assert.match(originGate, /EDGE_ORIGIN_SECRET/u);
+  assert.match(backendAction, /requireOriginSecret/u);
   assert.match(firebaseAuth, /accounts:lookup/u);
   assert.match(firebaseAuth, /firebaseUser\.disabled === true/u);
   assert.match(firebaseAuth, /tokenAuthTime < tokensValidAfter/u);
@@ -246,7 +255,8 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
 test('backendAction registry owns action metadata and frontend action names', async () => {
   const registry = await read('supabase/functions/backendAction/action-registry.ts');
   const frontendContract = await read('src/services/backend-action-contract.ts');
-  const rateLimit = await read('supabase/functions/backendAction/rate-limit.ts');
+  const workerPolicies = JSON.parse(await read('config/backend-actions.config.json'));
+  const workerRateLimit = await read('cloudflare/src/rate-limit.ts');
   const index = await read('supabase/functions/backendAction/index.ts');
   const serviceFiles = (await listFiles('src/services'))
     .filter((file) => !file.pathname.endsWith('/backend-action.ts'));
@@ -263,9 +273,6 @@ test('backendAction registry owns action metadata and frontend action names', as
   }
 
   const registeredActions = [...registry.matchAll(/(?:action|idempotentWrite)\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"/gu)];
-  assert.doesNotMatch(rateLimit, /definition\.name/u);
-  assert.match(rateLimit, /actionName: limits\.prefix/u);
-  assert.match(rateLimit, /actionName: `\$\{limits\.prefix\}\.second`/u);
   assert.ok(registeredActions.length > 20);
   for (const [, actionName, domain, rateLimitGroup] of registeredActions) {
     assert.match(frontendContract, new RegExp(`'${actionName}'`, 'u'));
@@ -274,12 +281,10 @@ test('backendAction registry owns action metadata and frontend action names', as
       new RegExp(`\\| "${domain}"`, 'u'),
       `${actionName} uses an unknown backend action domain`,
     );
-    assert.match(
-      rateLimit,
-      new RegExp(`case "${rateLimitGroup}":`, 'u'),
-      `${actionName} uses an unknown rate limit group`,
-    );
+    assert.equal(workerPolicies[actionName]?.group, rateLimitGroup, `${actionName} has a mismatched Worker rate limit group`);
   }
+  assert.match(workerRateLimit, /BACKEND_ACTION_POLICIES/u);
+  assert.match(workerRateLimit, /claimActionRateLimits/u);
 
   assert.match(registry, /function idempotentWrite/u);
   assert.match(registry, /idempotent: true,\s+requiresRequestId: true/u);
@@ -291,8 +296,8 @@ test('backendAction registry owns action metadata and frontend action names', as
   assert.match(registry, /requiredPermission: "role\.manage"/u);
   assert.doesNotMatch(registry, /requiresAdmin/u);
   assert.doesNotMatch(index, /const idempotentActions = new Set/u);
-  assert.doesNotMatch(rateLimit, /const readActions = new Set/u);
-  assert.doesNotMatch(rateLimit, /backend\.unknown/u);
+  assert.doesNotMatch(workerRateLimit, /const readActions = new Set/u);
+  assert.doesNotMatch(workerRateLimit, /backend\.unknown/u);
 });
 
 test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () => {
@@ -305,12 +310,15 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
   const cloudinaryWebhook = await read('supabase/functions/cloudinaryWebhook/index.ts');
   const deletionJobs = await read('supabase/functions/processDeletionJobs/index.ts');
   const maintenanceCleanup = await read('supabase/functions/maintenanceCleanup/index.ts');
+  const origin = await read('supabase/functions/_shared/origin.ts');
   const notion = await read('supabase/functions/_shared/notion.ts');
   const deployBackend = await read('.github/workflows/deploy-backend.yml');
 
   assert.match(syncUser, /requireEligibleFirebaseUser/u);
+  assert.ok(syncUser.indexOf('requireOriginSecret(request)') < syncUser.indexOf('requireEligibleFirebaseUser(request)'));
   assert.match(syncUser, /requireMethod\(request, "POST"\)/u);
   assert.match(outboxWorker, /requireBearerSecret/u);
+  assert.ok(outboxWorker.indexOf('requireOriginSecret(request)') < outboxWorker.indexOf('requireBearerSecret(request)'));
   assert.match(outboxWorker, /requireMethod\(request, "POST"\)/u);
   assert.match(outboxWorker, /errorMessage/u);
   assert.match(outboxWorker, /claim_outbox_events/u);
@@ -338,6 +346,7 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
   assert.match(webhook, /x-cld-signature/u);
   assert.match(webhook, /timingSafeEqual/u);
   assert.match(cloudinaryWebhook, /verifyCloudinarySignature/u);
+  assert.ok(cloudinaryWebhook.indexOf('requireOriginSecret(request)') < cloudinaryWebhook.indexOf('verifyCloudinarySignature(request, rawBody)'));
   assert.match(cloudinaryWebhook, /requireMethod\(request, "POST"\)/u);
   assert.match(deletionJobs, /deleteCloudinaryAsset/u);
   assert.match(deletionJobs, /requireMethod\(request, "POST"\)/u);
@@ -348,6 +357,9 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
   assert.match(maintenanceCleanup, /run_maintenance_cleanup/u);
   assert.match(maintenanceCleanup, /ISSUE_CATEGORY_IDS/u);
   assert.match(maintenanceCleanup, /valid_issue_categories/u);
+  assert.match(origin, /timingSafeEqual/u);
+  assert.match(origin, /EDGE_FUNCTION_NAMESPACE/u);
+  assert.match(origin, /EDGE_ORIGIN_SECRET/u);
   assert.match(notion, /name: "已刪除"/u);
   assert.match(notion, /ensureSelectOption/u);
   assert.match(notion, /"分類": \{ select: \{ name: categoryLabel \} \}/u);
@@ -376,6 +388,8 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
 
 test('cost-sensitive ingress and provider operations are bounded before work', async () => {
   const backendAction = await read('supabase/functions/backendAction/index.ts');
+  const worker = await read('cloudflare/src/index.ts');
+  const workerRateLimit = await read('cloudflare/src/rate-limit.ts');
   const cloudinary = await read('supabase/functions/_shared/cloudinary.ts');
   const cloudinaryWebhook = await read('supabase/functions/cloudinaryWebhook/index.ts');
   const hardening = await read('supabase/migrations/202607150001_rate_limit_cost_hardening.sql');
@@ -386,25 +400,21 @@ test('cost-sensitive ingress and provider operations are bounded before work', a
   assert.match(cloudinary, /max_file_size/u);
   assert.match(cloudinary, /transformation: `c_limit,w_\$\{maxDimension\},h_\$\{maxDimension\}`/u);
   assert.match(uploads, /upload_preset: CLOUDINARY_IMAGE_UPLOAD_PRESET/u);
-  assert.match(uploads, /claimFixedWindowRateLimitUnits/u);
+  assert.doesNotMatch(uploads, /claimFixedWindowRateLimitUnits/u);
+  assert.match(workerRateLimit, /unitsPath.*payload\.images/u);
   assert.doesNotMatch(uploads, /internal:delete-upload/u);
   assert.match(http, /readRequestText\(request: Request, maxBytes: number\)/u);
-  assert.ok(
-    cloudinaryWebhook.indexOf('requestRateLimitIdentifier(request)')
-      < cloudinaryWebhook.indexOf('readRequestText(request, MAX_WEBHOOK_BODY_BYTES)'),
-  );
-  assert.ok(
-    syncUser.indexOf('requestRateLimitIdentifier(request)')
-      < syncUser.indexOf('requireEligibleFirebaseUser(request)'),
-  );
+  assert.doesNotMatch(cloudinaryWebhook, /requestRateLimitIdentifier/u);
+  assert.doesNotMatch(syncUser, /requestRateLimitIdentifier/u);
+  assert.match(worker, /claimSyncIngress/u);
+  assert.match(worker, /claimCloudinaryIngress/u);
+  assert.match(worker, /claimActionRateLimits/u);
+  assert.match(worker, /rate-limit-provider-unavailable/u);
   assert.ok(
     backendAction.indexOf('getBackendActionDefinition(action)')
       < backendAction.indexOf('requireAuth(supabase, request)'),
   );
-  assert.ok(
-    backendAction.indexOf('claimBackendActionRateLimit(auth.uid, definition)')
-      < backendAction.indexOf('definition.requiredPermission && !hasPermission(auth, definition.requiredPermission)'),
-  );
+  assert.doesNotMatch(backendAction, /claimBackendActionRateLimit/u);
   assert.match(hardening, /pg_advisory_xact_lock/u);
   assert.match(hardening, /max_devices constant integer := 10/u);
   assert.match(hardening, /revoke select on app_private\.realtime_events from authenticated/u);

@@ -5,6 +5,7 @@ import { getIssueCategoryIdsByReadAccess } from "../_shared/issue-categories.ts"
 import { ISSUE_CATEGORY_IDS } from "../_shared/issue-categories.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import type { AuthContext, BackendSupabase, PermissionCode } from "./types.ts";
+import { edgeFunctionUrl } from "../_shared/origin.ts";
 
 export async function requireAuth(supabase: BackendSupabase, request: Request): Promise<AuthContext> {
   const firebaseUser = await requireVerifiedFirebaseUser(request);
@@ -70,6 +71,7 @@ export async function handleHealthcheck(request: Request, supabase: BackendSupab
   requireEnv("ADMIN_EMAILS");
   requireEnv("UPSTASH_REDIS_REST_URL");
   requireEnv("UPSTASH_REDIS_REST_TOKEN");
+  requireEnv("CLOUDFLARE_WORKER_URL");
 
   await ensureCloudinaryImageUploadPreset(
     RATE_LIMITS.imageCompression.maxUploadBytes,
@@ -83,14 +85,13 @@ export async function handleHealthcheck(request: Request, supabase: BackendSupab
     .limit(1);
   if (error) throw error;
 
-  const supabaseUrl = requireEnv("SUPABASE_URL").replace(/\/+$/u, "");
   const { error: settingsError } = await supabase
     .schema("app_private")
     .from("runtime_settings")
     .upsert([
       {
         key: "deletion_worker_url",
-        value: `${supabaseUrl}/functions/v1/processDeletionJobs`,
+        value: edgeFunctionUrl("delete"),
         updated_at: new Date().toISOString(),
       },
       {
@@ -110,15 +111,16 @@ export async function handleHealthcheck(request: Request, supabase: BackendSupab
       },
       {
         key: "maintenance_worker_url",
-        value: `${supabaseUrl}/functions/v1/maintenanceCleanup`,
+        value: edgeFunctionUrl("maintenance"),
         updated_at: new Date().toISOString(),
       },
       {
         key: "outbox_worker_url",
-        value: `${supabaseUrl}/functions/v1/outboxWorker`,
+        value: edgeFunctionUrl("outbox"),
         updated_at: new Date().toISOString(),
       },
       { key: "webhook_secret", value: expected, updated_at: new Date().toISOString() },
+      { key: "edge_origin_secret", value: requireEnv("EDGE_ORIGIN_SECRET"), updated_at: new Date().toISOString() },
     ], { onConflict: "key" });
   if (settingsError) throw settingsError;
 

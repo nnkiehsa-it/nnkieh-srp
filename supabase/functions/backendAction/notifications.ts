@@ -1,8 +1,6 @@
 import { asRecord, asString } from "../_shared/http.ts";
-import { RATE_LIMITS } from "../_shared/rate-limits.ts";
-import { claimFixedWindowRateLimit } from "../_shared/upstash-rate-limit.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
-import { asNumber, readCursor, readCursorDate, asUuid, utcHourWindow } from "./utils.ts";
+import { asNumber, readCursor, readCursorDate, asUuid } from "./utils.ts";
 import { requiredText } from "./validation.ts";
 import { subscribeTokensToTopic, unsubscribeTokensFromTopic } from "../_shared/fcm.ts";
 
@@ -139,7 +137,6 @@ export async function handleNotificationAction(
   }
 
   if (action === "registerPushToken") {
-    await claimFixedWindowRateLimit(auth.uid, "push-token.write", utcHourWindow(), RATE_LIMITS.pushTokenWriteHourly);
     const token = requiredText(payload.token, "token", PUSH_TOKEN_LIMITS.token);
     const deviceId = requiredText(payload.deviceId, "deviceId", PUSH_TOKEN_LIMITS.deviceId);
     const { data: previousDevice, error: previousDeviceError } = await supabase.schema("app_private")
@@ -175,7 +172,6 @@ export async function handleNotificationAction(
   }
 
   if (action === "unregisterPushToken") {
-    await claimFixedWindowRateLimit(auth.uid, "push-token.write", utcHourWindow(), RATE_LIMITS.pushTokenWriteHourly);
     const deviceId = requiredText(payload.deviceId, "deviceId", PUSH_TOKEN_LIMITS.deviceId);
     const { data: existingToken } = await supabase.schema("app_private").from("push_tokens")
       .select("token").eq("uid", auth.uid).eq("device_id", deviceId).maybeSingle();

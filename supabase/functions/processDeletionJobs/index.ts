@@ -7,6 +7,7 @@ import { markNotionPageDeleted } from "../_shared/notion.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { claimFixedWindowRateLimits, utcMinuteWindow, utcSecondWindow } from "../_shared/upstash-rate-limit.ts";
 import { requireBearerSecret } from "../_shared/webhook.ts";
+import { requireOriginSecret } from "../_shared/origin.ts";
 
 interface DeletionJob {
   id: string;
@@ -17,6 +18,8 @@ interface DeletionJob {
 }
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const methodFailure = requireMethod(request, "POST");
   if (methodFailure) return methodFailure;
 

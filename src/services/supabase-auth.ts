@@ -1,7 +1,7 @@
 import type { User } from 'firebase/auth';
-import { getSupabaseClient, hasSupabaseConfig } from '@/lib/supabase';
+import { hasSupabaseConfig } from '@/lib/supabase';
 import { withRequestTimeout } from '@/lib/request';
-import { readSupabaseFunctionError } from '@/services/supabase-function-error';
+import { apiGatewayUrl, hasApiGatewayConfig } from '@/lib/api-gateway';
 
 interface SyncUserResponse {
   error?: string;
@@ -30,7 +30,7 @@ function rememberSync(uid: string) {
 }
 
 export async function ensureSupabaseAuthenticatedRole(user: User) {
-  if (!hasSupabaseConfig()) return;
+  if (!hasSupabaseConfig() || !hasApiGatewayConfig()) return;
 
   const token = await withRequestTimeout(
     () => user.getIdTokenResult(),
@@ -38,17 +38,27 @@ export async function ensureSupabaseAuthenticatedRole(user: User) {
   );
   if (token.claims.role === 'authenticated' && wasRecentlySynced(user.uid)) return;
 
-  const client = getSupabaseClient();
-  const { data, error, response } = await withRequestTimeout(
-    () => client.functions.invoke<SyncUserResponse>('syncUser', {
-      body: { email: user.email },
-      headers: { Authorization: `Bearer ${token.token}` },
+  const response = await withRequestTimeout(
+    (signal) => fetch(apiGatewayUrl('/v1/auth/sync'), {
+      method: 'POST',
+      body: JSON.stringify({ email: user.email }),
+      headers: {
+        Authorization: `Bearer ${token.token}`,
+        'Content-Type': 'application/json',
+      },
+      signal,
     }),
     { label: 'Supabase 登入初始化' },
   );
+  let data: SyncUserResponse | null = null;
+  try {
+    data = await response.json() as SyncUserResponse;
+  } catch {
+    // Use the HTTP fallback below.
+  }
 
-  if (error || data?.ok !== true) {
-    throw new Error(error ? await readSupabaseFunctionError({ error, response }) : data?.error || 'Supabase 登入初始化失敗。');
+  if (!response.ok || data?.ok !== true) {
+    throw new Error(data?.error || `Supabase 登入初始化失敗（${response.status}）。`);
   }
   rememberSync(user.uid);
 

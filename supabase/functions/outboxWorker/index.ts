@@ -17,6 +17,7 @@ import {
   syncFacilityStatusToNotion,
 } from "../_shared/notion.ts";
 import { requireBearerSecret } from "../_shared/webhook.ts";
+import { requireOriginSecret } from "../_shared/origin.ts";
 
 interface OutboxEvent {
   id: string;
@@ -592,6 +593,8 @@ async function processEvent(supabase: AppSupabase, event: OutboxEvent) {
 }
 
 Deno.serve(async (request) => {
+  const originFailure = requireOriginSecret(request);
+  if (originFailure) return originFailure;
   const methodFailure = requireMethod(request, "POST");
   if (methodFailure) return methodFailure;
 
