@@ -57,8 +57,6 @@ jobs:
           deno-version: v2.x
 
       - name: Verify local database, permissions, and Edge workflows
-        env:
-          NOVAE_DENO_BIN: /home/runner/.deno/bin/deno
         run: npm run verify:integration
 
       - uses: supabase/setup-cli@v3

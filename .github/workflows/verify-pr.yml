@@ -78,6 +78,4 @@ jobs:
           deno-version: v2.x
 
       - name: Full local backend integration
-        env:
-          NOVAE_DENO_BIN: /home/runner/.deno/bin/deno
         run: npm run verify:integration

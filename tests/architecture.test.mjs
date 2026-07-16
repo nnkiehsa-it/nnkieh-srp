@@ -1248,12 +1248,17 @@ test('pull requests and backend deployments retain the local integration gate', 
   );
   assert.match(verifyPr, /Full local backend integration[\s\S]*npm run verify:integration/u);
   assert.match(verifyPr, /Check Cloudflare Worker[\s\S]*npm run check:worker/u);
-  assert.match(verifyPr, /denoland\/setup-deno@v2[\s\S]*NOVAE_DENO_BIN/u);
+  assert.match(verifyPr, /denoland\/setup-deno@v2[\s\S]*npm run verify:integration/u);
+  assert.doesNotMatch(verifyPr, /NOVAE_DENO_BIN|\/home\/runner\/\.deno/u);
   assert.match(
     deployBackend,
     /Verify local database, permissions, and Edge workflows[\s\S]*npm run verify:integration/u,
   );
-  assert.match(deployBackend, /denoland\/setup-deno@v2[\s\S]*NOVAE_DENO_BIN/u);
+  assert.match(
+    deployBackend,
+    /denoland\/setup-deno@v2[\s\S]*npm run verify:integration/u,
+  );
+  assert.doesNotMatch(deployBackend, /NOVAE_DENO_BIN|\/home\/runner\/\.deno/u);
   assert.match(agents, /新增 backend action 必須在 `tests\/integration\/`/u);
 });
 
