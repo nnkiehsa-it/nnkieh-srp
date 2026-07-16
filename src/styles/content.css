@@ -8,15 +8,10 @@
     --scroll-shadow-bleed: 0.75rem;
     margin-left: calc(var(--scroll-shadow-bleed) * -1);
     margin-right: calc(var(--scroll-shadow-bleed) * -1);
+    margin-top: calc(var(--scroll-shadow-bleed) * -1);
     padding-left: var(--scroll-shadow-bleed);
     padding-right: var(--scroll-shadow-bleed);
-  }
-
-  @media (min-width: 768px) {
-    .scroll-shadow-bleed {
-      margin-top: calc(var(--scroll-shadow-bleed) * -1);
-      padding-top: var(--scroll-shadow-bleed);
-    }
+    padding-top: var(--scroll-shadow-bleed);
   }
 
   .issue-card-grid {

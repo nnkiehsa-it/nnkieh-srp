@@ -1234,8 +1234,7 @@ test('authenticated route pages share one content width and AppShell owns horizo
   routePages.forEach((page) => assert.match(page, /class="[^"]*route-page/u));
   routePages.forEach((page) => assert.doesNotMatch(page, /route-page-surface-inset/u));
   assert.doesNotMatch(contentStyles, /\.issue-card-grid \{[^}]*padding:/u);
-  assert.match(contentStyles, /\.scroll-shadow-bleed \{[\s\S]*margin-left: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*padding-left: var\(--scroll-shadow-bleed\);/u);
-  assert.match(contentStyles, /@media \(min-width: 768px\) \{[\s\S]*\.scroll-shadow-bleed \{[\s\S]*margin-top: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*padding-top: var\(--scroll-shadow-bleed\);/u);
+  assert.match(contentStyles, /\.scroll-shadow-bleed \{[\s\S]*margin-left: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*margin-top: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*padding-left: var\(--scroll-shadow-bleed\);[\s\S]*padding-top: var\(--scroll-shadow-bleed\);/u);
   [issueBoard, routePages[1]]
     .forEach((page) => assert.match(page, /scroll-shadow-bleed[\s\S]*overflow-y-auto overflow-x-hidden/u));
   assert.match(emptyState, /class="flex w-full min-w-0/u);
