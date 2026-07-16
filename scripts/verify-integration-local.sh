@@ -128,11 +128,9 @@ supabase functions serve --env-file "$FUNCTION_ENV" --no-verify-jwt >"$FUNCTION_
 FUNCTION_PID="$!"
 for _ in $(seq 1 60); do
   status="$(curl -sS -o /dev/null -w '%{http_code}' \
-    -X POST "$API_URL/functions/v1/backendAction" \
-    -H 'content-type: application/json' \
-    -H "x-novae-origin-secret: $ORIGIN_SECRET" \
-    --data '{"action":"integrationReadinessProbe","payload":{}}' || true)"
-  if [[ "$status" == "400" ]]; then
+    -X OPTIONS "$API_URL/functions/v1/backendAction" \
+    -H "x-novae-origin-secret: $ORIGIN_SECRET" || true)"
+  if [[ "$status" == "200" ]]; then
     break
   fi
   if ! kill -0 "$FUNCTION_PID" >/dev/null 2>&1; then
@@ -141,9 +139,14 @@ for _ in $(seq 1 60); do
   fi
   sleep 1
 done
-if [[ "${status:-}" != "400" ]]; then
+if [[ "${status:-}" != "200" ]]; then
   cat "$FUNCTION_LOG" >&2
   echo "Edge Functions did not become ready." >&2
+  exit 1
+fi
+if grep -Eq 'Node\.js 20 and below are deprecated|integrationReadinessProbe' "$FUNCTION_LOG"; then
+  cat "$FUNCTION_LOG" >&2
+  echo "Edge Functions emitted a deprecated-runtime or synthetic readiness error." >&2
   exit 1
 fi
 

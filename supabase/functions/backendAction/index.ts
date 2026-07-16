@@ -1,6 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
-import { requireEnv } from "../_shared/env.ts";
+import { createDatabaseClient } from "../_shared/database-client.ts";
 import {
   asRecord,
   asString,
@@ -37,11 +35,7 @@ Deno.serve(async (request) => {
     const payload = asRecord(body.payload);
     if (!action) throw new Error("missing action");
 
-    const supabase = createClient<Database>(
-      requireEnv("SUPABASE_URL"),
-      requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } },
-    );
+    const supabase = createDatabaseClient();
     if (action === "healthcheck") {
       await claimBackendHealthcheckRateLimit();
       return successResponse(await handleHealthcheck(request, supabase), requestId);

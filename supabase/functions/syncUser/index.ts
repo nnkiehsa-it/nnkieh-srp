@@ -1,5 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
+import { createDatabaseClient } from "../_shared/database-client.ts";
 import { requireEnv } from "../_shared/env.ts";
 import { requireEligibleFirebaseUser } from "../_shared/firebase-auth.ts";
 import { getGoogleAccessToken } from "../_shared/google-oauth.ts";
@@ -62,11 +61,7 @@ Deno.serve(async (request) => {
       throw new Error(`Firebase custom claim update failed: ${await updateResponse.text()}`);
     }
 
-    const supabase = createClient<Database>(
-      requireEnv("SUPABASE_URL"),
-      requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } },
-    );
+    const supabase = createDatabaseClient();
 
     // Resolve email conflicts by setting email to null for any other user profile
     const { error: conflictError } = await supabase.schema("app_private")

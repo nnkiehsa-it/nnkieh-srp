@@ -1282,3 +1282,24 @@ test('GitHub workflows use the current Node 24 action generations', async () => 
   assert.match(combined, /supabase\/setup-cli@v3/u);
   assert.match(combined, /denoland\/setup-deno@v2/u);
 });
+
+test('Edge Functions avoid the Supabase JS Node-version shim', async () => {
+  const edgeFiles = await listFiles('supabase/functions');
+  const edgeSource = (await Promise.all(
+    edgeFiles.map((file) => readFile(file, 'utf8')),
+  )).join('\n');
+  const databaseClient = await read('supabase/functions/_shared/database-client.ts');
+  const integrationScript = await read('scripts/verify-integration-local.sh');
+
+  const supabaseJsImports = edgeSource
+    .split(/\r?\n/u)
+    .filter((line) => line.includes('npm:@supabase/supabase-js'));
+  assert.ok(supabaseJsImports.every((line) => line.trimStart().startsWith('import type ')));
+  assert.match(databaseClient, /npm:@supabase\/postgrest-js@2\.110\.7/u);
+  assert.match(databaseClient, /APP_SUPABASE_SERVICE_ROLE_KEY/u);
+  assert.match(integrationScript, /-X OPTIONS[\s\S]*backendAction/u);
+  assert.doesNotMatch(
+    integrationScript,
+    /--data ['"][^'"]*integrationReadinessProbe/u,
+  );
+});

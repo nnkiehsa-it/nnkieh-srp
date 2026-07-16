@@ -1,7 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
+import { createDatabaseClient } from "../_shared/database-client.ts";
 import { deleteCloudinaryAsset } from "../_shared/cloudinary.ts";
-import { requireEnv } from "../_shared/env.ts";
 import { errorMessage, errorStatus, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
 import { markNotionPageDeleted } from "../_shared/notion.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
@@ -31,11 +29,7 @@ Deno.serve(async (request) => {
       { identifier: "global", actionName: "worker.deletion.second", window: utcSecondWindow(), config: RATE_LIMITS.workerRunSecond },
       { identifier: "global", actionName: "worker.deletion", window: utcMinuteWindow(), config: RATE_LIMITS.workerRunMinute },
     ]);
-    const supabase = createClient<Database>(
-      requireEnv("SUPABASE_URL"),
-      requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } },
-    );
+    const supabase = createDatabaseClient();
     const { data, error } = await supabase
       .schema("app_api")
       .rpc("claim_deletion_jobs", { batch_size: 10 });

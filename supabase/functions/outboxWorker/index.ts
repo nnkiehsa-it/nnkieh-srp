@@ -1,6 +1,7 @@
-import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
-import { requireEnv } from "../_shared/env.ts";
+import {
+  createDatabaseClient,
+  type AppDatabaseClient,
+} from "../_shared/database-client.ts";
 import { isInvalidFcmTokenError, sendFcmMessage, sendFcmTopicMessage } from "../_shared/fcm.ts";
 import { errorMessage, errorStatus, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
@@ -41,7 +42,7 @@ const ISSUE_STATUS_LABELS: Record<string, string> = {
   "under-review": "待審核",
   "unable-to-handle": "無法處理",
 };
-type AppSupabase = SupabaseClient<Database>;
+type AppSupabase = AppDatabaseClient;
 
 function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
@@ -681,11 +682,7 @@ Deno.serve(async (request) => {
       { identifier: "global", actionName: "worker.outbox.second", window: utcSecondWindow(), config: RATE_LIMITS.workerRunSecond },
       { identifier: "global", actionName: "worker.outbox", window: utcMinuteWindow(), config: RATE_LIMITS.workerRunMinute },
     ]);
-    const supabase = createClient<Database>(
-      requireEnv("SUPABASE_URL"),
-      requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } },
-    );
+    const supabase = createDatabaseClient();
     const { data, error } = await supabase
       .schema("app_api")
       .rpc("claim_outbox_events", { batch_size: 10 });

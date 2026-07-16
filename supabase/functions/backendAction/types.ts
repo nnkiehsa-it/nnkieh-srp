@@ -1,7 +1,6 @@
-import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
+import type { AppDatabaseClient } from "../_shared/database-client.ts";
 
-export type BackendSupabase = SupabaseClient<Database>;
+export type BackendSupabase = AppDatabaseClient;
 export type JsonRecord = Record<string, unknown>;
 export type PermissionCode =
   | "announcement.manage"

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
+import type { AppDatabaseClient } from "./database-client.ts";
 import type { Database } from "./database.ts";
 import { optionalEnv, requireEnv } from "./env.ts";
 import { getIssueCategoryLabel } from "./issue-categories.ts";
@@ -27,7 +27,7 @@ const FACILITY_STATUS_LABELS: Record<string, string> = {
   "unable-to-handle": "無法處理",
 };
 
-type AppSupabase = SupabaseClient<Database>;
+type AppSupabase = AppDatabaseClient;
 const NOTION_API_VERSION = "2026-03-11";
 const knownSelectOptions = new Set<string>();
 const knownDateProperties = new Set<string>();

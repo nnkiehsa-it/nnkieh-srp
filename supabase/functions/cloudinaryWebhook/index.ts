@@ -1,6 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import type { Database } from "../_shared/database.ts";
-import { requireEnv } from "../_shared/env.ts";
+import { createDatabaseClient } from "../_shared/database-client.ts";
 import {
   errorMessage,
   errorStatus,
@@ -52,11 +50,7 @@ Deno.serve(async (request) => {
       && width <= RATE_LIMITS.imageCompression.maxDimension
       && height <= RATE_LIMITS.imageCompression.maxDimension;
 
-    const supabase = createClient<Database>(
-      requireEnv("SUPABASE_URL"),
-      requireEnv("APP_SUPABASE_SERVICE_ROLE_KEY"),
-      { auth: { persistSession: false } },
-    );
+    const supabase = createDatabaseClient();
     const { error } = await supabase
       .schema("app_private")
       .from("uploads")
