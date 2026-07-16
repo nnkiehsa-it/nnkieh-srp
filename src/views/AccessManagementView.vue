@@ -1,5 +1,5 @@
 <template>
-  <section class="route-page py-2 md:py-6">
+  <section class="route-page route-page-surface-inset py-2 md:py-6">
     <div class="mx-auto w-full max-w-3xl">
       <form class="panel panel-pad" @submit.prevent="findUser">
         <label for="access-user-lookup" class="field-label">新增管理員</label>
