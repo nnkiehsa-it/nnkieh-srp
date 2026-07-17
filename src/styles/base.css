@@ -331,6 +331,11 @@
     width: 100%;
   }
 
+  .route-content-frame {
+    animation: route-content-enter var(--motion-duration-panel) var(--motion-ease-enter) both;
+    transform-origin: 50% 0;
+  }
+
   .page-bottom-safe {
     padding-bottom: 1rem;
   }
@@ -459,5 +464,12 @@
 
   ::selection {
     @apply bg-ink-900 text-ink-50 dark:bg-ink-100 dark:text-ink-900;
+  }
+}
+
+@keyframes route-content-enter {
+  from {
+    opacity: 0.35;
+    transform: translateY(5px);
   }
 }

@@ -1234,6 +1234,7 @@ test('primary navigation preloads route chunks while shell chrome stays outside 
   const issueBoard = await read('src/components/IssueBoard.vue');
   const facilitiesView = await read('src/views/FacilitiesView.vue');
   const routeComponents = await read('src/router/route-components.ts');
+  const baseStyles = await read('src/styles/base.css');
   const responsiveStyles = await read('src/styles/responsive.css');
 
   assert.doesNotMatch(app, /Transition name="page-content"/u);
@@ -1249,6 +1250,9 @@ test('primary navigation preloads route chunks while shell chrome stays outside 
   assert.match(routeComponents, /preloadRequests/u);
   assert.match(routeComponents, /for \(const routeName of routeNames\)/u);
   assert.doesNotMatch(responsiveStyles, /\.page-content-(?:enter|leave)/u);
+  assert.match(app, /class="route-content-frame/u);
+  assert.match(baseStyles, /\.route-content-frame \{[\s\S]*animation: route-content-enter/u);
+  assert.doesNotMatch(baseStyles, /\.route-content-(?:leave|enter-active|enter-from)/u);
   assert.match(responsiveStyles, /\.board-controls \{[\s\S]*padding-top: 0\.5rem/u);
 });
 
@@ -1270,6 +1274,7 @@ test('proposals, announcements, and facilities share list cards and detail panel
   ]);
   const cardCollection = await read('src/components/ui/ContentCardCollection.vue');
   const cardShell = await read('src/components/ui/ContentCardShell.vue');
+  const cardSkeleton = await read('src/components/ui/ContentCardSkeleton.vue');
   const detailPagePanel = await read('src/components/ContentDetailPagePanel.vue');
   const detailActionGroup = await read('src/components/ui/DetailActionGroup.vue');
   const detailActionComponents = await Promise.all([
@@ -1291,6 +1296,7 @@ test('proposals, announcements, and facilities share list cards and detail panel
   ]);
 
   listComponents.forEach((component) => assert.match(component, /ContentCardCollection/u));
+  listComponents.forEach((component) => assert.match(component, /ContentCardSkeleton/u));
   rowComponents.forEach((component) => assert.match(component, /ContentCardShell/u));
   detailPanels.forEach((component) => assert.match(component, /ContentDetailPagePanel/u));
   detailActionComponents.forEach((component) => assert.match(component, /DetailActionGroup/u));
@@ -1300,6 +1306,8 @@ test('proposals, announcements, and facilities share list cards and detail panel
   });
   assert.match(cardCollection, /issue-card-grid/u);
   assert.match(cardShell, /issue-card[\s\S]*surface-card[\s\S]*list-row-trigger/u);
+  assert.match(cardSkeleton, /const CARD_COUNT = 2/u);
+  assert.match(cardSkeleton, /<header[\s\S]*showAuthor[\s\S]*supplement[\s\S]*<footer/u);
   assert.match(contentListState, /PageLoadFailure/u);
   assert.match(contentListState, /EmptyStatePanel/u);
   assert.match(contentListState, /FeedLoadMoreControl/u);
@@ -1509,8 +1517,9 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const boardControls = await read('src/components/BoardControls.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const commentComposer = await read('src/components/CommentComposer.vue');
-  const skeletonTable = await read('src/components/ui/SkeletonTable.vue');
-  const skeletonAnnouncements = await read('src/components/ui/SkeletonAnnouncementList.vue');
+  const contentCardSkeleton = await read('src/components/ui/ContentCardSkeleton.vue');
+  const segmentedControl = await read('src/components/ui/PillSegmentedControl.vue');
+  const controls = await read('src/styles/controls.css');
   const notifications = await read('src/views/NotificationsView.vue');
   const settingsView = await read('src/views/SettingsView.vue');
   const checker = await read('scripts/check-ui-primitives.mjs');
@@ -1531,6 +1540,8 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
     '.dropdown-label',
     '.control-frame',
     '.control-footer',
+    '.skeleton-block',
+    '.skeleton-card',
   ]) {
     assert.ok(primitives.includes(primitive), `missing UI primitive ${primitive}`);
   }
@@ -1545,9 +1556,11 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(settingsPanel, /list-surface/u);
   assert.match(settingsPanel, /settings-row list-surface-row list-surface-row--interactive/u);
   assert.match(commentComposer, /control-frame/u);
-  [skeletonTable, skeletonAnnouncements].forEach((skeleton) => {
-    assert.match(skeleton, /<SurfacePanel[^>]*class="issue-card"/u);
-  });
+  assert.match(contentCardSkeleton, /<SurfacePanel[\s\S]*class="issue-card skeleton-card"/u);
+  assert.match(segmentedControl, /ACTIVE_SEGMENT_WIDTH_REM = 7/u);
+  assert.match(segmentedControl, /:style="containerStyle"/u);
+  assert.match(controls, /\.segmented-control__button--active \{[\s\S]*width: 7rem/u);
+  assert.match(controls, /\.segmented-control__button--compact \{[\s\S]*width: 2rem/u);
   assert.match(notifications, /notification-group-row list-surface-row list-surface-row--interactive/u);
   assert.match(notifications, /notification-group-row list-surface-row/u);
   assert.match(settingsView, /v-if="loading"[\s\S]*<SurfacePanel variant="list"/u);

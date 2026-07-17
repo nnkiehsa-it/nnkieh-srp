@@ -6,7 +6,11 @@
     :loading="loading"
   >
     <template #loading>
-      <SkeletonTable :show-author="true" :is-admin="false" :rows="rows" />
+      <ContentCardSkeleton
+        :action-shapes="['pill']"
+        loading-label="facility.loadingFacility"
+        supplement="summary"
+      />
     </template>
 
     <FacilityTableRow
@@ -26,7 +30,7 @@
 <script setup lang="ts">
 import FacilityTableRow from '@/components/FacilityTableRow.vue';
 import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
-import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
 import type { FacilitySummary } from '@/types';
 
 withDefaults(defineProps<{
@@ -34,11 +38,9 @@ withDefaults(defineProps<{
   facilities: FacilitySummary[];
   loading: boolean;
   highlightQuery?: string;
-  rows?: number;
 }>(), {
   affectingFacilityId: '',
   highlightQuery: '',
-  rows: 4,
 });
 const emit = defineEmits<{
   'open-details': [facility: FacilitySummary];

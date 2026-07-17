@@ -5,14 +5,14 @@
       :key="index"
       class="flex items-start gap-2.5 py-2.5"
     >
-      <span class="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+      <span class="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
       <div class="min-w-0 flex-1 space-y-2">
         <div class="flex items-center gap-2">
-          <span class="h-3.5 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-          <span class="h-3 w-14 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+          <span class="h-3.5 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+          <span class="h-3 w-14 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
         </div>
-        <span class="block h-3.5 w-full rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-        <span class="block h-3.5 w-3/4 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+        <span class="block h-3.5 w-full rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+        <span class="block h-3.5 w-3/4 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
       </div>
     </div>
   </div>

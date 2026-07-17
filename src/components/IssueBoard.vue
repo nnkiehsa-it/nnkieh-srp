@@ -44,7 +44,6 @@
           <IssueBoardTable
             :issues="[]"
             :loading="true"
-            :rows="1"
             error=""
             :show-author="showAuthorCol"
           />

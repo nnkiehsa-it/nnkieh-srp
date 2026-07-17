@@ -8,9 +8,9 @@
   />
 
   <SkeletonDetail
-     v-else-if="loading"
-     :label="loadingLabel"
-     :show-comments="showComments"
+    v-else-if="loading"
+    :label="loadingLabel"
+    :show-comments="showComments"
   />
 
   <div v-else-if="!allowed" class="sr-only" role="status">{{ t('auth.redirectingToSignIn') }}</div>

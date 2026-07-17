@@ -148,17 +148,11 @@
   }
 
   .segmented-control {
-    @apply inline-flex w-fit overflow-x-auto whitespace-nowrap flex-nowrap items-center gap-0.5 border-0 bg-ink-100/70 text-xs shadow-inner dark:bg-ink-900/70 backdrop-blur-md;
+    @apply inline-flex overflow-hidden whitespace-nowrap flex-nowrap items-center gap-0.5 border-0 bg-ink-100/70 text-xs shadow-inner dark:bg-ink-900/70 backdrop-blur-md;
     box-sizing: border-box;
     border-radius: 9999px;
     min-height: 2rem;
     padding: 0.125rem;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-
-  .segmented-control::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
   }
 
   .scrollbar-none {
@@ -177,10 +171,21 @@
       transform var(--motion-duration-fast) var(--motion-ease),
       background-color var(--motion-duration) var(--motion-ease),
       color var(--motion-duration) var(--motion-ease),
-      box-shadow var(--motion-duration) var(--motion-ease);
+      box-shadow var(--motion-duration) var(--motion-ease),
+      width var(--motion-duration-panel) var(--motion-ease-enter);
     min-height: 1.75rem;
     border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
+    padding-block: 0.25rem;
+  }
+
+  .segmented-control__button--active {
+    padding-inline: 0.625rem;
+    width: 7rem;
+  }
+
+  .segmented-control__button--compact {
+    padding-inline: 0.5rem;
+    width: 2rem;
   }
 
   .tag {

@@ -8,11 +8,11 @@
             :key="index"
             class="notification-group-row list-surface-row"
           >
-            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
+            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
             <div class="min-w-0 flex-1 space-y-2 pt-1">
-              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
-              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
-              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
+              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
             </div>
           </div>
         </SurfacePanel>
@@ -82,11 +82,11 @@
             v-if="loadingMore"
             class="notification-group-row list-surface-row border-t border-ink-100/70 dark:border-ink-800/70"
           >
-            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
+            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
             <div class="min-w-0 flex-1 space-y-2 pt-1">
-              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
-              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
-              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 animate-skeleton"></div>
+              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
             </div>
           </div>
 

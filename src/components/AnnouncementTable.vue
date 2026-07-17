@@ -3,7 +3,16 @@
     :empty="announcements.length === 0"
     empty-label="announcement.noAnnouncementsYet"
     list-label="announcement.announcementList"
+    :loading="loading"
   >
+    <template #loading>
+      <ContentCardSkeleton
+        :action-shapes="['icon', 'pill']"
+        loading-label="announcement.announcementLoading"
+        :show-admin="canManage"
+      />
+    </template>
+
     <AnnouncementTableRow
       v-for="announcement in announcements"
       :key="announcement.id"
@@ -21,12 +30,14 @@
 <script setup lang="ts">
 import AnnouncementTableRow from './AnnouncementTableRow.vue';
 import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
+import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
 import type { AnnouncementRecord } from '@/types';
 
 defineProps<{
   announcements: AnnouncementRecord[];
   canManage?: boolean;
   likingAnnouncementId?: string;
+  loading?: boolean;
 }>();
 
 const emit = defineEmits<{

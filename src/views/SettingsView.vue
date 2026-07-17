@@ -3,37 +3,37 @@
     <div v-if="loading" class="space-y-6 py-4">
       <!-- Account Skeleton -->
       <SurfacePanel variant="list" padding="md" class="flex items-center gap-3">
-        <span class="h-10 w-10 shrink-0 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+        <span class="h-10 w-10 shrink-0 rounded-full bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
         <div class="min-w-0 flex-1 space-y-2">
-          <span class="block h-4 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-          <span class="block h-3 w-48 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+          <span class="block h-4 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+          <span class="block h-3 w-48 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
         </div>
-        <span class="h-10 w-16 rounded-xl bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+        <span class="h-10 w-16 rounded-xl bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
       </SurfacePanel>
 
       <!-- Push Notifications Skeleton -->
       <SurfacePanel variant="list" padding="md" class="space-y-2">
-        <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-        <span class="block h-3 w-3/4 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+        <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+        <span class="block h-3 w-3/4 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
       </SurfacePanel>
 
       <!-- Notification Types Skeleton -->
       <SurfacePanel variant="list" padding="md" class="space-y-3">
-        <span class="block h-4 w-20 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+        <span class="block h-4 w-20 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
         <div class="space-y-2">
           <div class="flex items-center justify-between border-b border-ink-100 py-3 dark:border-ink-800/60">
             <div class="space-y-2 flex-1">
-              <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-              <span class="block h-3 w-2/3 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+              <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+              <span class="block h-3 w-2/3 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
             </div>
-            <span class="h-6 w-11 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+            <span class="h-6 w-11 rounded-full bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
           </div>
           <div class="flex items-center justify-between border-b border-ink-100 py-3 dark:border-ink-800/60">
             <div class="space-y-2 flex-1">
-              <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-              <span class="block h-3 w-2/3 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+              <span class="block h-4 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
+              <span class="block h-3 w-2/3 rounded bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
             </div>
-            <span class="h-6 w-11 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+            <span class="h-6 w-11 rounded-full bg-ink-200/60 dark:bg-ink-700/50 skeleton-block"></span>
           </div>
         </div>
       </SurfacePanel>

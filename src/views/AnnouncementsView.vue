@@ -37,11 +37,19 @@
       @retry="retryAnnouncements"
     >
       <template #loading>
-        <SkeletonAnnouncementList :can-manage="isAdmin" />
+        <AnnouncementTable
+          :announcements="[]"
+          :can-manage="isAdmin"
+          :loading="true"
+        />
       </template>
 
       <template #loading-more>
-        <SkeletonAnnouncementList :can-manage="isAdmin" :count="1" />
+        <AnnouncementTable
+          :announcements="[]"
+          :can-manage="isAdmin"
+          :loading="true"
+        />
       </template>
 
       <AnnouncementTable
@@ -86,7 +94,6 @@ import AnnouncementTable from '@/components/AnnouncementTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import ContentListState from '@/components/ui/ContentListState.vue';
-import SkeletonAnnouncementList from '@/components/ui/SkeletonAnnouncementList.vue';
 import { useAnnouncementManagement } from '@/composables/useAnnouncementManagement';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { useI18n } from '@/i18n';

@@ -8,12 +8,16 @@
       @retry="reloadPage"
     />
 
-    <div v-else-if="sessionLoading" class="space-y-6" :aria-label="t('issue.loadingProposals')" aria-busy="true">
-      <div class="flex items-center justify-between border-b border-ink-200/80 pb-4 dark:border-ink-800/80">
-        <span class="h-7 w-16 rounded bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
-        <div class="flex gap-2">
-          <span class="h-9 w-24 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-          <span class="h-9 w-20 rounded-full bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
+    <div v-else-if="sessionLoading" class="space-y-5" :aria-label="t('issue.loadingProposals')" aria-busy="true">
+      <div class="board-controls relative z-20 space-y-3">
+        <div class="flex flex-row items-center justify-between gap-3 md:mt-0">
+          <span class="skeleton-block hidden h-8 w-32 rounded md:block"></span>
+          <div class="flex w-full shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:w-auto">
+            <span class="skeleton-block h-8 w-[9.375rem] rounded-full"></span>
+            <span class="skeleton-block h-8 w-8 rounded-full md:h-9 md:w-9"></span>
+            <span class="skeleton-block h-8 w-8 rounded-full md:h-9 md:w-9"></span>
+            <span class="skeleton-block h-8 w-8 rounded-full"></span>
+          </div>
         </div>
       </div>
       <IssueBoardTable

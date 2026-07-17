@@ -7,7 +7,13 @@
     :loading="loading"
   >
     <template #loading>
-      <SkeletonTable :show-author="showAuthor" :is-admin="isAdmin" />
+      <ContentCardSkeleton
+        :action-shapes="['icon', 'pill']"
+        loading-label="issue.proposalLoading"
+        :show-admin="isAdmin"
+        :show-author="showAuthor"
+        supplement="progress"
+      />
     </template>
 
     <IssueTableRow
@@ -26,7 +32,7 @@
 <script setup lang="ts">
 import IssueTableRow from './IssueTableRow.vue';
 import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
-import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
 import { useSession } from '@/composables/useSession';
 import type { IssueRecord } from '@/types';
 

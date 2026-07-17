@@ -37,7 +37,7 @@
         </template>
 
         <template #loading-more>
-          <FacilityTable :facilities="[]" :loading="true" :rows="1" />
+          <FacilityTable :facilities="[]" :loading="true" />
         </template>
 
         <FacilityTable
