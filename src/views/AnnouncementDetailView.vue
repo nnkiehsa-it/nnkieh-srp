@@ -29,7 +29,7 @@
     <ConfirmDialog
       :open="deleteDialogOpen"
       title="announcement.areYouSureYouWantToDeleteThisAnnouncement"
-      message="announcement.onceDeletedThisAnnouncementCannotBeRestored"
+      message="announcement.deleteWarning"
       confirm-label="comments.confirmDeletion"
       :busy="deleting"
       @cancel="closeDeleteDialog"

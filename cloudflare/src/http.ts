@@ -1,4 +1,5 @@
 import type { Env, JsonRecord } from './types';
+import { API_ERRORS, type ApiErrorCode } from '../generated/api-errors';
 
 export const MAX_BODY_BYTES = 64 * 1024;
 
@@ -28,20 +29,25 @@ export function jsonResponse(request: Request, env: Env, data: unknown, status =
   });
 }
 
-export function actionError(
+export function apiErrorResponse(
   request: Request,
   env: Env,
   requestId: string,
-  status: number,
-  code: string,
-  message: string,
+  code: ApiErrorCode,
+  retryAfterSeconds?: number,
   headers: HeadersInit = {},
 ) {
-  return jsonResponse(request, env, { error: { code, message }, requestId, success: false }, status, headers);
-}
-
-export function simpleError(request: Request, env: Env, status: number, message: string, headers: HeadersInit = {}) {
-  return jsonResponse(request, env, { error: message, ok: false }, status, headers);
+  const retryAfter = retryAfterSeconds && Number.isFinite(retryAfterSeconds)
+    ? Math.max(1, Math.ceil(retryAfterSeconds))
+    : undefined;
+  const error = retryAfter ? { code, retryAfterSeconds: retryAfter } : { code };
+  return jsonResponse(
+    request,
+    env,
+    { error, requestId, success: false },
+    API_ERRORS[code].status,
+    retryAfter ? { ...headers, 'retry-after': String(retryAfter) } : headers,
+  );
 }
 
 export async function readBody(request: Request) {

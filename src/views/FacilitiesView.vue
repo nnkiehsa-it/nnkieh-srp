@@ -66,7 +66,7 @@
     <ConfirmDialog
       :open="deleteDialogOpen"
       title="facility.areYouSureYouWantToDeleteThisFacilityReport"
-      message="facility.thisFacilityReportCannotBeRestoredAfterDeletion"
+      message="facility.deleteWarning"
       confirm-label="comments.confirmDeletion"
       :busy="deleting"
       @cancel="closeDeleteDialog"
@@ -145,7 +145,7 @@ const searchHint = computed(() => {
   const committed = normalizeSearchText(committedQuery.value);
   if (draft !== committed) return t('issue.search.pressEnterToSearch');
   if (!committed) return t('issue.search.enterTheKeywordAndPressEnterToSearch');
-  if (committed.length < 3) return t('facility.onlyLoadedFacilitiesAreBeingSearchedEnterAtLeast3CharactersToSearchMore');
+  if (committed.length < 3) return t('facility.search.loadedOnlyHint');
   return t('facility.searchForQuery', { query: committedQuery.value });
 });
 const emptyDescription = computed(() => committedQuery.value.trim()

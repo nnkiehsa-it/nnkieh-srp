@@ -18,5 +18,5 @@ export async function handleAnnouncementAction(
   if (isAnnouncementReadAction(action)) return handleAnnouncementReadAction(action, payload, auth, supabase);
   if (isAnnouncementWriteAction(action)) return handleAnnouncementWriteAction(action, payload, auth, supabase);
   if (isAnnouncementCommentAction(action)) return handleAnnouncementCommentAction(action, payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

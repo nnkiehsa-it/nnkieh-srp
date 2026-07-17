@@ -25,14 +25,14 @@ export function validateBasicUser(user: User | null): ValidationResult {
   if (!user?.email) {
     return {
       ok: false,
-      reason: 'auth.theCurrentLoginAccountCannotPassTheSchoolIdentityVerification',
+      reason: 'auth.schoolVerificationFailed',
     };
   }
 
   if (!user.emailVerified) {
     return {
       ok: false,
-      reason: 'auth.pleaseCompleteTheSchoolAccountVerificationBeforeLoggingIn',
+      reason: 'auth.schoolVerificationRequired',
     };
   }
 
@@ -68,7 +68,7 @@ export async function validateUserAgainstToken(user: User) {
   if (!email) {
     return {
       ok: false,
-      reason: 'auth.theCurrentLoginAccountCannotPassTheSchoolIdentityVerification',
+      reason: 'auth.schoolVerificationFailed',
     };
   }
 
@@ -82,7 +82,7 @@ export async function validateUserAgainstToken(user: User) {
   if (!emailVerified) {
     return {
       ok: false,
-      reason: 'auth.pleaseCompleteTheSchoolAccountVerificationBeforeLoggingIn',
+      reason: 'auth.schoolVerificationRequired',
     };
   }
 

@@ -71,7 +71,7 @@ export async function handleUserAction(
       categoryMap.set(assignment.uid, [...(categoryMap.get(assignment.uid) ?? []), assignment.category_id]);
     }
     return { users: (profiles ?? []).map((profile) => ({
-      uid: profile.uid, email: profile.email ?? null, name: profile.display_name ?? "使用者",
+      uid: profile.uid, email: profile.email ?? null, name: profile.display_name ?? profile.email ?? profile.uid,
       photoUrl: profile.cached_photo_url ?? profile.photo_url ?? null,
       roles: roleMap.get(profile.uid) ?? [],
       managedIssueCategoryIds: categoryMap.get(profile.uid) ?? [],
@@ -143,7 +143,7 @@ export async function handleUserAction(
     if (
       parsedSourceUrl.protocol !== "https:"
       || !parsedSourceUrl.hostname.toLowerCase().endsWith(".googleusercontent.com")
-    ) throw new Error("avatar-source-not-allowed");
+    ) throw new Error("validation-invalid");
 
     const { data: existing, error: existingError } = await supabase
       .schema("app_private")
@@ -167,10 +167,10 @@ export async function handleUserAction(
     const contentType = imageResponse.headers.get("content-type") ?? "";
     const contentLength = Number(imageResponse.headers.get("content-length") ?? 0);
     if (!contentType.startsWith("image/") || contentLength > 5 * 1024 * 1024) {
-      throw new Error("avatar-source-invalid");
+      throw new Error("validation-invalid");
     }
     const imageBuffer = await imageResponse.arrayBuffer();
-    if (imageBuffer.byteLength > 5 * 1024 * 1024) throw new Error("avatar-source-invalid");
+    if (imageBuffer.byteLength > 5 * 1024 * 1024) throw new Error("validation-invalid");
     const avatarHash = await sha256Hex(imageBuffer);
     if (existing?.avatar_hash === avatarHash && existing.cached_photo_url) {
       const { error } = await supabase.schema("app_private").from("user_profiles").upsert({

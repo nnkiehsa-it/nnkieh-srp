@@ -46,7 +46,7 @@ export function useIssueSearch(options: {
     if (normalizedSearchQuery.value !== normalizedCommittedSearchQuery.value) return 'issue.search.pressEnterToSearch';
     if (!isSearching.value) return 'issue.search.enterTheKeywordAndPressEnterToSearch';
     if (normalizedCommittedSearchQuery.value.length < MIN_GLOBAL_SEARCH_LENGTH) {
-      return 'issue.search.currentlyOnlySearchingForLoadedProposalsEnterAtLeast3WordsToSearchForMore';
+      return 'issue.search.loadedOnlyHint';
     }
     if (searchState.loading) return 'issue.search.searching';
     if (searchState.limited) return t('issue.search.limitedResults', { count: searchResultCount.value });
@@ -245,7 +245,7 @@ export function useIssueSearch(options: {
       applySearchFilter(titleQuery);
     } catch (caught) {
       if (isAbortFailure(caught)) return;
-      searchState.error = 'issue.search.failedToLoadMoreSearchResultsPleaseTryAgainLater';
+      searchState.error = 'issue.search.loadMoreFailed';
     } finally {
       if (currentToken === requestToken) searchState.loadingMore = false;
       if (requestController === controller) requestController = null;

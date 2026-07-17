@@ -50,7 +50,7 @@ integrationTest("access, role, idempotency, avatar, and upload actions", async (
   assert.equal((roleSearch.users as unknown[]).length, 1);
 
   await expectActionError(
-    "request-id-required",
+    "validation-required",
     () => callAction("setUserRoles", {
       managedIssueCategoryIds: [],
       roles: ["announcement-manager"],

@@ -112,27 +112,27 @@ const personalNotificationOptions = computed<Array<{
   {
     key: 'comments',
     label: t('notification.commentNotifications'),
-    description: t('notification.receiveNotificationsWhenNewCommentsAreReceivedForAProposalOrAnnouncement'),
+    description: t('notification.preference.commentsDescription'),
   },
   {
     key: 'issueUpdates',
     label: t('issue.proposalUpdate'),
-    description: t('notification.receiveNotificationsAboutImportantUpdatesToProposalsYouCreateOrSupport'),
+    description: t('notification.preference.issueDescription'),
   },
   {
     key: 'facilityUpdates',
     label: t('facility.facilityUpdates'),
-    description: t('notification.receiveNotificationsWhenFacilitiesYouReportOrMarkMeTooAreUpdated'),
+    description: t('notification.preference.facilityDescription'),
   },
 ]);
 
 const pushStatusDescription = computed(() => {
   if (!pushInitialized.value && pushLoading.value) return t('notification.confirmingNotificationStatusForThisDevice');
-  if (pushRequiresPwaInstall.value) return t('app.install.afterJoiningTheHomeScreenYouCanTurnOnPushNotifications');
-  if (!pushSupported.value) return t('notification.yourCurrentBrowserOrDeviceDoesNotSupportPushNotifications');
-  if (pushPermission.value === 'denied') return t('access.notificationPermissionHasBeenTurnedOffPleaseGoToSystemSettingsToAllowItAgain');
-  if (pushEnabled.value) return t('settings.importantUpdatesWillBeDeliveredToThisDeviceAccordingToThePreferencesBelow');
-  return t('settings.onceTurnedOnImportantUpdatesWillBeDeliveredToThisDeviceImmediately');
+  if (pushRequiresPwaInstall.value) return t('app.install.pushAvailableAfterInstall');
+  if (!pushSupported.value) return t('notification.pushUnsupported');
+  if (pushPermission.value === 'denied') return t('access.pushPermissionDenied');
+  if (pushEnabled.value) return t('settings.pushPreferencesDescription');
+  return t('settings.pushEnabledDescription');
 });
 
 const pushActionLabel = computed(() => {
@@ -187,7 +187,7 @@ async function handleSetPersonalPushPreference(key: PersonalPushPreferenceKey, v
   if (succeeded) {
     feedbackHandle.succeed(t('notification.notificationSettingsSaved'));
   } else {
-    feedbackHandle.fail(pushError.value || t('notification.failedToSaveNotificationSettingsPleaseTryAgainLater'));
+    feedbackHandle.fail(pushError.value || t('notification.preferencesSaveFailed'));
   }
 }
 

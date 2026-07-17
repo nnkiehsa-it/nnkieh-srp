@@ -39,8 +39,8 @@ function isOnline() {
 
 function notificationLoadFailureMessage() {
   return isOnline()
-    ? 'notification.notificationFailedToLoadPleaseTryAgainLater'
-    : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+    ? 'notification.loadFailed'
+    : 'notification.offlineRefreshRequired';
 }
 
 const { user, isAdmin, roleLoading } = useSession();
@@ -163,8 +163,8 @@ function startSubscriptions() {
     if (currentVersion !== subscriptionVersion) return;
     loading.value = false;
     error.value = isOnline()
-      ? 'notification.theNetworkResponseTimeIsTooLongPleaseTryAgain'
-      : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+      ? 'notification.requestTimeout'
+      : 'notification.offlineRefreshRequired';
   }, 5_000);
 
   void fetchNotificationSnapshot(activeSources.value, uid, controller.signal)
@@ -217,7 +217,7 @@ function startSubscriptions() {
         currentVersion === subscriptionVersion
         && notifications.value.length === 0
       ) {
-        error.value = 'notification.failedToLoadNotificationStatusPleaseTryAgainLater';
+        error.value = 'notification.statusLoadFailed';
       }
     }, false,
   ));

@@ -29,7 +29,11 @@ function assertNumberRange(value, min, max, errorMsg) {
 
 async function readRateLimitsConfig(projectRoot) {
   const configPath = path.join(projectRoot, 'config', 'rate-limits.config.json');
-  const raw = JSON.parse(await readFile(configPath, 'utf8'));
+  const apiErrorsPath = path.join(projectRoot, 'config', 'api-errors.config.json');
+  const [raw, apiErrors] = await Promise.all([
+    readFile(configPath, 'utf8').then(JSON.parse),
+    readFile(apiErrorsPath, 'utf8').then(JSON.parse),
+  ]);
 
   const issueCreateDaily = raw.issueCreateDaily || {};
   const facilityCreateDaily = raw.facilityCreateDaily || {};
@@ -66,9 +70,13 @@ async function readRateLimitsConfig(projectRoot) {
   const imageCompression = raw.imageCompression || {};
 
   function readLimitConfig(name, value) {
+    const errorCode = assertNonEmptyString(value.errorCode, `${name}.errorCode 必須是非空字串。`);
+    if (!Object.hasOwn(apiErrors, errorCode)) {
+      throw new Error(`${name}.errorCode 必須存在於 api-errors.config.json。`);
+    }
     return {
       limit: assertPositiveInteger(value.limit, `${name}.limit 必須是正整數。`),
-      message: assertNonEmptyString(value.message, `${name}.message 必須是非空字串。`),
+      errorCode,
     };
   }
 

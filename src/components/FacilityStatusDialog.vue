@@ -43,9 +43,9 @@ const emit = defineEmits<{
 }>();
 
 const options = [
-  { value: 'processing', label: 'facility.processing', description: 'facility.workHasStartedOnThisFacilityIssueButThereIsNoFinalOutcomeYet' },
-  { value: 'completed', label: 'facility.completed', description: 'facility.thisFacilityIssueHasBeenResolvedEnterTheOutcome' },
-  { value: 'unable-to-handle', label: 'facility.cannotBeResolved', description: 'facility.ifItCannotBeProcessedAfterEvaluationTheReasonsMustBeExplained' },
+  { value: 'processing', label: 'facility.processing', description: 'facility.status.processingHelp' },
+  { value: 'completed', label: 'facility.completed', description: 'facility.status.resolvedResultHelp' },
+  { value: 'unable-to-handle', label: 'facility.cannotBeResolved', description: 'facility.status.rejectionReasonHelp' },
 ] satisfies Array<{ value: FacilityStatus; label: string; description: string }>;
 
 const availableOptions = computed(() =>

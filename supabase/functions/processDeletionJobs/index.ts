@@ -1,6 +1,6 @@
 import { createDatabaseClient } from "../_shared/database-client.ts";
 import { deleteCloudinaryAsset } from "../_shared/cloudinary.ts";
-import { errorMessage, errorStatus, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
+import { errorMessage, errorStatus, jsonResponse, publicErrorBody, requireMethod } from "../_shared/http.ts";
 import { markNotionPageDeleted } from "../_shared/notion.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { claimFixedWindowRateLimits, utcMinuteWindow, utcSecondWindow } from "../_shared/upstash-rate-limit.ts";
@@ -69,7 +69,7 @@ Deno.serve(async (request) => {
           .schema("app_api")
           .rpc("fail_deletion_job", {
             job_id: job.id,
-            error_message: traceCode,
+            error_trace_id: traceCode,
           });
         if (failError) throw failError;
       }
@@ -88,6 +88,6 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true, processedCount: jobs.length });
   } catch (error) {
     console.error(errorMessage(error));
-    return jsonResponse({ ok: false, error: publicError(error) }, { status: errorStatus(error) });
+    return jsonResponse({ ok: false, error: publicErrorBody(error) }, { status: errorStatus(error) });
   }
 });

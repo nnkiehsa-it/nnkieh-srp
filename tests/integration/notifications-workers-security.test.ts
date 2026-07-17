@@ -195,12 +195,26 @@ integrationTest("worker database lifecycles and maintenance RPC", async () => {
   const outboxEvent = ((outboxEvents ?? []) as Array<{ id: string; target_id: string }>)
     .find((event) => event.target_id === outboxTarget);
   assert.ok(outboxEvent);
+  const errorTraceId = crypto.randomUUID();
   const { error: outboxFailError } = await supabase.schema("app_api")
     .rpc("fail_outbox_event", {
-      error_message: "integration expected failure",
+      error_trace_id: errorTraceId,
       event_id: outboxEvent.id,
     });
   if (outboxFailError) throw outboxFailError;
+  const { data: failedOutbox, error: failedOutboxError } = await supabase.schema("app_private")
+    .from("outbox_events")
+    .select("error_trace_id")
+    .eq("id", outboxEvent.id)
+    .single();
+  if (failedOutboxError) throw failedOutboxError;
+  assert.equal(failedOutbox.error_trace_id, errorTraceId);
+  const { error: legacyFailError } = await supabase.schema("app_api")
+    .rpc("fail_outbox_event", {
+      error_message: "legacy-format-must-not-exist",
+      event_id: outboxEvent.id,
+    } as never);
+  assert.ok(legacyFailError, "legacy error_message RPC parameter must be removed");
 
   const { data: maintenance, error: maintenanceError } = await supabase
     .schema("app_api")

@@ -91,7 +91,7 @@ export const backendActionDefinitions = [
       }
     }
     if (Object.values(revisions).some((revision) => revision < 1)) {
-      throw new Error("content-revisions-unavailable");
+      throw new Error("upstream-unavailable");
     }
     return { revisions };
   }),

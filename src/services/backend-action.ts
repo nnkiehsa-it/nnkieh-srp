@@ -3,7 +3,7 @@ import { getFirebaseIdToken } from '@/lib/auth-token';
 import type { BackendActionName } from '@/services/backend-action-contract';
 import { auth } from '@/lib/firebase';
 import { apiGatewayUrl } from '@/lib/api-gateway';
-import { t } from '@/i18n';
+import { ApiRequestError, type ApiErrorResponse } from '@/lib/api-error';
 
 interface BackendActionSuccessEnvelope<TResponse> {
   data: TResponse;
@@ -11,12 +11,7 @@ interface BackendActionSuccessEnvelope<TResponse> {
   success: true;
 }
 
-interface BackendActionErrorEnvelope {
-  error?: {
-    code?: string;
-    message?: string;
-  };
-  requestId?: string;
+interface BackendActionErrorEnvelope extends ApiErrorResponse {
   success: false;
 }
 
@@ -51,12 +46,6 @@ function withStableRequestId<TRequest>(name: BackendActionName, payload: TReques
     payload: { ...record, requestId } as TRequest,
     storageKey,
   };
-}
-
-function formatEnvelopeError(envelope: BackendActionErrorEnvelope) {
-  const message = envelope.error?.message?.trim() || 'common.theServiceIsTemporarilyUnableToProcessTheRequestPleaseTryAgainLater';
-  const requestId = envelope.requestId?.trim();
-  return requestId ? t('service.errorTrackingCode', { message: t(message), requestId }) : message;
 }
 
 export function invokeBackendAction<TRequest = Record<string, unknown>, TResponse = unknown>(
@@ -94,9 +83,9 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
         throw new Error('common.theServiceDidNotReturnAnyData');
       }
       if (!response.ok || envelope.success !== true) {
-        throw new Error(envelope.success === false
-          ? formatEnvelopeError(envelope)
-          : t('service.httpUnavailable', { status: response.status }));
+        throw envelope.success === false
+          ? new ApiRequestError(envelope)
+          : new ApiRequestError({ error: { code: 'upstream-invalid-response' } });
       }
       if (stableOperation.storageKey) sessionStorage.removeItem(stableOperation.storageKey);
       return envelope.data;

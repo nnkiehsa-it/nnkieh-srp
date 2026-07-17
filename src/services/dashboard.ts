@@ -25,8 +25,8 @@ interface DashboardResponse {
       started_at_ms: number | null;
       completed_at_ms: number | null;
       updated_at_ms: number | null;
-      failed_tasks: string[];
-      error: string;
+      failed_task_codes: string[];
+      error_trace_id: string;
     };
     recent_failures: Array<{
       id: string;
@@ -35,7 +35,7 @@ interface DashboardResponse {
       detail_type: string;
       source: string;
       status: string;
-      message: string;
+      error_trace_id: string;
       next_attempt_at_ms: number | null;
       target_id: string;
       target_type: string;
@@ -120,8 +120,8 @@ async function loadPlatformDashboard(): Promise<PlatformDashboardData> {
           started_at: toDate(operations.scheduled_maintenance.started_at_ms),
           completed_at: toDate(operations.scheduled_maintenance.completed_at_ms),
           updated_at: toDate(operations.scheduled_maintenance.updated_at_ms),
-          failed_tasks: operations.scheduled_maintenance.failed_tasks,
-          error: operations.scheduled_maintenance.error,
+          failed_task_codes: operations.scheduled_maintenance.failed_task_codes,
+          error_trace_id: operations.scheduled_maintenance.error_trace_id,
         },
         recent_failures: operations.recent_failures.map((failure) => ({
           id: failure.id,
@@ -130,7 +130,7 @@ async function loadPlatformDashboard(): Promise<PlatformDashboardData> {
           detail_type: failure.detail_type,
           source: failure.source,
           status: failure.status,
-          message: failure.message,
+          error_trace_id: failure.error_trace_id,
           next_attempt_at: toDate(failure.next_attempt_at_ms),
           target_id: failure.target_id,
           target_type: failure.target_type,

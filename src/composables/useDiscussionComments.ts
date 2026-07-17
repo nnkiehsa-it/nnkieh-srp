@@ -259,7 +259,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
       if (currentVersion === requestVersion && !isAbortFailure(caught)) {
         error.value = isOnline.value
           ? formatRequestError(caught, adapters.loadErrorMessage)
-          : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+          : 'notification.offlineRefreshRequired';
         if (isContentUnavailableError(caught)) {
           adapters.onContentUnavailable?.(id);
         }
@@ -293,7 +293,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
       if (currentVersion === requestVersion && !isAbortFailure(caught)) {
         error.value = isOnline.value
           ? formatRequestError(caught, adapters.loadErrorMessage)
-          : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+          : 'notification.offlineRefreshRequired';
       }
     } finally {
       if (currentVersion === requestVersion) loading.value = false;
@@ -359,7 +359,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
         }
         loadMoreError.value = isOnline.value
           ? 'comments.unableToLoadMoreComments'
-          : 'comments.currentlyOfflinePleaseRestoreYourInternetConnectionAndTryAgain';
+          : 'comments.offline';
         show(
           loadMoreError.value,
           'error',

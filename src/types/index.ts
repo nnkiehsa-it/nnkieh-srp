@@ -167,7 +167,7 @@ interface PlatformDashboardFailure {
   id: string;
   source: 'outbox' | 'push' | 'cleanup' | string;
   status: string;
-  message: string;
+  error_trace_id: string;
   detail_type: string;
   target_type: string;
   target_id: string;
@@ -182,8 +182,8 @@ interface PlatformDashboardScheduledMaintenance {
   started_at: Date | null;
   completed_at: Date | null;
   updated_at: Date | null;
-  failed_tasks: string[];
-  error: string;
+  failed_task_codes: string[];
+  error_trace_id: string;
 }
 
 export interface PlatformDashboardOperations {

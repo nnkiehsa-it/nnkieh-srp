@@ -24,7 +24,7 @@ withDefaults(defineProps<{
   title?: string;
 }>(), {
   actionLabel: 'dashboard.refresh',
-  description: 'common.theDataWaitingTimeIsTooLongPleaseCheckTheNetworkAndTryAgain',
+  description: 'common.loadTimeout',
   retryDisabled: false,
   title: 'common.thereSeemsToBeAProblemWithTheNetwork',
 });

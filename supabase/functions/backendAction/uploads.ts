@@ -33,7 +33,7 @@ function extractMarkdownUploadIds(content: string) {
 function assertOnlyManagedMarkdownImages(content: string) {
   const sources = [...content.matchAll(MARKDOWN_IMAGE_SOURCE_PATTERN)].map((match) => match[1]);
   if (sources.some((source) => !source?.startsWith("srp-upload://"))) {
-    throw new Error("external-images-not-allowed");
+    throw new Error("validation-invalid");
   }
 }
 
@@ -52,7 +52,7 @@ async function assertMarkdownUploadsAttachable(
     : targetType === "announcement"
       ? RATE_LIMITS.imageUploads.announcementMaxImages
       : RATE_LIMITS.imageUploads.commentMaxImages;
-  if (uploadIds.length > maxImages) throw new Error("too-many-images");
+  if (uploadIds.length > maxImages) throw new Error("validation-too-many");
 
   const { data: attachable, error: attachableError } = await supabase.schema("app_private")
     .from("uploads")
@@ -68,7 +68,7 @@ async function assertMarkdownUploadsAttachable(
       )
       : upload.owner_uid === ownerUid && !upload.attached_target_id)
   ).map((upload) => upload.id));
-  if (validIds.size !== uploadIds.length) throw new Error("upload-attachment-invalid");
+  if (validIds.size !== uploadIds.length) throw new Error("validation-invalid");
 }
 
 function issueDeliveryAccess(
@@ -194,7 +194,7 @@ export async function handleUploadAction(
     const images = Array.isArray(payload.images)
       ? payload.images.slice(0, RATE_LIMITS.imageUploads.issueMaxImages).map((image) => image as JsonRecord)
       : [];
-    if (images.length === 0) throw new Error("missing-images");
+    if (images.length === 0) throw new Error("validation-required");
     for (const image of images) {
       if (
         asString(image.contentType) !== "image/webp"
@@ -218,7 +218,7 @@ export async function handleUploadAction(
     const uploads = Array.isArray(payload.uploads)
       ? payload.uploads.slice(0, RATE_LIMITS.imageUploads.issueMaxImages).map((upload) => upload as JsonRecord)
       : [];
-    if (uploads.length === 0) throw new Error("missing-uploads");
+    if (uploads.length === 0) throw new Error("validation-required");
     const finalized = await Promise.all(uploads.map((upload) =>
       handleUploadAction("internal:finalize-upload", upload, auth, supabase)
     ));
@@ -315,7 +315,7 @@ export async function handleUploadAction(
       if (
         responsePublicId !== upload.cloudinary_public_id
         || !await verifyCloudinaryUploadResponseSignature(responsePublicId, responseVersion, responseSignature)
-      ) throw new Error("upload-response-invalid");
+      ) throw new Error("upstream-invalid-response");
 
       const metadata = await getCloudinaryAuthenticatedImageMetadata(responsePublicId);
       const bytes = Math.round(asNumber(metadata.bytes, 0));

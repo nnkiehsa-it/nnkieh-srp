@@ -2,10 +2,9 @@ import type { User } from 'firebase/auth';
 import { hasSupabaseConfig } from '@/lib/supabase';
 import { withRequestTimeout } from '@/lib/request';
 import { apiGatewayUrl, hasApiGatewayConfig } from '@/lib/api-gateway';
-import { t } from '@/i18n';
+import { ApiRequestError, type ApiErrorResponse } from '@/lib/api-error';
 
-interface SyncUserResponse {
-  error?: string;
+interface SyncUserResponse extends ApiErrorResponse {
   ok?: boolean;
   role?: string;
 }
@@ -59,7 +58,7 @@ export async function ensureSupabaseAuthenticatedRole(user: User) {
   }
 
   if (!response.ok || data?.ok !== true) {
-    throw new Error(data?.error || t('service.supabaseAuthFailed', { status: response.status }));
+    throw new ApiRequestError(data ?? { error: { code: 'upstream-invalid-response' } });
   }
   rememberSync(user.uid);
 

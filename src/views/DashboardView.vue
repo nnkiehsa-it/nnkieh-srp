@@ -57,7 +57,7 @@
             <div class="dashboard-section-head">
               <div>
                 <h3 class="dashboard-section-title">{{ t('dashboard.maintenanceStatus') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.quicklyUnderstandWhetherSynchronizationCleaningAndSchedulingNeedProcessing') }}</p>
+                <p class="dashboard-section-subtitle">{{ t('dashboard.operationsOverviewHelp') }}</p>
               </div>
               <span class="dashboard-total">{{ t(operationsStatus.label) }}</span>
             </div>
@@ -81,7 +81,7 @@
             <div class="dashboard-section-head">
               <div>
                 <h3 class="dashboard-section-title">{{ t('dashboard.categoryUsageOverview') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.viewTheDistributionOfProposalsAndDiscussionsInEachCategory') }}</p>
+                <p class="dashboard-section-subtitle">{{ t('dashboard.categoryDistributionHelp') }}</p>
               </div>
               <span class="dashboard-total">{{ t('dashboard.countItems', { count: stats.total_issues_created + stats.total_comments_created }) }}</span>
             </div>
@@ -138,7 +138,7 @@
             <div class="dashboard-section-head">
               <div>
                 <h3 class="dashboard-section-title">{{ t('dashboard.recentIssues') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.useTheTrackingCodeToCheckTheEdgeFunctionLogForCompleteErrors') }}</p>
+                <p class="dashboard-section-subtitle">{{ t('dashboard.failureTrackingCodeHelp') }}</p>
               </div>
             </div>
             <div v-if="recentFailureRows.length > 0" class="mt-4 space-y-3">
@@ -157,7 +157,7 @@
               </div>
             </div>
             <p v-else class="mt-4 rounded-xl bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-500 dark:bg-ink-950/50 dark:text-ink-400">
-              {{ t('dashboard.thereAreCurrentlyNoFailedEventsDetectedByQuickscan') }}
+              {{ t('dashboard.noRecentFailures') }}
             </p>
           </SurfacePanel>
         </aside>

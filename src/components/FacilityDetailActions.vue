@@ -13,8 +13,8 @@
         :disabled="facility.isOwnFacility || closed || affecting"
         :label="t('facility.affectedCount', { count: facility.affected_count })"
         :compact="compact"
-        :title="facility.isOwnFacility ? 'facility.theAuthorIsAutomaticallyIncludedInTheAffectedCount' : 'facility.iAlsoEncountered'"
-        :aria-label="facility.isOwnFacility ? 'facility.theAuthorHasAutomaticallyBeenIncludedInTheNumberOfEncounters' : 'facility.iAlsoEncounteredItWhenSwitching'"
+        :title="facility.isOwnFacility ? 'facility.authorIncludedInAffectedCount' : 'facility.iAlsoEncountered'"
+        :aria-label="facility.isOwnFacility ? 'facility.authorAffectedConfirmation' : 'facility.iAlsoEncounteredItWhenSwitching'"
         @click="emit('toggleAffected')"
       >
         <AppIcon name="hand" />

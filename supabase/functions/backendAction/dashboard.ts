@@ -28,7 +28,7 @@ export async function getPlatformDashboard(supabase: BackendSupabase) {
     asCount(maintenanceDetails.failed_deletion_jobs_too_old),
   );
   const failedMaintenanceTasks = failedDeletionJobs > 0
-    ? ["刪除工作失敗過久"]
+    ? ["maintenance.deletion-jobs-stale"]
     : [];
   const outboxFailed = asCount(snapshot.outbox_failed);
   const outboxPending = asCount(snapshot.outbox_pending);
@@ -44,7 +44,7 @@ export async function getPlatformDashboard(supabase: BackendSupabase) {
         attempt_count: asCount(failure.attempt_count),
         created_at_ms: toMs(failure.created_at),
         detail_type: asString(failure.detail_type),
-        message: asString(failure.message),
+        error_trace_id: asString(failure.error_trace_id),
         next_attempt_at_ms: toMs(failure.next_attempt_at),
         source: asString(failure.source, "outbox"),
         status: asString(failure.status),
@@ -90,8 +90,8 @@ export async function getPlatformDashboard(supabase: BackendSupabase) {
       recent_failures: recentFailures,
       scheduled_maintenance: {
         completed_at_ms: toMs(maintenance.completed_at),
-        error: asString(maintenance.error),
-        failed_tasks: failedMaintenanceTasks,
+        error_trace_id: asString(maintenance.error_trace_id),
+        failed_task_codes: failedMaintenanceTasks,
         started_at_ms: toMs(maintenance.started_at),
         status: asString(maintenance.status, "idle"),
         updated_at_ms: toMs(maintenance.completed_at ?? maintenance.started_at),

@@ -82,7 +82,7 @@ export async function handleFacilityAction(
     return asRecord(data);
   }
 
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }
 
 export async function listFacilities(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {

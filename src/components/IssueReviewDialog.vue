@@ -15,8 +15,8 @@
       </h3>
       <p class="dialog-description">
         {{ t(step === 1
-          ? 'issue.reviewTheProposalAndDecideWhetherToApproveItOnceApprovedItWillBecomePublicAndOpenForSupport'
-          : 'notification.pleaseBrieflyDescribeTheReasonForRejectionANotificationWillBeSentToTheProposer') }}
+          ? 'issue.review.approvalHelp'
+          : 'notification.rejectionReasonHelp') }}
       </p>
 
       <div class="mt-5 space-y-4">
@@ -115,7 +115,7 @@ const reviewOptions = [
   {
     value: 'rejected' as const,
     label: 'issue.failureToPassTheReview',
-    description: 'issue.theProposalWillNotBeMadePublicAndTheProposerMustBeNotifiedOfTheReasonsForRejection',
+    description: 'issue.review.rejectionVisibilityWarning',
   },
 ];
 

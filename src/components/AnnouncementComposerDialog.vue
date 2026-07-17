@@ -18,7 +18,7 @@
     :images="editorImages"
     :max-images="maxImages"
     max-images-label="announcement.announcement"
-    hint="announcement.announcementsWillBePostedToAllUsersImmediately"
+    hint="announcement.publishDescription"
     submit-label="announcement.publishAnnouncement"
     :busy="submitting"
     :uploading="uploading"

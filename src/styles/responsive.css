@@ -181,34 +181,6 @@
   transform: translateY(-4px) scale(0.996);
 }
 
-.page-content-enter-active {
-  position: relative;
-  z-index: 1;
-  transition:
-    opacity var(--motion-duration) var(--motion-ease-enter),
-    transform var(--motion-duration) var(--motion-ease-enter);
-}
-
-.page-content-leave-active {
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  transition:
-    opacity var(--motion-duration-fast) var(--motion-ease-exit),
-    transform var(--motion-duration-fast) var(--motion-ease-exit);
-}
-
-.page-content-enter-from {
-  opacity: 0;
-  transform: translateY(3px);
-}
-
-.page-content-leave-to {
-  opacity: 0;
-  transform: translateY(-3px);
-}
-
 .panel-switch-enter-active {
   transition:
     opacity var(--motion-duration-panel) var(--motion-ease-enter),

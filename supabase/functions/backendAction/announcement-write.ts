@@ -18,7 +18,7 @@ async function createAnnouncement(payload: JsonRecord, auth: AuthContext, supaba
   await validateMarkdownUploadsBeforeCreate(supabase, auth.uid, content, "announcement");
   const { data, error } = await supabase.schema("app_api").rpc("backend_create_announcement", {
     actor_uid: auth.uid,
-    actor_name: auth.name || "管理員",
+    actor_name: auth.name || auth.email || auth.uid,
     actor_photo_url: auth.photoUrl,
     announcement_title: requiredText(payload.title, "title", INPUT_LIMITS.title),
     announcement_content: content,
@@ -67,5 +67,5 @@ export async function handleAnnouncementWriteAction(
   if (action === "createAnnouncement") return createAnnouncement(payload, auth, supabase);
   if (action === "deleteAnnouncement") return deleteAnnouncement(payload, auth, supabase);
   if (action === "setAnnouncementLike") return setAnnouncementLike(payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

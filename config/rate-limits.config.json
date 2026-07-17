@@ -1,127 +1,127 @@
 {
   "issueCreateDaily": {
     "limit": 30,
-    "message": "達到上限，明天才能再發。"
+    "errorCode": "rate-limit.issue-create"
   },
   "commentCreateHourly": {
     "limit": 200,
-    "message": "留言達到上限，稍後再試。"
+    "errorCode": "rate-limit.comment-create"
   },
   "imageUploadDaily": {
     "limit": 200,
-    "message": "今天的圖片上傳額度已用完。"
+    "errorCode": "rate-limit.image-upload-daily"
   },
   "imageUploadWriteSecond": {
     "limit": 6,
-    "message": "圖片操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-write"
   },
   "imageUploadWriteHourly": {
     "limit": 120,
-    "message": "圖片操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-write"
   },
   "loginSyncHourly": {
     "limit": 300,
-    "message": "登入同步太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.login-sync"
   },
   "facilityCreateDaily": {
     "limit": 30,
-    "message": "今天建立的設備案件已達上限。"
+    "errorCode": "rate-limit.facility-create"
   },
   "facilityAffectedToggleHourly": {
     "limit": 600,
-    "message": "設備操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.facility-affected"
   },
   "facilityStatusUpdateHourly": {
     "limit": 180,
-    "message": "設備狀態更新太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.facility-status"
   },
   "loginSyncIngressSecond": {
     "limit": 3,
-    "message": "登入同步太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.login-sync"
   },
   "loginSyncIngressHourly": {
     "limit": 60,
-    "message": "登入同步太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.login-sync"
   },
   "avatarCacheDaily": {
     "limit": 60,
-    "message": "頭像更新太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.avatar-update"
   },
   "supportToggleHourly": {
     "limit": 600,
-    "message": "附議操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.support"
   },
   "announcementLikeHourly": {
     "limit": 600,
-    "message": "公告互動太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.announcement-interaction"
   },
   "pushTokenWriteHourly": {
     "limit": 120,
-    "message": "通知裝置設定太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.push-token"
   },
   "backendActionReadHourly": {
     "limit": 900,
-    "message": "讀取太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.read"
   },
   "backendActionReadSecond": {
     "limit": 8,
-    "message": "讀取太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.read"
   },
   "backendActionWriteHourly": {
     "limit": 300,
-    "message": "操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.operation"
   },
   "backendActionWriteSecond": {
     "limit": 3,
-    "message": "操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.operation"
   },
   "backendActionSensitiveWriteHourly": {
     "limit": 120,
-    "message": "操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.operation"
   },
   "backendActionSensitiveWriteSecond": {
     "limit": 2,
-    "message": "操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.operation"
   },
   "backendActionAdminWriteHourly": {
     "limit": 180,
-    "message": "管理操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.admin-operation"
   },
   "backendActionAdminWriteSecond": {
     "limit": 2,
-    "message": "管理操作太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.admin-operation"
   },
   "backendActionUploadResolveHourly": {
     "limit": 300,
-    "message": "圖片讀取太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-read"
   },
   "backendActionUploadResolveSecond": {
     "limit": 4,
-    "message": "圖片讀取太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-read"
   },
   "backendHealthcheckMinute": {
       "limit": 12,
-    "message": "服務檢查太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.healthcheck"
   },
   "backendHealthcheckSecond": {
       "limit": 2,
-    "message": "服務檢查太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.healthcheck"
   },
   "cloudinaryWebhookMinute": {
     "limit": 300,
-    "message": "圖片同步太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-sync"
   },
   "cloudinaryWebhookSecond": {
     "limit": 10,
-    "message": "圖片同步太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.image-sync"
   },
   "workerRunMinute": {
     "limit": 30,
-    "message": "背景處理太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.background-processing"
   },
   "workerRunSecond": {
     "limit": 2,
-    "message": "背景處理太頻繁，請稍後再試。"
+    "errorCode": "rate-limit.background-processing"
   },
   "imageUploads": {
     "issueMaxImages": 5,

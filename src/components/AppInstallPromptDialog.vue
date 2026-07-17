@@ -114,7 +114,7 @@
       :danger="false"
       :open="isSkipConfirmOpen"
       title="app.install.areYouSureYouWantToSkipItFirst"
-      message="app.install.areYouSureYouWantToSkipThisStepYouCanStillTurnOnTheInstallationPromptLater"
+      message="app.install.skipConfirmation"
       cancel-label="app.install.continueToView"
       confirm-label="app.install.confirmSkip"
       @cancel="isSkipConfirmOpen = false"
@@ -175,12 +175,12 @@ const { t } = useI18n();
 const contentKeys = computed<InstallContent>(() => {
   const isNotificationInstall = props.reason === 'notifications';
   const installDescription = isNotificationInstall
-    ? 'app.install.forReliableNotificationsAddTheAppToTheHomeScreenAndOpenItFromThere'
+    ? 'app.install.reliableNotificationsHint'
     : 'app.install.homeScreenAppBenefit';
 
   if (props.mode === 'in-app-browser') {
     return {
-      actionDescription: 'app.install.openThisPageInTheSystemBrowserThenFollowItsStepsToAddTheAppToTheHomeScreen',
+      actionDescription: 'app.install.systemBrowserInstallHelp',
       actionTitle: 'app.install.switchTheOpeningMethodFirst',
       badge: isNotificationInstall ? 'app.install.notificationsRequireHomeScreenMode' : 'app.install.itIsRecommendedToSwitchBrowsers',
       description: t(
@@ -198,8 +198,8 @@ const contentKeys = computed<InstallContent>(() => {
         : '',
       secondaryLabel: 'app.install.maybeLater',
       steps: [
-        { title: 'app.install.clickTheMenuButton', description: 'app.install.clickTheMenuIconInTheUpperRightOrLowerRightCornerUsuallyTheThreeDotsShareOrCompassIcon' },
-        { title: 'app.install.selectOpenWithBrowser', description: 'app.install.clickOpenInSafariOpenInDefaultBrowserOrOpenInOtherApplicationInTheMenu' },
+        { title: 'app.install.clickTheMenuButton', description: 'app.install.browserMenuLocationStep' },
+        { title: 'app.install.selectOpenWithBrowser', description: 'app.install.openInSystemBrowserStep' },
         { title: 'app.install.followTheStepsToAddItToTheHomeScreen', description: 'app.install.systemBrowserGuidedInstall' },
       ],
       title: isNotificationInstall ? 'app.install.installUsingTheSystemBrowser' : 'app.install.itIsRecommendedToUseTheSystemBrowserInstead',
@@ -225,11 +225,11 @@ const contentKeys = computed<InstallContent>(() => {
       secondaryBadge: browserName,
       secondaryLabel: 'app.install.skipItFirst',
       steps: [
-        { title: 'app.install.clickCopyUrl', description: 'app.install.firstSaveTheUrlOfTheCurrentPageToTheClipboard' },
+        { title: 'app.install.clickCopyUrl', description: 'app.install.copyUrlFirst' },
         { title: 'app.install.changeToSafariToEnable', description: 'app.install.pasteTheUrlAndGoToTheSamePage' },
-        { title: 'app.install.longPressOnTheAddressBar', description: 'app.install.longPressTheAddressBarAboveInSafariToCallOutRelatedOperations' },
+        { title: 'app.install.longPressOnTheAddressBar', description: 'app.install.safariAddressBarStep' },
         { title: 'app.install.selectShareButton', description: 'app.install.selectShareFromTheActionThatPopsUp' },
-        { title: 'app.install.installedAsApp', description: 'app.install.scrollDownAndSelectAddToHomeScreenThenFollowTheOnScreenInstructions' },
+        { title: 'app.install.installedAsApp', description: 'app.install.iosAddToHomeScreenStep' },
       ],
       title: 'app.install.pleaseUseSafariToOpenItInstead',
     };
@@ -243,16 +243,16 @@ const contentKeys = computed<InstallContent>(() => {
       description: '',
       icon: 'share',
       iconToneClass: 'text-primary',
-      notes: [installDescription, 'app.install.ifAddToHomeScreenIsNotShownEditTheActionsAtTheBottomOfTheShareMenuThenTryAgain', 'app.install.afterTheInstallationIsCompletePleaseReEnterThePlatformFromTheDesktopIcon'],
+      notes: [installDescription, 'app.install.iosMissingActionHelp', 'app.install.reopenFromHomeScreen'],
       primaryLabel: null,
       secondaryBadge: 'Safari',
       secondaryLabel: 'app.install.maybeLater',
       steps: [
-        { title: 'app.install.longPressOnTheAddressBar', description: 'app.install.firstLongPressTheAddressBarOfTheCurrentPageAboveSafari' },
+        { title: 'app.install.longPressOnTheAddressBar', description: 'app.install.safariLongPressAddressBar' },
         { title: 'app.install.selectShareButton', description: 'app.install.selectShareFromTheActionsThatAppear' },
-        { title: 'app.install.installedAsApp', description: 'app.install.scrollDownTheSharingMenuFindAndClickAddToHomeScreen' },
+        { title: 'app.install.installedAsApp', description: 'app.install.iosShareMenuStep' },
         { title: 'app.install.confirmHowTheAppOpens', description: 'app.install.ifYouSeeOpenAsWebAppPleaseKeepItOpen' },
-        { title: 'app.install.clickAddToCompleteTheInstallation', description: 'app.install.returnToTheHomeScreenAndReopenTheAppFromItsNewIcon' },
+        { title: 'app.install.clickAddToCompleteTheInstallation', description: 'app.install.reopenInstalledApp' },
       ],
       title: isNotificationInstall ? 'app.install.installTheAppToUseNotifications' : 'app.install.installedAsApp',
     };
@@ -267,13 +267,13 @@ const contentKeys = computed<InstallContent>(() => {
     iconToneClass: 'text-primary',
     notes: props.canInstallNatively
       ? ['app.install.installationPromptAvailableLater']
-      : ['app.install.ifTheSystemInstallPromptDoesNotAppearChooseInstallAppOrAddToHomeScreenFromTheBrowserMenu'],
+      : ['app.install.manualInstallFallback'],
     primaryLabel: props.canInstallNatively ? (props.installing ? 'app.install.opening' : 'app.install.installApp') : null,
     secondaryBadge: props.canInstallNatively ? 'app.install.systemInstallationWindow' : 'app.install.browserMenu',
     secondaryLabel: 'app.install.skipItFirst',
     steps: [
-      { title: props.canInstallNatively ? 'app.install.clickInstallApp' : 'app.install.openBrowserMenu', description: props.canInstallNatively ? 'app.install.theSystemWillOpenTheAndroidNativeInstallationPrompt' : 'app.install.lookForTheInstallationOptionInYourCurrentBrowserSMenu' },
-      { title: 'app.install.installedAsApp', description: props.canInstallNatively ? 'app.install.followTheSystemDialogBoxToCompleteTheInstallationOrAddAShortcut' : 'app.install.selectInstallAppOrAddToHomeScreenToFinish' },
+      { title: props.canInstallNatively ? 'app.install.clickInstallApp' : 'app.install.openBrowserMenu', description: props.canInstallNatively ? 'app.install.androidNativePrompt' : 'app.install.browserMenuHint' },
+      { title: 'app.install.installedAsApp', description: props.canInstallNatively ? 'app.install.systemDialogStep' : 'app.install.selectInstallAppOrAddToHomeScreenToFinish' },
       { title: 'app.install.openThePlatformFromTheHomeScreen', description: isNotificationInstall ? 'app.install.turnItBackOnAndGoBackToNotificationSettings' : 'app.install.afterThatYouCanEnterDirectlyLikeNormalApp' },
     ],
     title: isNotificationInstall ? 'app.install.installTheAppToUseNotifications' : 'app.install.installApp',

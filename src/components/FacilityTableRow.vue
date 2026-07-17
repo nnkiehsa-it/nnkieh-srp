@@ -35,7 +35,7 @@
           '!h-8 !gap-1 !px-2.5 text-xs',
         ]"
         :disabled="affecting || facility.isOwnFacility || isClosed"
-        :title="t(facility.isOwnFacility ? 'facility.theAuthorIsAutomaticallyIncludedInTheAffectedCount' : 'facility.iAlsoEncountered')"
+        :title="t(facility.isOwnFacility ? 'facility.authorIncludedInAffectedCount' : 'facility.iAlsoEncountered')"
         @click="emit('toggle-affected', facility)"
       >
         <AppIcon name="hand" :size="4" />

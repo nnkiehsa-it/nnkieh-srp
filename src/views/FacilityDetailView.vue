@@ -43,7 +43,7 @@
     <ConfirmDialog
       :open="deleteDialogOpen"
       title="facility.areYouSureYouWantToDeleteThisFacilityReport"
-      message="facility.thisFacilityReportCannotBeRestoredAfterDeletion"
+      message="facility.deleteWarning"
       confirm-label="comments.confirmDeletion"
       :busy="deleting"
       @cancel="closeDeleteDialog"

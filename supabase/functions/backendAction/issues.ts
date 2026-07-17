@@ -16,5 +16,5 @@ export async function handleIssueAction(
   if (isIssueReadAction(action)) return handleIssueReadAction(action, payload, auth, supabase);
   if (isIssueWriteAction(action)) return handleIssueWriteAction(action, payload, auth, supabase);
   if (isIssueCommentAction(action)) return handleIssueCommentAction(action, payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

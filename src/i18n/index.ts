@@ -9,9 +9,10 @@ export type MessageKey = keyof typeof zhTW;
 const LOCALE_STORAGE_KEY = 'novae:locale';
 const supportedLocales = new Set<AppLocale>(['zh-TW', 'en']);
 const localeState = ref<AppLocale>('zh-TW');
-const sourceKeyLookup = new Map<string, MessageKey>(
-  Object.entries(zhTW).map(([key, value]) => [value, key as MessageKey]),
-);
+const catalogs: Record<AppLocale, Readonly<Record<string, string>>> = {
+  en,
+  'zh-TW': zhTW,
+};
 let initialized = false;
 
 function normalizeLocale(value: string | null | undefined): AppLocale | null {
@@ -74,9 +75,8 @@ export function setLocale(locale: AppLocale) {
 }
 
 export function t(source: string, params: TranslationParams = {}) {
-  const messages: Record<string, string> = localeState.value === 'en' ? en : zhTW;
-  const resolvedKey = messages[source] ? source : sourceKeyLookup.get(source);
-  const message = (resolvedKey ? messages[resolvedKey] : undefined) ?? source;
+  const messages = catalogs[localeState.value];
+  const message = Object.hasOwn(messages, source) ? messages[source] : source;
   return interpolate(message, params);
 }
 

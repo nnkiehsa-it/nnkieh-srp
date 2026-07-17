@@ -7,8 +7,8 @@ export function useLoadingTimeout(loading: Ref<boolean>, timeoutMs = 12_000) {
   const hasProblem = computed(() => timedOut.value || (loading.value && !isOnline.value));
   const problemTitle = computed(() => isOnline.value ? 'common.thereSeemsToBeAProblemWithTheNetwork' : 'common.currentlyOffline');
   const problemDescription = computed(() => isOnline.value
-    ? 'common.theDataWaitingTimeIsTooLongPleaseCheckTheNetworkAndTryAgain'
-    : 'common.pleaseConfirmTheNetworkConnectionRestoreTheConnectionAndTryAgain'
+    ? 'common.loadTimeout'
+    : 'common.reconnectAndRetry'
   );
   let timer: number | null = null;
 

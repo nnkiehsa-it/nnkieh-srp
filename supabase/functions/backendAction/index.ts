@@ -33,7 +33,7 @@ Deno.serve(async (request) => {
     const body = await readJsonRecord(request);
     action = asString(body.action);
     const payload = asRecord(body.payload);
-    if (!action) throw new Error("missing action");
+    if (!action) throw new Error("invalid-action");
 
     const supabase = createDatabaseClient();
     if (action === "healthcheck") {
@@ -42,7 +42,7 @@ Deno.serve(async (request) => {
     }
 
     const definition = getBackendActionDefinition(action);
-    if (!definition) throw new Error(`Unsupported action: ${action}`);
+    if (!definition) throw new Error("invalid-action");
     const auth = await requireAuth(supabase, request);
     const data = await executeBackendAction(definition, payload, auth, supabase);
     return successResponse(data, requestId);

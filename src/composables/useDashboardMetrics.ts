@@ -73,7 +73,7 @@ export function useDashboardMetrics(
         value: t('dashboard.countToBeSynchronized', { count: formatCappedCount(operations.value.pending_notion_sync_count, operations.value.pending_notion_sync_capped) }),
         detail: operations.value.oldest_pending_sync_at
           ? t('dashboard.theEarliestWaitingTime', { time: formatDate(operations.value.oldest_pending_sync_at) })
-          : t('dashboard.thereAreCurrentlyNoJobsWaitingToBeSynchronized'),
+          : t('dashboard.noPendingSyncJobs'),
         statusLabel: t(operations.value.failed_notion_sync_count > 0 ? 'dashboard.issue' : operations.value.pending_notion_sync_count > 0 ? 'dashboard.queuing' : 'dashboard.normal'),
         toneClass: operations.value.failed_notion_sync_count > 0 ? 'text-error' : operations.value.pending_notion_sync_count > 0 ? 'text-warning' : 'text-success',
       },
@@ -94,14 +94,14 @@ export function useDashboardMetrics(
       {
         label: t('dashboard.imageUpload'),
         value: t('dashboard.countStuck', { count: formatCappedCount(operations.value.stuck_upload_count, operations.value.stuck_upload_capped) }),
-        detail: t('dashboard.imageProcessingThatHasNotBeenCompletedForMoreThan20Minutes'),
+        detail: t('dashboard.stuckImageProcessing'),
         statusLabel: t(operations.value.stuck_upload_count > 0 ? 'dashboard.needCleaning' : 'dashboard.normal'),
         toneClass: operations.value.stuck_upload_count > 0 ? 'text-warning' : 'text-success',
       },
       {
         label: t('dashboard.deletionCleanup'),
         value: t('dashboard.countToBeCleared', { count: formatCappedCount(operations.value.cleanup_backlog_count, operations.value.cleanup_backlog_capped) }),
-        detail: t('dashboard.cleaningUpOfExternalImagesAndSynchronizedPages'),
+        detail: t('dashboard.externalCleanup'),
         statusLabel: t(operations.value.cleanup_backlog_count > 0 ? 'dashboard.toBeMaintained' : 'dashboard.normal'),
         toneClass: operations.value.cleanup_backlog_count > 0 ? 'text-warning' : 'text-success',
       },
@@ -113,7 +113,9 @@ export function useDashboardMetrics(
           : maintenance.updated_at
             ? t('dashboard.lastUpdatedTime', { time: formatDate(maintenance.updated_at) })
             : t('dashboard.noScheduleRecordYet'),
-        statusLabel: maintenance.failed_tasks.length > 0 ? maintenance.failed_tasks.join(', ') : maintenanceStatusLabel(maintenance.status, t),
+        statusLabel: maintenance.failed_task_codes.length > 0
+          ? maintenance.failed_task_codes.map((code) => maintenanceTaskLabel(code, t)).join(', ')
+          : maintenanceStatusLabel(maintenance.status, t),
         toneClass: maintenance.status === 'failed'
           ? 'text-error'
           : maintenance.status === 'running' || maintenance.status === 'attention'
@@ -137,7 +139,7 @@ export function useDashboardMetrics(
               ? t('dashboard.cleanup')
               : failure.source,
       updatedLabel: formatDate(failure.updated_at) || t('dashboard.timeUnknown'),
-      trackingCode: failure.message || failure.id,
+      trackingCode: failure.error_trace_id || failure.id,
     }));
   });
 
@@ -163,7 +165,7 @@ function statusView(status: PlatformDashboardOperations['overall_status'], t: Tr
     case 'critical':
       return {
         label: t('dashboard.needProcessing'),
-        caption: t('dashboard.thereAreFailureEventsThatNeedToBeReviewedByTheAdministrator'),
+        caption: t('dashboard.failuresNeedReview'),
         toneClass: 'bg-error-container text-on-error-container',
       };
     case 'attention':
@@ -187,6 +189,11 @@ function maintenanceStatusLabel(status: string, t: Translate) {
   if (status === 'attention') return t('dashboard.notice');
   if (status === 'failed') return t('dashboard.fail');
   return t('dashboard.noRecordYet');
+}
+
+function maintenanceTaskLabel(code: string, t: Translate) {
+  if (code === 'maintenance.deletion-jobs-stale') return t('dashboard.deletionJobsStale');
+  return t('dashboard.unknownMaintenanceFailure');
 }
 
 function buildCategoryComparisonRows(stats: PlatformDashboardStats | null, t: Translate) {

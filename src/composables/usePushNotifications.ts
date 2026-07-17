@@ -57,7 +57,7 @@ function browserPermission(): PushNotificationPermission {
 }
 
 function readableError(value: unknown) {
-  return value instanceof Error ? value.message : 'notification.pushNotificationsCannotBeSetAtTheMomentPleaseTryAgainLater';
+  return value instanceof Error ? value.message : 'notification.pushSetupFailed';
 }
 
 async function resolveMessaging() {
@@ -80,7 +80,7 @@ async function resolveMessaging() {
 
 async function waitForPushServiceWorker() {
   if (!('serviceWorker' in navigator)) {
-    throw new Error('notification.thisBrowserOrDeviceCannotReceivePushNotifications');
+    throw new Error('notification.pushUnavailable');
   }
 
   return withRequestTimeout(
@@ -207,7 +207,7 @@ export function usePushNotifications() {
       ) {
         const messaging = await resolveMessaging();
         currentToken = messaging ? await getPushToken(messaging) : '';
-        if (!currentToken) throw new Error('notification.unableToGetAPushNotificationIdentifierForThisDeviceTryAgainLater');
+        if (!currentToken) throw new Error('notification.pushTokenUnavailable');
         const registrationKey = `${user.value.uid}:${currentToken}`;
         if (synchronizedRegistrationKey !== registrationKey) {
           const synchronizedPreference = await registerCurrentPushToken(currentToken);
@@ -237,12 +237,12 @@ export function usePushNotifications() {
 
   async function enablePushNotifications() {
     if (!user.value) {
-      error.value = 'notification.pleaseLogInFirstBeforeTurningOnPushNotifications';
+      error.value = 'notification.signInRequired';
       return false;
     }
 
     if (requiresPwaInstall.value) {
-      error.value = 'app.install.addTheAppToTheHomeScreenThenEnableNotificationsFromTheInstalledApp';
+      error.value = 'app.install.enableNotificationsAfterInstall';
       requestAppInstallPrompt('notifications');
       return false;
     }
@@ -269,7 +269,7 @@ export function usePushNotifications() {
       currentToken = await getPushToken(messaging);
 
       if (!currentToken) {
-        throw new Error('notification.unableToGetAPushNotificationIdentifierForThisDeviceTryAgainLater');
+        throw new Error('notification.pushTokenUnavailable');
       }
 
       const preference = await registerCurrentPushToken(currentToken);
@@ -384,7 +384,7 @@ export function usePushNotifications() {
     supported: readonly(supported),
     statusLabel: computed(() => {
       if (requiresPwaInstall.value) return 'app.install.addToHomeScreenFirst';
-      if (!supported.value) return 'notification.thisDeviceDoesNotCurrentlySupportPushNotifications';
+      if (!supported.value) return 'notification.pushDeviceUnsupported';
       if (permission.value === 'denied') return 'notification.theBrowserHasBlockedPushNotifications';
       if (deviceEnabled.value) return 'notification.pushNotificationIsEnabledForThisDevice';
       return 'notification.pushNotificationsCanBeTurnedOn';

@@ -149,7 +149,7 @@ export function useIssueBuckets(deps: BucketDeps) {
       if (bucket.issues.length === 0 || options.append) {
         bucket.error = isOnline.value
           ? options.append ? 'issue.failedToLoadMoreProposalsPleaseTryAgainLater' : 'issue.proposalLoadingFailedPleaseTryAgainLater'
-          : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+          : 'notification.offlineRefreshRequired';
       }
     } finally {
       if (version === getBucketVersion(bucket)) {

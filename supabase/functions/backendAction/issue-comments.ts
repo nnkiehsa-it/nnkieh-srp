@@ -97,5 +97,5 @@ export async function handleIssueCommentAction(
   if (action === "listComments") return listComments(payload, auth, supabase);
   if (action === "createComment") return createComment(payload, auth, supabase);
   if (action === "deleteComment") return deleteComment(payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

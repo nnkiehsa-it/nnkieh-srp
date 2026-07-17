@@ -1,28 +1,23 @@
 import { RequestFailure } from '@/lib/request';
+import { ApiRequestError } from '@/lib/api-error';
 
 export function toReadableBackendError(error: unknown) {
   if (error instanceof RequestFailure) return error;
-  const message = error instanceof Error ? error.message : '';
-  if (message.includes('is not configured')) {
-    return new Error('issue.serviceSetupHasNotBeenCompletedPleaseTryAgainLater', { cause: error });
-  }
-  if (message.includes('issue.upperLimitReached')) {
-    return new Error(message);
+  if (error instanceof ApiRequestError && error.code === 'service-not-configured') {
+    return new Error('issue.serviceSetupIncomplete', { cause: error });
   }
   if (isContentUnavailableError(error)) {
-    return new Error(message || 'issue.theContentNoLongerExists');
+    return new Error('issue.theContentNoLongerExists', { cause: error });
   }
   const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
   if (code === 'permission-denied' || code === '42501') {
-    return new Error('access.youCurrentlyDoNotHavePermissionToPerformThisOperation');
+    return new Error('access.operationForbidden');
   }
   if (code === 'unauthenticated' || code === '401') {
     return new Error('issue.pleaseLogInBeforeContinuing');
   }
-  if (/backend|provider|session/i.test(message)) {
-    return new Error('facility.theOperationFailedPleaseTryAgainLater');
-  }
-  return new Error(message || 'facility.theOperationFailedPleaseTryAgainLater');
+  if (error instanceof ApiRequestError) return error;
+  return new Error('facility.theOperationFailedPleaseTryAgainLater', { cause: error });
 }
 
 export function isContentUnavailableError(error: unknown) {
@@ -36,6 +31,5 @@ export function isContentUnavailableError(error: unknown) {
       return true;
     }
   }
-  const message = error instanceof Error ? error.message : String(error ?? '');
-  return message.includes('issue.deleted') || message.includes('issue.notFound');
+  return false;
 }

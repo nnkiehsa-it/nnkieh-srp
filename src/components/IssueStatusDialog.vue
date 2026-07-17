@@ -47,9 +47,9 @@ const emit = defineEmits<{
 }>();
 
 const statusOptions = [
-  { value: 'processing', label: 'facility.processing', description: 'issue.theProposalHasBeenProcessedButHasNotYetBeenFinalized' },
-  { value: 'completed', label: 'facility.completed', description: 'issue.theProposalHasBeenImplementedOrHasClearCompletionResults' },
-  { value: 'infeasible', label: 'issue.notFeasible', description: 'issue.ifTheProposalCannotBeProcessedAfterEvaluationTheReasonsMustBeExplained' },
+  { value: 'processing', label: 'facility.processing', description: 'issue.status.processedNotFinal' },
+  { value: 'completed', label: 'facility.completed', description: 'issue.status.completedResultHelp' },
+  { value: 'infeasible', label: 'issue.notFeasible', description: 'issue.status.rejectionReasonHelp' },
 ] satisfies Array<{ value: EditableStatus; label: string; description: string }>;
 
 const availableStatusOptions = computed(() =>
@@ -70,7 +70,7 @@ const initialStatus = computed<EditableStatus>(() => {
 const statusWarnings = computed<Record<string, string>>(() => {
   const warnings: Record<string, string> = {};
   if (props.issue.result_content) {
-    warnings.processing = 'issue.changingToProcessingWillClearTheCurrentProposalResultDescription';
+    warnings.processing = 'issue.status.processingClearsResult';
   }
   return warnings;
 });

@@ -146,5 +146,5 @@ export async function handleIssueReadAction(
   if (action === "getIssue") return getIssue(payload, auth, supabase);
   if (action === "listIssues" || action === "searchIssues") return listIssues(action, payload, auth, supabase);
   if (action === "listUserIssues") return listUserIssues(payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

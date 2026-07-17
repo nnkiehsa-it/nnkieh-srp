@@ -4,7 +4,7 @@ import {
   errorStatus,
   jsonResponse,
   MAX_WEBHOOK_BODY_BYTES,
-  publicError,
+  publicErrorBody,
   readRequestText,
   requireMethod,
   textResponse,
@@ -79,6 +79,6 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true });
   } catch (error) {
     console.error(errorMessage(error));
-    return jsonResponse({ ok: false, error: publicError(error) }, { status: errorStatus(error) });
+    return jsonResponse({ ok: false, error: publicErrorBody(error) }, { status: errorStatus(error) });
   }
 });

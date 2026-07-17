@@ -1,12 +1,10 @@
 import { requireFirebaseUid } from './auth';
 import {
-  actionError,
+  apiErrorResponse,
   corsHeaders,
   isAllowedBrowserRequest,
-  jsonResponse,
   parseJsonRecord,
   readBody,
-  simpleError,
 } from './http';
 import {
   claimActionRateLimits,
@@ -17,6 +15,7 @@ import {
 } from './rate-limit';
 import { verifyCloudinarySignature } from './signature';
 import type { Env } from './types';
+import { isApiErrorCode } from '../generated/api-errors';
 
 function clientIp(request: Request) {
   return request.headers.get('cf-connecting-ip')?.trim() || 'unknown';
@@ -27,22 +26,22 @@ function originUrl(env: Env, role: string) {
   return `${base}/n${env.EDGE_FUNCTION_NAMESPACE}-${role}`;
 }
 
-function upstreamHeaders(request: Request, env: Env) {
+function upstreamHeaders(request: Request, env: Env, requestId: string) {
   const headers = new Headers();
   for (const name of ['authorization', 'content-type', 'x-cld-signature', 'x-cld-timestamp']) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
   headers.set('x-novae-origin-secret', env.EDGE_ORIGIN_SECRET);
-  headers.set('x-request-id', crypto.randomUUID());
+  headers.set('x-request-id', requestId);
   return headers;
 }
 
-async function forward(request: Request, env: Env, role: string, body: Uint8Array) {
+async function forward(request: Request, env: Env, role: string, body: Uint8Array, requestId: string) {
   const upstreamBody = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer;
   const upstream = await fetch(originUrl(env, role), {
     method: 'POST',
-    headers: upstreamHeaders(request, env),
+    headers: upstreamHeaders(request, env, requestId),
     body: upstreamBody,
     signal: AbortSignal.timeout(30_000),
   });
@@ -61,33 +60,33 @@ async function forward(request: Request, env: Env, role: string, body: Uint8Arra
 }
 
 async function handleAction(request: Request, env: Env, requestId: string) {
-  if (!isAllowedBrowserRequest(request, env)) return actionError(request, env, requestId, 403, 'origin-denied', '不允許的請求來源。');
+  if (!isAllowedBrowserRequest(request, env)) return apiErrorResponse(request, env, requestId, 'origin-denied');
   const body = await readBody(request);
   const parsed = parseJsonRecord(body);
   const action = typeof parsed.action === 'string' ? parsed.action : '';
-  if (!action) return actionError(request, env, requestId, 400, 'invalid-action', '請求格式不正確。');
+  if (!action) return apiErrorResponse(request, env, requestId, 'invalid-action');
   const uid = await requireFirebaseUid(request, env);
   await claimActionRateLimits(env, uid, action, parsed);
-  return await forward(request, env, 'api', body);
+  return await forward(request, env, 'api', body, requestId);
 }
 
-async function handleSync(request: Request, env: Env) {
-  if (!isAllowedBrowserRequest(request, env)) return simpleError(request, env, 403, '不允許的請求來源。');
+async function handleSync(request: Request, env: Env, requestId: string) {
+  if (!isAllowedBrowserRequest(request, env)) return apiErrorResponse(request, env, requestId, 'origin-denied');
   const body = await readBody(request);
   parseJsonRecord(body);
   await claimSyncIngress(env, clientIp(request));
   const uid = await requireFirebaseUid(request, env);
   await claimSyncUser(env, uid);
-  return await forward(request, env, 'sync', body);
+  return await forward(request, env, 'sync', body, requestId);
 }
 
-async function handleCloudinary(request: Request, env: Env) {
+async function handleCloudinary(request: Request, env: Env, requestId: string) {
   const body = await readBody(request);
   if (!await verifyCloudinarySignature(request, body, env.CLOUDINARY_WEBHOOK_SECRET)) {
-    return simpleError(request, env, 401, 'Invalid Cloudinary signature.');
+    return apiErrorResponse(request, env, requestId, 'invalid-signature');
   }
   await claimCloudinaryIngress(env, clientIp(request));
-  return await forward(request, env, 'media', body);
+  return await forward(request, env, 'media', body, requestId);
 }
 
 export default {
@@ -97,37 +96,23 @@ export default {
       if (!isAllowedBrowserRequest(request, env)) return new Response(null, { status: 403 });
       return new Response(null, { status: 204, headers: corsHeaders(request, env) });
     }
-    if (request.method !== 'POST') return jsonResponse(request, env, { error: 'method-not-allowed' }, 405, { allow: 'POST, OPTIONS' });
+    if (request.method !== 'POST') return apiErrorResponse(request, env, requestId, 'method-not-allowed', undefined, { allow: 'POST, OPTIONS' });
 
     try {
       const pathname = new URL(request.url).pathname;
       if (pathname === '/v1/actions') return await handleAction(request, env, requestId);
-      if (pathname === '/v1/auth/sync') return await handleSync(request, env);
-      if (pathname === '/v1/webhooks/cloudinary') return await handleCloudinary(request, env);
-      return jsonResponse(request, env, { error: 'not-found' }, 404);
+      if (pathname === '/v1/auth/sync') return await handleSync(request, env, requestId);
+      if (pathname === '/v1/webhooks/cloudinary') return await handleCloudinary(request, env, requestId);
+      return apiErrorResponse(request, env, requestId, 'not-found');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'internal-error';
       console.error({ message, requestId, path: new URL(request.url).pathname });
       if (error instanceof RateLimitError) {
-        const headers = { 'retry-after': String(error.retryAfter) };
-        return new URL(request.url).pathname === '/v1/actions'
-          ? actionError(request, env, requestId, 429, 'rate-limited', error.message, headers)
-          : simpleError(request, env, 429, error.message, headers);
+        const code = isApiErrorCode(error.message) ? error.message : 'internal-error';
+        return apiErrorResponse(request, env, requestId, code, error.retryAfterSeconds);
       }
-      if (message === 'rate-limit-provider-unavailable') {
-        return new URL(request.url).pathname === '/v1/actions'
-          ? actionError(request, env, requestId, 503, message, '限流服務暫時無法使用，請稍後再試。')
-          : simpleError(request, env, 503, '限流服務暫時無法使用，請稍後再試。');
-      }
-      if (message === 'unauthenticated') {
-        return new URL(request.url).pathname === '/v1/actions'
-          ? actionError(request, env, requestId, 401, message, '請先登入後再操作。')
-          : simpleError(request, env, 401, '請先登入後再操作。');
-      }
-      const status = message === 'request-too-large' ? 413 : message === 'invalid-json' || message === 'unsupported-action' ? 400 : 502;
-      return new URL(request.url).pathname === '/v1/actions'
-        ? actionError(request, env, requestId, status, message, status === 502 ? '服務暫時無法處理請求，請稍後再試。' : '請求格式不正確。')
-        : simpleError(request, env, status, status === 502 ? '服務暫時無法處理請求，請稍後再試。' : '請求格式不正確。');
+      const code = isApiErrorCode(message) ? message : 'upstream-unavailable';
+      return apiErrorResponse(request, env, requestId, code);
     }
   },
 };

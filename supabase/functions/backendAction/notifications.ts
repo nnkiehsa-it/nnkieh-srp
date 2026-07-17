@@ -215,5 +215,5 @@ export async function handleNotificationAction(
     return data;
   }
 
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

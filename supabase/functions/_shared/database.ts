@@ -114,7 +114,7 @@ interface OutboxEventRow {
   locked_at: string | null;
   notification_completed_at: string | null;
   notion_completed_at: string | null;
-  last_error: string | null;
+  error_trace_id: string | null;
   created_at: string;
   updated_at: string;
   expires_at: string;
@@ -149,7 +149,7 @@ interface DeletionJobRow {
   status: string;
   attempt_count: number;
   next_attempt_at: string;
-  last_error: string | null;
+  error_trace_id: string | null;
   locked_at: string | null;
   created_at: string;
   updated_at: string;
@@ -231,7 +231,7 @@ interface MaintenanceRunRow {
   id: string;
   completed_at: string | null;
   details: Json;
-  error: string | null;
+  error_trace_id: string | null;
   started_at: string;
   status: string;
   task_name: string;
@@ -269,7 +269,7 @@ interface AppPrivateTables {
   }>;
   push_delivery_logs: Table<{
     id: string;
-    error_message: string | null;
+    error_trace_id: string | null;
     notification_type: string;
     status: string;
     target_id: string;
@@ -542,8 +542,8 @@ interface AppApiFunctions {
   complete_deletion_job: AppFunction<{ job_id: string }, void>;
   complete_idempotency_key: AppFunction<{ action_name: string; action_response: Json; actor_uid: string; request_id: string }, void>;
   complete_outbox_event: AppFunction<{ event_id: string }, void>;
-  fail_deletion_job: AppFunction<{ error_message: string; job_id: string }, void>;
-  fail_outbox_event: AppFunction<{ error_message: string; event_id: string }, void>;
+  fail_deletion_job: AppFunction<{ error_trace_id: string; job_id: string }, void>;
+  fail_outbox_event: AppFunction<{ error_trace_id: string; event_id: string }, void>;
   get_platform_dashboard_snapshot: AppFunction<Record<string, never>, Json>;
   backend_delete_issue: AppFunction<{ actor_is_admin: boolean; actor_uid: string; issue_id: string }, void>;
   release_idempotency_key: AppFunction<{ action_name: string; actor_uid: string; request_id: string }, void>;

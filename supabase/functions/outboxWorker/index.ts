@@ -3,7 +3,7 @@ import {
   type AppDatabaseClient,
 } from "../_shared/database-client.ts";
 import { isInvalidFcmTokenError, sendFcmMessage, sendFcmTopicMessage } from "../_shared/fcm.ts";
-import { errorMessage, errorStatus, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
+import { errorMessage, errorStatus, jsonResponse, publicErrorBody, requireMethod } from "../_shared/http.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { claimFixedWindowRateLimits, utcMinuteWindow, utcSecondWindow } from "../_shared/upstash-rate-limit.ts";
 import {
@@ -493,7 +493,7 @@ async function sendPushes(
   }
   if (pushFailureTraceCode) {
     await supabase.schema("app_private").from("push_delivery_logs").insert({
-      error_message: pushFailureTraceCode,
+      error_trace_id: pushFailureTraceCode,
       notification_type: notificationType,
       status: "failed",
       target_id: targetId,
@@ -531,7 +531,7 @@ async function sendPushesWithoutBlockingOutbox(
       traceCode,
     }));
     await supabase.schema("app_private").from("push_delivery_logs").insert({
-      error_message: traceCode,
+      error_trace_id: traceCode,
       notification_type: asString(notification.type),
       status: "failed",
       target_id: asString(notification.target_id),
@@ -714,7 +714,7 @@ Deno.serve(async (request) => {
           .schema("app_api")
           .rpc("fail_outbox_event", {
             event_id: event.id,
-            error_message: traceCode,
+            error_trace_id: traceCode,
           });
         if (failError) throw failError;
       }
@@ -730,6 +730,6 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true, processedCount: events.length });
   } catch (error) {
     console.error(errorMessage(error));
-    return jsonResponse({ ok: false, error: publicError(error) }, { status: errorStatus(error) });
+    return jsonResponse({ ok: false, error: publicErrorBody(error) }, { status: errorStatus(error) });
   }
 });

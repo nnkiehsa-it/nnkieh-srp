@@ -172,6 +172,7 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   ].join('\n');
   const firebaseAuth = await read('supabase/functions/_shared/firebase-auth.ts');
   const http = await read('supabase/functions/_shared/http.ts');
+  const apiErrors = await read('supabase/functions/_shared/api-errors.ts');
   const uploads = await read('src/services/uploads.ts');
   const announcementsService = await read('src/services/announcements.ts');
   const announcementLikeFixMigration = await read('supabase/migrations/202607090004_fix_announcement_like_ambiguity.sql');
@@ -250,7 +251,7 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(http, /is not configured/u);
   assert.match(http, /record\.message/u);
   assert.match(http, /record\.details/u);
-  assert.match(http, /request-in-progress/u);
+  assert.match(apiErrors, /request-in-progress/u);
   assert.doesNotMatch(session, /adminEmails/u);
   assert.doesNotMatch(backendAction, /max_file_size/u);
   assert.doesNotMatch(uploads, /body\.set\('max_file_size'/u);
@@ -431,7 +432,7 @@ test('cost-sensitive ingress and provider operations are bounded before work', a
   assert.match(worker, /claimSyncIngress/u);
   assert.match(worker, /claimCloudinaryIngress/u);
   assert.match(worker, /claimActionRateLimits/u);
-  assert.match(worker, /rate-limit-provider-unavailable/u);
+  assert.match(workerRateLimit, /rate-limit-provider-unavailable/u);
   assert.ok(
     backendAction.indexOf('getBackendActionDefinition(action)')
       < backendAction.indexOf('requireAuth(supabase, request)'),
@@ -1090,6 +1091,9 @@ test('content reads persist by account and invalidate after writes or realtime e
   assert.match(persistentCache, /entry\?\.writeVersion === writeVersion/u);
   assert.match(contentCache, /CONTENT_READ_CACHE_TTL_MS = 30 \* 24 \* 60 \* 60/u);
   assert.match(contentCache, /getCachedContentPersistent/u);
+  assert.match(contentCache, /function rememberContentCacheEntry/u);
+  assert.match(contentCache, /cache\.delete\(key\);[\s\S]*cache\.set\(key, entry\)/u);
+  assert.match(contentCache, /leastRecentlyUsedKey/u);
   assert.match(contentCache, /runCoalescedContentRequest/u);
   assert.match(contentCache, /pendingInvalidations/u);
   assert.match(contentCache, /interface ContentCacheWriteGuard/u);
@@ -1190,7 +1194,7 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(baseStyles, /body\.dialog-open \.action-feedback-viewport \{[\s\S]*top: calc\(env\(safe-area-inset-top\) \+ 6\.75rem\)/u);
 });
 
-test('primary navigation preloads route chunks and page transitions do not overlap', async () => {
+test('primary navigation preloads route chunks while shell chrome stays outside route transitions', async () => {
   const app = await read('src/App.vue');
   const appShell = await read('src/components/AppShell.vue');
   const issueBoard = await read('src/components/IssueBoard.vue');
@@ -1198,9 +1202,10 @@ test('primary navigation preloads route chunks and page transitions do not overl
   const routeComponents = await read('src/router/route-components.ts');
   const responsiveStyles = await read('src/styles/responsive.css');
 
-  assert.match(app, /<Transition name="page-content" mode="out-in">/u);
+  assert.doesNotMatch(app, /Transition name="page-content"/u);
   assert.doesNotMatch(app, /flex-1 overflow-x-hidden/u);
   assert.match(appShell, /app-main-content relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden/u);
+  assert.match(appShell, /<AppMobileHeader[\s\S]*<ViewportFrame as="main"[\s\S]*<slot \/>/u);
   assert.match(issueBoard, /overflow-y-auto overflow-x-hidden overscroll-contain/u);
   assert.match(facilitiesView, /overflow-y-auto overflow-x-hidden overscroll-contain/u);
   assert.match(app, /requestIdleCallback/u);
@@ -1209,7 +1214,7 @@ test('primary navigation preloads route chunks and page transitions do not overl
   assert.match(appShell, /preloadRoutePath/u);
   assert.match(routeComponents, /preloadRequests/u);
   assert.match(routeComponents, /for \(const routeName of routeNames\)/u);
-  assert.match(responsiveStyles, /\.page-content-leave-active \{[\s\S]*position: absolute/u);
+  assert.doesNotMatch(responsiveStyles, /\.page-content-(?:enter|leave)/u);
   assert.match(responsiveStyles, /\.board-controls \{[\s\S]*padding-top: 0\.5rem/u);
 });
 
@@ -1296,6 +1301,8 @@ test('frontend localization follows the first-visit system language and remains 
   assert.match(i18n, /storedLocale \?\? detectSystemLocale\(\)/u);
   assert.match(i18n, /navigator\.languages/u);
   assert.match(i18n, /document\.documentElement\.lang = locale/u);
+  assert.doesNotMatch(i18n, /sourceKeyLookup|getSourceKeyLookup/u);
+  assert.match(i18n, /Object\.hasOwn\(messages, source\)/u);
   assert.match(settings, /@click="setLocale\(option\.value\)"/u);
   assert.match(settings, /value: 'zh-TW'/u);
   assert.match(settings, /value: 'en'/u);
@@ -1310,6 +1317,47 @@ test('frontend localization follows the first-visit system language and remains 
   assert.match(i18nCheck, /static user-facing attribute/u);
   assert.match(i18nCheck, /static user-facing object property/u);
   assert.match(i18nCheck, /Locale interpolation parameters do not match/u);
+  assert.match(i18nCheck, /readCatalogDirectory/u);
+  assert.match(i18nCheck, /key\.length > 55/u);
+  assert.match(i18nCheck, /contains key outside its/u);
+  assert.match(i18nCheck, /references an unknown API error code/u);
+});
+
+test('public API errors use a generated code-only contract', async () => {
+  const apiErrorConfig = JSON.parse(await read('config/api-errors.config.json'));
+  const backendResponse = await read('supabase/functions/backendAction/response.ts');
+  const sharedHttp = await read('supabase/functions/_shared/http.ts');
+  const gatewayHttp = await read('cloudflare/src/http.ts');
+  const databaseTypes = await read('supabase/functions/_shared/database.ts');
+  const dashboardAction = await read('supabase/functions/backendAction/dashboard.ts');
+  const traceStorageMigration = await read('supabase/migrations/202607170001_unify_error_trace_storage.sql');
+  const rateLimitConfig = JSON.parse(await read('config/rate-limits.config.json'));
+  const packageJson = JSON.parse(await read('package.json'));
+
+  assert.ok(apiErrorConfig['internal-error']);
+  assert.ok(apiErrorConfig['rate-limit.operation']);
+  assert.match(packageJson.scripts['generate:all'], /generate:api-errors/u);
+  assert.doesNotMatch(backendResponse, /message:/u);
+  assert.match(backendResponse, /publicErrorBody\(error\)/u);
+  assert.doesNotMatch(sharedHttp, /達到上限|太頻繁|上傳額度已用完/u);
+  assert.match(gatewayHttp, /retryAfterSeconds/u);
+  assert.doesNotMatch(dashboardAction, /[\u3400-\u9fff]/u);
+  assert.match(dashboardAction, /failed_task_codes/u);
+  assert.doesNotMatch(databaseTypes, /last_error|error_message/u);
+  for (const table of ['outbox_events', 'deletion_jobs', 'push_delivery_logs', 'maintenance_runs']) {
+    assert.match(
+      traceStorageMigration,
+      new RegExp(`alter table app_private\\.${table} alter column error_trace_id type uuid`, 'u'),
+    );
+  }
+  assert.match(traceStorageMigration, /fail_outbox_event\(event_id uuid, error_trace_id uuid\)/u);
+  assert.match(traceStorageMigration, /raise exception 'validation-invalid'/u);
+  for (const value of Object.values(rateLimitConfig)) {
+    if (!value || typeof value !== 'object' || !Object.hasOwn(value, 'limit')) continue;
+    assert.equal(typeof value.errorCode, 'string');
+    assert.ok(apiErrorConfig[value.errorCode]);
+    assert.equal(Object.hasOwn(value, 'message'), false);
+  }
 });
 
 test('navigation and contextual creation share the same responsive information architecture', async () => {

@@ -1,3 +1,5 @@
+import { API_ERRORS, isApiErrorCode, type ApiErrorCode } from "./api-errors.ts";
+
 export const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -13,7 +15,7 @@ export function handleCorsPreflight(request: Request) {
 export function requireMethod(request: Request, method: string) {
   if (request.method === method) return null;
   return jsonResponse(
-    { error: "method-not-allowed" },
+    { error: { code: "method-not-allowed" }, ok: false },
     {
       headers: { Allow: method },
       status: 405,
@@ -68,23 +70,7 @@ export function errorMessage(error: unknown) {
 }
 
 export function errorStatus(error: unknown) {
-  const message = errorMessage(error);
-  if (message === "unauthenticated") return 401;
-  if (message === "permission-denied") return 403;
-  if (message === "not-found") return 404;
-  if (message === "method-not-allowed") return 405;
-  if (message === "missing action" || message.startsWith("Unsupported action:")) return 400;
-  if (message === "unsupported-action") return 400;
-  if (message === "invalid-json") return 400;
-  if (message === "request-too-large") return 413;
-  if (message === "invalid-issue-category" || message === "support-not-available") return 400;
-  if (message.endsWith("-required") || message.endsWith("-too-long") || message === "invalid-status") return 400;
-  if (message === "request-in-progress") return 409;
-  if (message.includes("push-token-limit-reached")) return 409;
-  if (message.includes("達到上限") || message.includes("太頻繁") || message.includes("上傳額度已用完")) return 429;
-  if (message.endsWith(" is not configured.")) return 503;
-  if (message === "rate-limit-provider-unavailable") return 503;
-  return 500;
+  return API_ERRORS[publicErrorCode(error)].status;
 }
 
 export async function readRequestText(request: Request, maxBytes: number) {
@@ -130,29 +116,45 @@ export async function readJsonRecord(request: Request) {
   }
 }
 
-export function publicError(error: unknown) {
-  const message = errorMessage(error);
-  if (message.includes("達到上限") || message.includes("太頻繁") || message.includes("上傳額度已用完")) return message;
-  if (message.includes("push-token-limit-reached")) return "通知裝置數量已達上限，請先移除舊裝置。";
-  const safeMessages: Record<string, string> = {
-    "invalid-json": "請求格式不正確。",
-    "invalid-issue-category": "提案分類不正確。",
-    "invalid-status": "提案狀態不正確。",
-    "last-platform-admin": "至少需要保留一位平台管理員。",
-    "missing-result": "結案時必須填寫處理結果。",
-    "method-not-allowed": "請求方法不正確。",
-    "not-found": "找不到指定內容。",
-    "permission-denied": "沒有執行此操作的權限。",
-    "request-in-progress": "操作處理中，請稍後再試。",
-    "request-too-large": "送出的內容超過限制。",
-    "push-token-limit-reached": "通知裝置數量已達上限，請先移除舊裝置。",
-    "support-not-available": "此提案目前無法附議。",
-    "unauthenticated": "請先登入後再操作。",
+function normalizePublicErrorToken(token: string): ApiErrorCode | null {
+  if (isApiErrorCode(token)) return token;
+  const aliases: Record<string, ApiErrorCode> = {
+    "missing-result": "validation-required",
+    "unsupported-upload-target": "validation-invalid",
+    "invalid-parent-comment": "validation-invalid",
+    "facility-author-fixed": "support-not-available",
+    "facility-closed": "support-not-available",
+    "42501": "permission-denied",
+    "PGRST116": "not-found",
   };
-  if (safeMessages[message]) return safeMessages[message];
-  if (message.endsWith("-required")) return "請完整填寫必要內容。";
-  if (message.endsWith("-too-long")) return "送出的文字超過長度限制。";
-  return "服務暫時無法處理請求，請稍後再試。";
+  if (aliases[token]) return aliases[token];
+  if (token.endsWith("-required")) return "validation-required";
+  if (token.endsWith("-too-long")) return "validation-too-long";
+  if (token.endsWith(" is not configured.")) return "service-not-configured";
+  return null;
+}
+
+export function publicErrorCode(error: unknown): ApiErrorCode {
+  if (error && typeof error === "object" && !(error instanceof Error)) {
+    const record = error as Record<string, unknown>;
+    for (const candidate of [asString(record.message), asString(record.code)]) {
+      const code = normalizePublicErrorToken(candidate);
+      if (code) return code;
+    }
+  }
+  const normalized = normalizePublicErrorToken(errorMessage(error));
+  if (normalized) return normalized;
+  return "internal-error";
+}
+
+export function publicErrorBody(error: unknown) {
+  const retryAfterSeconds = error && typeof error === "object" && "retryAfterSeconds" in error
+    && typeof error.retryAfterSeconds === "number" && Number.isFinite(error.retryAfterSeconds)
+    ? Math.max(1, Math.ceil(error.retryAfterSeconds))
+    : undefined;
+  return retryAfterSeconds
+    ? { code: publicErrorCode(error), retryAfterSeconds }
+    : { code: publicErrorCode(error) };
 }
 
 export function asRecord(value: unknown): Record<string, unknown> {

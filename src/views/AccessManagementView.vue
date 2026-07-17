@@ -36,7 +36,7 @@
           <p class="field-label mb-2">{{ t('access.platformAccess') }}</p>
           <SelectionOptionButton
             label="access.platformAdministrator"
-            description="access.hasAccessToAllCategoriesFacilitiesAnnouncementsRolesAndStatistics"
+            description="access.platformAdminDescription"
             :selected="isPlatformAdmin"
             :disabled="Boolean(savingUid)"
             @select="togglePlatformAdmin"
@@ -110,7 +110,7 @@ async function findUser() {
   try {
     const matches = await listRoleAssignments(query);
     user.value = matches[0] ?? null;
-    if (!user.value) error.value = t('access.theUserCannotBeFoundTheOtherPartyNeedsToLogInFirstOrPleaseConfirmWhetherTheEmailUidIsCorrect');
+    if (!user.value) error.value = t('access.userNotFoundHelp');
   } catch (caught) {
     error.value = caught instanceof Error ? t(caught.message) : t('access.theSearchFailed');
   } finally {

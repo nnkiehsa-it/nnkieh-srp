@@ -255,7 +255,7 @@
   <ConfirmDialog
     :open="logoutDialogOpen"
     :title="t('auth.signOut')"
-    :message="t('auth.youWillNeedToSignInAgainWithYourSchoolGoogleAccount')"
+    :message="t('auth.signInAgainNotice')"
     :confirm-label="t('auth.signOutLabel')"
     @cancel="logoutDialogOpen = false"
     @confirm="confirmLogout"

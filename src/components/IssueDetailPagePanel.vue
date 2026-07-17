@@ -82,7 +82,7 @@
           <EmptyStatePanel
             class="!px-3 !py-7"
             :title="t('comments.commentsAreCurrentlyDisabled')"
-            :description="t('access.thisProposalIsNotPublicYetOnlyTheAuthorAndAdministratorsCanViewIt')"
+            :description="t('access.privateIssueVisibility')"
             icon="comment"
           />
         </div>

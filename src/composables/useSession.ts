@@ -75,7 +75,7 @@ function markAppReady() {
 function recoverFromSessionStartupTimeout() {
   if (state.initialized) return;
   debugLog('session startup timed out; continuing without blocking the app');
-  state.error = 'auth.signInStatusIsTakingLongerThanExpectedTheAppHasOpenedWhileItContinuesLoading';
+  state.error = 'auth.slowSignInStatus';
   markAppReady();
 }
 
@@ -206,7 +206,7 @@ async function refreshVerifiedSession(user: NonNullable<SessionState['user']>, v
       if (!isCurrentVerification(user, verificationId)) return;
     } catch (error) {
       debugLog('background supabase auth initialization failed', error);
-      await rejectCurrentUser('auth.loginInitializationFailedPleaseLogInAgainAndTryAgain');
+      await rejectCurrentUser('auth.initializationFailed');
       return;
     }
 
@@ -239,7 +239,7 @@ export function initializeSession() {
   booted = true;
   if (!auth) {
     state.user = null;
-    state.error = 'auth.theServiceIsTemporarilyUnavailablePleaseTryAgainLater';
+    state.error = 'auth.serviceUnavailable';
     markAppReady();
     return;
   }

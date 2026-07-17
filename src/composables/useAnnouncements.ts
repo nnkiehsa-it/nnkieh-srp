@@ -118,8 +118,8 @@ export function useAnnouncements(options: UseAnnouncementsOptions = {}) {
       if (isAbortFailure(caught)) return;
       if (currentVersion === getVersion(state) && state.announcements.length === 0) {
         state.error = isOnline.value
-          ? 'announcement.announcementLoadingFailedPleaseTryAgainLater'
-          : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+          ? 'announcement.loadFailed'
+          : 'notification.offlineRefreshRequired';
       }
     } finally {
       if (currentVersion === getVersion(state)) {
@@ -154,8 +154,8 @@ export function useAnnouncements(options: UseAnnouncementsOptions = {}) {
       if (isAbortFailure(caught)) return;
       if (currentVersion === getVersion(state)) {
         state.error = isOnline.value
-          ? 'announcement.failedToLoadMoreAnnouncementsPleaseTryAgainLater'
-          : 'notification.itIsCurrentlyOfflinePleaseRestoreTheInternetConnectionAndRefreshIt';
+          ? 'announcement.loadMoreFailed'
+          : 'notification.offlineRefreshRequired';
       }
     } finally {
       if (currentVersion === getVersion(state)) {

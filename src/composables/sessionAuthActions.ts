@@ -109,7 +109,7 @@ export async function loginWithGoogle(state: SessionState, options: { selectAcco
   state.loading = true;
 
   if (!auth) {
-    state.error = 'auth.theServiceIsTemporarilyUnavailablePleaseTryAgainLater';
+    state.error = 'auth.serviceUnavailable';
     state.loading = false;
     return;
   }
@@ -193,11 +193,11 @@ function getLoginErrorMessage(error: unknown, fallback = 'auth.loginFailedPlease
     || error.code === 'auth/invalid-recaptcha-action'
     || error.code === 'auth/recaptcha-not-enabled'
   ) {
-    return 'auth.loginSecurityVerificationFailedPleaseRefreshThePageAndTryAgain';
+    return 'auth.appCheckFailed';
   }
 
   if (error.code === 'auth/network-request-failed') {
-    return 'auth.loginConnectionFailedPleaseConfirmTheNetworkStatusAndTryAgain';
+    return 'auth.connectionFailed';
   }
 
   if (error.code === 'auth/popup-closed-by-user') {
@@ -205,19 +205,19 @@ function getLoginErrorMessage(error: unknown, fallback = 'auth.loginFailedPlease
   }
 
   if (error.code === 'auth/popup-blocked') {
-    return 'auth.theLoginWindowIsBlockedByTheBrowserPleaseAllowThePopUpWindowAndTryAgain';
+    return 'auth.popupBlocked';
   }
 
   if (error.code === 'auth/operation-not-supported-in-this-environment') {
-    return 'auth.theCurrentBrowserCannotOpenTheLoginWindowPleaseUseTheSystemBrowserToOpenItInstead';
+    return 'auth.systemBrowserRequired';
   }
 
   if (error.code === 'auth/unauthorized-domain') {
-    return 'access.theCurrentUrlDoesNotAllowGoogleLoginPleaseContactTheAdministratorToConfirmTheSettings';
+    return 'access.googleLoginOriginInvalid';
   }
 
   if (error.code === 'auth/argument-error') {
-    return 'auth.theLoginComponentFailedToInitializePleaseRefreshThePageAndTryAgain';
+    return 'auth.loginWidgetInitFailed';
   }
 
   return fallback;

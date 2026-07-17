@@ -37,5 +37,5 @@ export async function handleAnnouncementReadAction(
 ) {
   if (action === "listAnnouncements") return listAnnouncements(payload, auth, supabase);
   if (action === "getAnnouncement") return getAnnouncement(payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

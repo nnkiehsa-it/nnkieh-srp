@@ -2,7 +2,7 @@ import { createDatabaseClient } from "../_shared/database-client.ts";
 import { requireEnv } from "../_shared/env.ts";
 import { requireEligibleFirebaseUser } from "../_shared/firebase-auth.ts";
 import { getGoogleAccessToken } from "../_shared/google-oauth.ts";
-import { errorMessage, errorStatus, handleCorsPreflight, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
+import { errorMessage, errorStatus, handleCorsPreflight, jsonResponse, publicErrorBody, requireMethod } from "../_shared/http.ts";
 import { requireOriginSecret } from "../_shared/origin.ts";
 
 function parseCustomAttributes(value: string) {
@@ -95,6 +95,6 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true, role: "authenticated" });
   } catch (error) {
     console.error(errorMessage(error));
-    return jsonResponse({ ok: false, error: publicError(error) }, { status: errorStatus(error) });
+    return jsonResponse({ ok: false, error: publicErrorBody(error) }, { status: errorStatus(error) });
   }
 });

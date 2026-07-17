@@ -1,4 +1,5 @@
 import { requireEnv } from "./env.ts";
+import type { ApiErrorCode } from "./api-errors.ts";
 
 interface RateLimitWindow {
   expiresAt: Date;
@@ -6,8 +7,8 @@ interface RateLimitWindow {
 }
 
 interface RateLimitConfig {
+  errorCode: ApiErrorCode;
   limit: number;
-  message: string;
 }
 
 interface RateLimitClaim {
@@ -16,6 +17,16 @@ interface RateLimitClaim {
   identifier: string;
   units?: number;
   window: RateLimitWindow;
+}
+
+export class RateLimitError extends Error {
+  readonly retryAfterSeconds: number;
+
+  constructor(code: ApiErrorCode, retryAfterSeconds: number) {
+    super(code);
+    this.name = "RateLimitError";
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
 }
 
 function sanitizeKeyPart(value: string) {
@@ -94,7 +105,11 @@ export async function claimFixedWindowRateLimits(claims: RateLimitClaim[]) {
   for (let index = 0; index < claims.length; index += 1) {
     const count = readPipelineCount(data[index]);
     if (count > claims[index].config.limit) {
-      throw new Error(claims[index].config.message);
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((claims[index].window.expiresAt.getTime() - Date.now()) / 1000),
+      );
+      throw new RateLimitError(claims[index].config.errorCode, retryAfterSeconds);
     }
   }
 }

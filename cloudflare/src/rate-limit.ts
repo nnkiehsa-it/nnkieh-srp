@@ -1,6 +1,7 @@
 import { BACKEND_ACTION_POLICIES } from '../generated/backend-actions';
 import { RATE_LIMITS } from '../generated/rate-limits';
 import type { Env, JsonRecord } from './types';
+import type { ApiErrorCode } from '../generated/api-errors';
 
 interface Window {
   expiresAt: Date;
@@ -9,19 +10,20 @@ interface Window {
 
 interface Claim {
   actionName: string;
+  errorCode: ApiErrorCode;
   identifier: string;
   limit: number;
-  message: string;
   units?: number;
   window: Window;
 }
 
 export class RateLimitError extends Error {
-  readonly retryAfter: number;
+  readonly retryAfterSeconds: number;
 
-  constructor(message: string, retryAfter: number) {
-    super(message);
-    this.retryAfter = retryAfter;
+  constructor(code: ApiErrorCode, retryAfterSeconds: number) {
+    super(code);
+    this.name = 'RateLimitError';
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -81,7 +83,7 @@ export async function claimRateLimits(env: Env, claims: Claim[]) {
   for (let index = 0; index < claims.length; index += 1) {
     if (countFromResult(results[index]) > claims[index].limit) {
       throw new RateLimitError(
-        claims[index].message,
+        claims[index].errorCode,
         Math.max(1, Math.ceil((claims[index].window.expiresAt.getTime() - Date.now()) / 1000)),
       );
     }
@@ -120,7 +122,7 @@ const extraConfig = {
 
 export async function claimActionRateLimits(env: Env, uid: string, action: string, body: JsonRecord) {
   const policy = BACKEND_ACTION_POLICIES[action as keyof typeof BACKEND_ACTION_POLICIES];
-  if (!policy) throw new Error('unsupported-action');
+  if (!policy) throw new Error('invalid-action');
   const claims: Claim[] = groupClaims(uid, policy.group);
   if ('extraLimit' in policy) {
     const extra = extraConfig[policy.extraLimit];

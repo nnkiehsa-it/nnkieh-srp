@@ -1,6 +1,6 @@
 import { createDatabaseClient } from "../_shared/database-client.ts";
 import { requireEnv } from "../_shared/env.ts";
-import { errorMessage, errorStatus, jsonResponse, publicError, requireMethod } from "../_shared/http.ts";
+import { errorMessage, errorStatus, jsonResponse, publicErrorBody, requireMethod } from "../_shared/http.ts";
 import { ISSUE_CATEGORY_IDS } from "../_shared/issue-categories.ts";
 import { RATE_LIMITS } from "../_shared/rate-limits.ts";
 import { DATA_RETENTION } from "../_shared/data-retention.ts";
@@ -51,6 +51,6 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: true, result: data, workers: workerResults });
   } catch (error) {
     console.error(errorMessage(error));
-    return jsonResponse({ ok: false, error: publicError(error) }, { status: errorStatus(error) });
+    return jsonResponse({ ok: false, error: publicErrorBody(error) }, { status: errorStatus(error) });
   }
 });

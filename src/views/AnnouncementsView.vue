@@ -16,7 +16,7 @@
 
     <ContentListState
       :empty="announcements.length === 0"
-      empty-description="announcement.announcementsWillAppearHereAsTheyArePublished"
+      empty-description="announcement.emptyDescription"
       empty-icon="chart"
       empty-title="announcement.thereAreCurrentlyNoAnnouncements"
       :error="error"
@@ -66,7 +66,7 @@
     <ConfirmDialog
       :open="Boolean(deletePendingAnnouncement)"
       title="announcement.areYouSureYouWantToDeleteThisAnnouncement"
-      message="announcement.onceDeletedThisAnnouncementCannotBeRestored"
+      message="announcement.deleteWarning"
       confirm-label="comments.confirmDeletion"
       :busy="deleting"
       @cancel="closeDeleteDialog"
@@ -134,7 +134,7 @@ const {
   loadingMore,
   refresh: refreshAnnouncements,
   refreshFeedback: {
-    error: 'announcement.announcementUpdateFailedPleaseTryAgainLater',
+    error: 'announcement.updateFailed',
     loading: 'announcement.announcementIsBeingUpdated',
     success: 'announcement.announcementHasBeenUpdated',
   },

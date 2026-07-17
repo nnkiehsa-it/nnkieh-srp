@@ -78,15 +78,15 @@ async function createCloudinaryUploadError(response: Response) {
 
   if (response.status === 401) {
     if (/stale|expired|timestamp.{0,40}(?:too old|out of range)|(?:too old|out of range).{0,40}timestamp/i.test(providerMessage)) {
-      return new Error('image.theImageUploadVerificationHasTimedOutPleaseSelectAnotherImageAndTryAgain');
+      return new Error('image.uploadVerificationTimeout');
     }
-    return new Error('access.imageServiceVerificationFailedPleaseContactTheAdministratorToCheckTheCloudinaryKeySettings');
+    return new Error('access.imageServiceMisconfigured');
   }
   if (response.status === 413 || /file size|too large/i.test(providerMessage)) {
     return new Error('image.imageSizeExceedsUploadLimit');
   }
   if (response.status === 400 && /format|allowed_formats/i.test(providerMessage)) {
-    return new Error('image.theImageFormatIsNotSupportedPleaseSelectAnotherImage');
+    return new Error('image.unsupportedFormat');
   }
   return new Error(t('upload.httpFailed', { status: response.status }));
 }

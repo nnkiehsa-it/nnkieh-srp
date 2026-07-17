@@ -421,7 +421,7 @@ const props = withDefaults(defineProps<{
   busyLabel: 'comments.imageProcessing',
   disabled: false,
   editorClass: '',
-  helperText: 'markdown.youCanEnterTextOrAddImagesAndUseTheToolbarToInsertFormats',
+  helperText: 'markdown.editorHelp',
   maxImagesLabel: '',
   placeholder: '',
   previewClass: '',

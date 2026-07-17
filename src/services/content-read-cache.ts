@@ -39,6 +39,16 @@ function scopedKey(key: string) {
   return `${activeScope}\u0000${key}`;
 }
 
+function rememberContentCacheEntry(key: string, entry: CacheEntry<unknown>) {
+  cache.delete(key);
+  cache.set(key, entry);
+  while (cache.size > MAX_MEMORY_CACHE_ENTRIES) {
+    const leastRecentlyUsedKey = cache.keys().next().value;
+    if (typeof leastRecentlyUsedKey !== 'string') break;
+    cache.delete(leastRecentlyUsedKey);
+  }
+}
+
 export function setContentCacheScope(scope: string) {
   const normalized = scope.trim() || 'anonymous';
   if (normalized === activeScope) return;
@@ -65,6 +75,7 @@ export function isContentCacheFresh(updatedAt: number, now = Date.now(), maxAgeM
 export function getCachedContent<T>(key: string, maxAgeMs = CONTENT_READ_CACHE_TTL_MS): T | null {
   const entry = cache.get(key);
   if (!entry || entry.stale || !isContentCacheFresh(entry.updatedAt, Date.now(), maxAgeMs)) return null;
+  rememberContentCacheEntry(key, entry);
   return entry.value as T;
 }
 
@@ -88,7 +99,7 @@ export async function getCachedContentPersistent<T>(key: string, maxAgeMs = CONT
   const pending = readPersistentCache<T>(persistentKey).then((entry) => {
     if (!entry || entry.scope !== guard.scope || !isContentCacheFresh(entry.updatedAt, Date.now(), maxAgeMs)) return null;
     if (!isContentCacheWriteGuardCurrent(guard)) return null;
-    cache.set(key, { stale: false, updatedAt: entry.updatedAt, value: entry.value });
+    rememberContentCacheEntry(key, { stale: false, updatedAt: entry.updatedAt, value: entry.value });
     return entry.value;
   }).finally(() => {
     if (pendingPersistentReads.get(persistentKey) === pending) pendingPersistentReads.delete(persistentKey);
@@ -118,7 +129,7 @@ export function setCachedContentFromRead<T>(guard: ContentCacheWriteGuard, value
 }
 
 function writeCachedContent<T>(key: string, value: T, updatedAt: number, guard: ContentCacheWriteGuard) {
-  cache.set(key, { stale: false, updatedAt, value });
+  rememberContentCacheEntry(key, { stale: false, updatedAt, value });
   const scope = activeScope;
   const persistentKey = `${scope}\u0000${key}`;
   const writeVersion = ++persistentWriteVersion;
@@ -129,11 +140,6 @@ function writeCachedContent<T>(key: string, value: T, updatedAt: number, guard: 
       }
     });
 
-  while (cache.size > MAX_MEMORY_CACHE_ENTRIES) {
-    const oldestKey = cache.keys().next().value;
-    if (typeof oldestKey !== 'string') break;
-    cache.delete(oldestKey);
-  }
 }
 
 export function runCoalescedContentRequest<T>(key: string, request: (guard: ContentCacheWriteGuard) => Promise<T>) {

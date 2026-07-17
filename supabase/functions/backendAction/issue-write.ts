@@ -24,5 +24,5 @@ export async function handleIssueWriteAction(
   if (action === "updateIssueResult") return updateIssueResult(payload, auth, supabase);
   if (action === "toggleSupport" || action === "removeSupport") return updateSupport(action, payload, auth, supabase);
   if (action === "deleteIssue") return deleteIssue(payload, auth, supabase);
-  throw new Error("unsupported-action");
+  throw new Error("invalid-action");
 }

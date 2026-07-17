@@ -13,7 +13,7 @@ async function runWithIdempotency(
   const action = definition.name;
   const requestId = asString(payload.requestId);
   if (definition.requiresRequestId && !requestId) {
-    throw new Error("request-id-required");
+    throw new Error("validation-required");
   }
   if (!requestId || !definition.idempotent) {
     return await execute();

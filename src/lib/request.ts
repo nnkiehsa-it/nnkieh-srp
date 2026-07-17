@@ -94,7 +94,7 @@ export function isAbortFailure(error: unknown) {
   return error instanceof RequestFailure && error.code === 'aborted';
 }
 
-export function formatRequestError(error: unknown, fallback = 'common.thereSeemsToBeAProblemWithTheNetworkPleaseTryAgainLater') {
+export function formatRequestError(error: unknown, fallback = 'common.networkError') {
   if (error instanceof RequestFailure) {
     if (error.code === 'aborted') return '';
     if (error.code === 'timeout') return 'common.theNetworkResponseTimeIsTooLongPleaseReload';

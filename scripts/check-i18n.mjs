@@ -6,8 +6,8 @@ import { parse as parseVueSfc } from '@vue/compiler-sfc';
 const root = process.cwd();
 const sourceRoot = path.join(root, 'src');
 const catalogPaths = {
-  en: path.join(sourceRoot, 'i18n/messages/en.ts'),
-  zhTW: path.join(sourceRoot, 'i18n/messages/zh-TW.ts'),
+  en: path.join(sourceRoot, 'i18n/messages/en'),
+  zhTW: path.join(sourceRoot, 'i18n/messages/zh-TW'),
 };
 
 function readCatalog(sourceText, variableName, filePath) {
@@ -42,6 +42,32 @@ function readCatalog(sourceText, variableName, filePath) {
   return { duplicateKeys, messages };
 }
 
+async function readCatalogDirectory(directory) {
+  const messages = new Map();
+  const duplicateKeys = [];
+  const structureErrors = [];
+  const entries = await readdir(directory, { withFileTypes: true });
+  const catalogFiles = entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.ts') && entry.name !== 'index.ts')
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  for (const entry of catalogFiles) {
+    const filePath = path.join(directory, entry.name);
+    const domain = path.basename(entry.name, '.ts');
+    const catalog = readCatalog(await readFile(filePath, 'utf8'), 'messages', filePath);
+    duplicateKeys.push(...catalog.duplicateKeys);
+    for (const [key, value] of catalog.messages) {
+      if (!key.startsWith(`${domain}.`)) {
+        structureErrors.push(`${filePath} contains key outside its ${domain} domain: ${key}`);
+      }
+      if (messages.has(key)) duplicateKeys.push(key);
+      messages.set(key, value);
+    }
+  }
+
+  return { duplicateKeys, messages, structureErrors };
+}
+
 async function listSourceFiles(directory) {
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -61,19 +87,19 @@ function stripNonRuntimeText(source) {
     .replace(/(^|[^:])\/\/.*$/gmu, '$1');
 }
 
-const [zhSource, enSource, sourceFiles, issueCategoryConfigSource, rateLimitConfigSource] = await Promise.all([
-  readFile(catalogPaths.zhTW, 'utf8'),
-  readFile(catalogPaths.en, 'utf8'),
+const [zh, en, sourceFiles, issueCategoryConfigSource, rateLimitConfigSource, apiErrorConfigSource] = await Promise.all([
+  readCatalogDirectory(catalogPaths.zhTW),
+  readCatalogDirectory(catalogPaths.en),
   listSourceFiles(sourceRoot),
   readFile(path.join(root, 'config/issue-categories.config.json'), 'utf8'),
   readFile(path.join(root, 'config/rate-limits.config.json'), 'utf8'),
+  readFile(path.join(root, 'config/api-errors.config.json'), 'utf8'),
 ]);
 sourceFiles.push(path.join(root, 'index.html'), path.join(root, 'vite.config.ts'));
-const zh = readCatalog(zhSource, 'zhTW', catalogPaths.zhTW);
-const en = readCatalog(enSource, 'en', catalogPaths.en);
 const errors = [];
 const issueCategoryConfig = JSON.parse(issueCategoryConfigSource);
 const rateLimitConfig = JSON.parse(rateLimitConfigSource);
+const apiErrorConfig = JSON.parse(apiErrorConfigSource);
 const allowedStaticTemplateText = new Set([
   'Novae',
 ]);
@@ -159,6 +185,7 @@ function checkVueTemplate(source, relativePath) {
 }
 
 for (const [locale, catalog] of [['zh-TW', zh], ['en', en]]) {
+  errors.push(...catalog.structureErrors.map((error) => `${locale}: ${error}`));
   for (const key of catalog.duplicateKeys) errors.push(`${locale} has duplicate key: ${key}`);
   for (const [key, value] of catalog.messages) {
     if (!/^[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*)+$/u.test(key)) {
@@ -167,6 +194,7 @@ for (const [locale, catalog] of [['zh-TW', zh], ['en', en]]) {
     if (/^text\.[0-9a-f]{8,}$/u.test(key)) {
       errors.push(`${locale} still has an opaque generated key: ${key}`);
     }
+    if (key.length > 55) errors.push(`${locale} has an overly sentence-shaped key: ${key}`);
     if (!value.trim()) errors.push(`${locale} has an empty message: ${key}`);
   }
 }
@@ -188,22 +216,19 @@ for (const category of issueCategoryConfig.categories ?? []) {
   }
 }
 
-const localizedSourceMessages = new Set(zh.messages.values());
-function checkConfigMessages(value, sourcePath) {
-  if (typeof value === 'string') {
-    if (/\p{Script=Han}/u.test(value) && !localizedSourceMessages.has(value)) {
-      errors.push(`${sourcePath} contains a user-facing message missing from the locale catalogs: ${value}`);
-    }
-    return;
+for (const [code, definition] of Object.entries(apiErrorConfig)) {
+  if (!definition || typeof definition !== 'object' || typeof definition.messageKey !== 'string') {
+    errors.push(`API error ${code} has no locale messageKey`);
+  } else if (!zh.messages.has(definition.messageKey)) {
+    errors.push(`API error ${code} references a missing locale key: ${definition.messageKey}`);
   }
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => checkConfigMessages(item, `${sourcePath}[${index}]`));
-    return;
-  }
-  if (!value || typeof value !== 'object') return;
-  Object.entries(value).forEach(([key, item]) => checkConfigMessages(item, `${sourcePath}.${key}`));
 }
-checkConfigMessages(rateLimitConfig, 'config/rate-limits.config.json');
+for (const [name, value] of Object.entries(rateLimitConfig)) {
+  if (!value || typeof value !== 'object' || !Object.hasOwn(value, 'limit')) continue;
+  if (typeof value.errorCode !== 'string' || !Object.hasOwn(apiErrorConfig, value.errorCode)) {
+    errors.push(`Rate limit ${name} references an unknown API error code: ${String(value.errorCode ?? '')}`);
+  }
+}
 for (const [key, zhValue] of zh.messages) {
   const enValue = en.messages.get(key);
   if (enValue === undefined) continue;
