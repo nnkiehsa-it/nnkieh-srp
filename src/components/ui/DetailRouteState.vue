@@ -8,8 +8,9 @@
   />
 
   <SkeletonDetail
-    v-else-if="loading"
-    :label="loadingLabel"
+     v-else-if="loading"
+     :label="loadingLabel"
+     :show-comments="showComments"
   />
 
   <div v-else-if="!allowed" class="sr-only" role="status">{{ t('auth.redirectingToSignIn') }}</div>
@@ -41,10 +42,12 @@ withDefaults(defineProps<{
   problemDescription: string;
   problemRetryDisabled?: boolean;
   problemTitle: string;
+  showComments?: boolean;
 }>(), {
   error: '',
   errorTitle: 'common.contentReadFailed',
   problemRetryDisabled: false,
+  showComments: true,
 });
 
 const emit = defineEmits<{

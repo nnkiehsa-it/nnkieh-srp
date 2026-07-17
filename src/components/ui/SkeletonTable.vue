@@ -35,7 +35,7 @@ withDefaults(defineProps<{
   showAuthor?: boolean;
   isAdmin?: boolean;
 }>(), {
-  rows: 4,
+  rows: 2,
   showAuthor: true,
   isAdmin: false,
 });

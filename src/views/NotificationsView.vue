@@ -4,7 +4,7 @@
       <div :key="notificationPanelKey">
         <SurfacePanel v-if="loading" variant="list" :aria-label="t('notification.notificationsLoading')">
           <div
-            v-for="index in 4"
+            v-for="index in 2"
             :key="index"
             class="notification-group-row list-surface-row"
           >

@@ -30,7 +30,7 @@ withDefaults(defineProps<{
   count?: number;
   canManage?: boolean;
 }>(), {
-  count: 4,
+  count: 2,
   canManage: false,
 });
 </script>
