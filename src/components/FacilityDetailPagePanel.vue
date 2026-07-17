@@ -1,31 +1,23 @@
 <template>
-  <DetailPageShell
-    back-label="返回設備列表"
-    details-label="設備內容"
+  <ContentDetailPagePanel
+    :author-name="facility.author_name"
+    :author-photo-url="facility.author_photo_url"
+    :author-secondary="facility.location"
+    :author-uid="facility.author_uid"
+    back-label="text.326fa994df51"
+    :content="facility.content"
+    details-label="text.61ad921351ac"
+    :notice-content="facility.result_content"
+    :notice-fallback-alt="t('facility.resultImage', { title: facility.title })"
+    notice-title="text.acf9101e8dc4"
+    notice-markdown
     :show-comments="false"
-    :show-mobile-back-button="false"
+    :title="facility.title"
     @back="emit('back')"
   >
     <template #header>
-      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">設備</span>
+      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('text.a6a61230ffa1') }}</span>
       <span class="tag font-semibold shadow-note" :class="statusClass">{{ statusLabel }}</span>
-    </template>
-
-    <template #details="{ compact, scrollContent }">
-      <ContentDetailBody
-        :author-name="facility.author_name"
-        :author-photo-url="facility.author_photo_url"
-        :author-secondary="facility.location"
-        :author-uid="facility.author_uid"
-        :compact="compact"
-        :content="facility.content"
-        :notice-content="facility.result_content"
-        :notice-fallback-alt="`${facility.title} 的設備處理結果圖片`"
-        notice-title="處理結果"
-        notice-markdown
-        :scroll-content="scrollContent"
-        :title="facility.title"
-      />
     </template>
 
     <template #actions="{ compact }">
@@ -42,14 +34,16 @@
         @toggle-affected="emit('toggleAffected')"
       />
     </template>
-  </DetailPageShell>
+  </ContentDetailPagePanel>
 </template>
 
 <script setup lang="ts">
 import FacilityDetailActions from '@/components/FacilityDetailActions.vue';
-import ContentDetailBody from '@/components/ContentDetailBody.vue';
-import DetailPageShell from '@/components/ui/DetailPageShell.vue';
+import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
 import type { FacilityRecord, OperationTimeListItem } from '@/types';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 defineProps<{
   affecting: boolean;

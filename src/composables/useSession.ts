@@ -75,7 +75,7 @@ function markAppReady() {
 function recoverFromSessionStartupTimeout() {
   if (state.initialized) return;
   debugLog('session startup timed out; continuing without blocking the app');
-  state.error = '登入狀態載入時間過長，已先開啟 App。';
+  state.error = 'text.b87b6d13b972';
   markAppReady();
 }
 
@@ -129,13 +129,13 @@ function observeAuthState(firebaseAuth: NonNullable<typeof auth>) {
       acceptCurrentUser(user);
     } catch (error) {
       debugLog('auth state processing failed', error);
-      state.error = '登入狀態檢查逾時，請重新載入。';
+      state.error = 'text.c33314730d97';
     } finally {
       markAppReady();
     }
   }, (error) => {
     debugLog('auth state observer failed', error);
-    state.error = '登入狀態載入失敗，請稍後再試。';
+    state.error = 'text.d7962461867e';
     if (!state.initialized) {
       markAppReady();
     }
@@ -156,7 +156,7 @@ async function rejectCurrentUser(reason: string) {
   state.roleLoading = false;
   state.error = reason;
   try {
-    await withRequestTimeout(() => signOut(firebaseAuth), { label: '登出' });
+    await withRequestTimeout(() => signOut(firebaseAuth), { label: 'text.b7fd2c1683eb' });
   } finally {
     resolveRoleReadyWaiters();
     markAppReady();
@@ -206,7 +206,7 @@ async function refreshVerifiedSession(user: NonNullable<SessionState['user']>, v
       if (!isCurrentVerification(user, verificationId)) return;
     } catch (error) {
       debugLog('background supabase auth initialization failed', error);
-      await rejectCurrentUser('登入初始化失敗，請重新登入後再試。');
+      await rejectCurrentUser('text.a24318a8270b');
       return;
     }
 
@@ -239,7 +239,7 @@ export function initializeSession() {
   booted = true;
   if (!auth) {
     state.user = null;
-    state.error = '服務暫時無法使用，請稍後再試。';
+    state.error = 'text.f346c9b8883d';
     markAppReady();
     return;
   }

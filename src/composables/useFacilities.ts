@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { deleteFacility, listFacilities, toggleFacilityAffected, updateFacilityStatus } from '@/services/facilities';
 import { isAbortFailure } from '@/lib/request';
 import { normalizeSearchText } from '@/lib/search';
+import { FACILITY_STATUS_LABELS, isFacilityClosed } from '@/constants/statuses';
 import type { FacilityCursor, FacilitySortOption, FacilityStatus, FacilitySummary } from '@/types';
 import { subscribeContentRevisionChanges } from '@/services/content-revisions';
 
@@ -60,7 +61,7 @@ export function useFacilities() {
       }
     } catch (caught) {
       if (isAbortFailure(caught)) return;
-      if (version === requestVersion) error.value = caught instanceof Error ? caught.message : '設備載入失敗。';
+      if (version === requestVersion) error.value = caught instanceof Error ? caught.message : 'text.53fbde7469ea';
     } finally {
       if (version === requestVersion) (append ? loadingMore : loading).value = false;
       if (requestController === controller) requestController = null;
@@ -71,7 +72,7 @@ export function useFacilities() {
     if (
       affectingFacilityId.value
       || facility.isOwnFacility
-      || ['completed', 'unable-to-handle'].includes(facility.status)
+      || isFacilityClosed(facility.status)
     ) return;
     affectingFacilityId.value = facility.id;
     try {
@@ -88,7 +89,7 @@ export function useFacilities() {
     const updateCollection = (collection: FacilitySummary[]) => {
       const index = collection.findIndex((entry) => entry.id === facility.id);
       if (index < 0) return;
-      if (bucket.value === 'active' && ['completed', 'unable-to-handle'].includes(updated.status)) {
+      if (bucket.value === 'active' && isFacilityClosed(updated.status)) {
         collection.splice(index, 1);
       } else {
         collection.splice(index, 1, updated);
@@ -105,8 +106,16 @@ export function useFacilities() {
   }
 
   const statusOptions = computed(() => bucket.value === 'closed'
-    ? [{ value: '', label: '全部' }, { value: 'completed', label: '已完成' }, { value: 'unable-to-handle', label: '無法處理' }]
-    : [{ value: '', label: '全部' }, { value: 'pending', label: '待受理' }, { value: 'processing', label: '處理中' }]);
+    ? [
+      { value: '', label: 'text.778fc8f99453' },
+      { value: 'completed', label: FACILITY_STATUS_LABELS.completed },
+      { value: 'unable-to-handle', label: FACILITY_STATUS_LABELS['unable-to-handle'] },
+    ]
+    : [
+      { value: '', label: 'text.778fc8f99453' },
+      { value: 'pending', label: FACILITY_STATUS_LABELS.pending },
+      { value: 'processing', label: FACILITY_STATUS_LABELS.processing },
+    ]);
 
   function restoreBrowseResults() {
     requestVersion += 1;

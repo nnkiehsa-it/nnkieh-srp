@@ -10,6 +10,7 @@ export type IssueCommentsEnabledWhen = 'readable' | 'public';
 export interface IssueCategoryConfig {
   id: string;
   label: string;
+  labelKey: string;
   readAccess: IssueReadAccess;
   authorStorage: IssueAuthorStorage;
   support: {
@@ -35,6 +36,7 @@ export const ISSUE_CATEGORIES = [
   {
     id: "public-issues",
     label: "公共議題",
+    labelKey: "category.publicIssues",
     readAccess: "reviewed-school",
     authorStorage: "private",
     support: {
@@ -58,6 +60,7 @@ export const ISSUE_CATEGORIES = [
   {
     id: "rights-maintenance",
     label: "學生權益",
+    labelKey: "category.studentRights",
     readAccess: "owner-admin",
     authorStorage: "issue",
     support: {
@@ -86,6 +89,9 @@ export const DEFAULT_ISSUE_CATEGORY: IssueCategory = ISSUE_CATEGORIES[0].id;
 export const ISSUE_CATEGORY_IDS = ISSUE_CATEGORIES.map((category) => category.id) as IssueCategory[];
 export const ISSUE_CATEGORY_LABELS = Object.fromEntries(
   ISSUE_CATEGORIES.map((category) => [category.id, category.label]),
+) as Record<IssueCategory, string>;
+export const ISSUE_CATEGORY_LABEL_KEYS = Object.fromEntries(
+  ISSUE_CATEGORIES.map((category) => [category.id, category.labelKey]),
 ) as Record<IssueCategory, string>;
 
 const ISSUE_CATEGORY_BY_ID = ISSUE_CATEGORIES.reduce((lookup, category) => {

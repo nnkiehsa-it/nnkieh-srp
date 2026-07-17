@@ -4,21 +4,21 @@
     v-model:content="form.content"
     v-model:show-preview="showPreview"
     :open="open"
-    eyebrow="發起新提案"
-    :title="`發布至「${categoryLabel}」`"
+    eyebrow="text.271568f2eda5"
+    :title="t('text.c6ba0918f29e', { category: t(categoryLabel) })"
     title-input-id="issue-title"
-    title-label="提案標題"
+    title-label="text.6baa727f1716"
     :title-max-length="INPUT_LIMITS.title"
     :title-warning-length="27"
-    title-placeholder="為您的提案取個明確的標題..."
+    title-placeholder="text.64eb8c7aefed"
     editor-textarea-id="issue-content"
-    editor-label="詳細說明"
-    editor-placeholder="在此輸入詳細說明..."
+    editor-label="text.b085db5ec3bb"
+    editor-placeholder="text.cf1d2913a469"
     :images="editorImages"
     :max-images="RATE_LIMITS.imageUploads.issueMaxImages"
-    max-images-label="提案"
-    hint="建議提出精確的提案。"
-    submit-label="確認發布"
+    max-images-label="text.b9a2f9c03506"
+    hint="text.66de893e1e35"
+    submit-label="text.ea3ea494dd98"
     :busy="submitting"
     :uploading="uploading"
     :error="error || uploadError"
@@ -36,6 +36,7 @@ import { INPUT_LIMITS } from '@/constants/input-limits';
 import { RATE_LIMITS } from '@/generated/rate-limits';
 import { useIssueComposerForm } from '@/composables/useIssueComposerForm';
 import type { IssueRecord, WritableIssueCategory } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   open: boolean;
@@ -47,6 +48,7 @@ const emit = defineEmits<{
   close: [];
   submitted: [issue: IssueRecord];
 }>();
+const { t } = useI18n();
 
 const {
   form,
@@ -68,7 +70,7 @@ const {
 
 const editorImages = computed(() =>
   imageUrls.value.map((src, index) => ({
-    alt: '提案附加圖片預覽',
+    alt: t('text.c549f291eee2'),
     key: `${src}:${index}`,
     src,
   })),

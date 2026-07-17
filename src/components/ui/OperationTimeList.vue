@@ -9,14 +9,17 @@
       class="flex items-center gap-1"
       :class="{ 'shrink-0': compact }"
     >
-      <span class="font-semibold text-ink-400">{{ compact ? `${item.shortLabel}：` : `${item.label}：` }}</span>
-      <span class="font-medium text-ink-700 dark:text-ink-300">{{ item.valueLabel }}</span>
+      <span class="font-semibold text-ink-400">{{ compact ? `${t(item.shortLabel)}:` : `${t(item.label)}:` }}</span>
+      <span class="font-medium text-ink-700 dark:text-ink-300">{{ t(item.valueLabel) }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { OperationTimeListItem } from '@/types';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   compact?: boolean;

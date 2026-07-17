@@ -19,7 +19,7 @@ export function usePlatformDashboard() {
       if (currentVersion === requestVersion) dashboard.value = nextDashboard;
     } catch (caught) {
       if (currentVersion === requestVersion && !isAbortFailure(caught)) {
-        error.value = formatRequestError(caught, '儀表板載入失敗，請稍後再試。');
+        error.value = formatRequestError(caught, 'text.7ddf899f6d4d');
       }
     } finally {
       if (currentVersion === requestVersion) loading.value = false;

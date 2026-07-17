@@ -25,14 +25,14 @@ interface RequestOptions {
 function abortedFailure(signal: AbortSignal, label: string) {
   return signal.reason instanceof RequestFailure
     ? signal.reason
-    : new RequestFailure(`${label}已取消。`, 'aborted');
+    : new RequestFailure(t('request.aborted', { label: t(label) }), 'aborted');
 }
 
 export async function withRequestTimeout<T>(
   operation: (signal: AbortSignal) => Promise<T>,
   options: RequestOptions = {},
 ): Promise<T> {
-  const label = options.label ?? '請求';
+  const label = options.label ?? 'text.466c5b7be28e';
   const controller = new AbortController();
   const timeoutMs = options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
   let timedOut = false;
@@ -43,13 +43,13 @@ export async function withRequestTimeout<T>(
 
   const timeoutId = window.setTimeout(() => {
     timedOut = true;
-    controller.abort(new RequestFailure(`${label}逾時，請檢查網路後重試。`, 'timeout'));
+    controller.abort(new RequestFailure(t('request.timeout', { label: t(label) }), 'timeout'));
   }, timeoutMs);
 
   const aborted = new Promise<never>((_, reject) => {
     controller.signal.addEventListener('abort', () => reject(
       timedOut
-        ? new RequestFailure(`${label}逾時，請檢查網路後重試。`, 'timeout')
+        ? new RequestFailure(t('request.timeout', { label: t(label) }), 'timeout')
         : abortedFailure(controller.signal, label),
     ), { once: true });
   });
@@ -60,7 +60,7 @@ export async function withRequestTimeout<T>(
     if (error instanceof RequestFailure) throw error;
     if (controller.signal.aborted) throw abortedFailure(controller.signal, label);
     throw new RequestFailure(
-      error instanceof Error && error.message ? error.message : `${label}失敗。`,
+      error instanceof Error && error.message ? error.message : t('request.failed', { label: t(label) }),
       'network',
     );
   } finally {
@@ -81,7 +81,7 @@ export async function safeFetch(
       signal,
     });
     if (!response.ok) {
-      throw new RequestFailure(`請求失敗（${response.status}）。`, 'http', response.status);
+      throw new RequestFailure(t('request.httpFailed', { status: response.status }), 'http', response.status);
     }
     return response;
   }, {
@@ -94,11 +94,12 @@ export function isAbortFailure(error: unknown) {
   return error instanceof RequestFailure && error.code === 'aborted';
 }
 
-export function formatRequestError(error: unknown, fallback = '網路似乎有問題，請稍後再試。') {
+export function formatRequestError(error: unknown, fallback = 'text.4cabfb030bb6') {
   if (error instanceof RequestFailure) {
     if (error.code === 'aborted') return '';
-    if (error.code === 'timeout') return '網路回應時間過長，請重新載入。';
+    if (error.code === 'timeout') return 'text.ab728a7beea5';
     return error.message || fallback;
   }
   return error instanceof Error && error.message ? error.message : fallback;
 }
+import { t } from '@/i18n';

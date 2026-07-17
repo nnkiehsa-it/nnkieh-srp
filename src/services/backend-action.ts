@@ -3,6 +3,7 @@ import { getFirebaseIdToken } from '@/lib/auth-token';
 import type { BackendActionName } from '@/services/backend-action-contract';
 import { auth } from '@/lib/firebase';
 import { apiGatewayUrl } from '@/lib/api-gateway';
+import { t } from '@/i18n';
 
 interface BackendActionSuccessEnvelope<TResponse> {
   data: TResponse;
@@ -53,9 +54,9 @@ function withStableRequestId<TRequest>(name: BackendActionName, payload: TReques
 }
 
 function formatEnvelopeError(envelope: BackendActionErrorEnvelope) {
-  const message = envelope.error?.message?.trim() || '服務暫時無法處理請求，請稍後再試。';
+  const message = envelope.error?.message?.trim() || 'text.a536dc73985a';
   const requestId = envelope.requestId?.trim();
-  return requestId ? `${message} 錯誤追蹤碼：${requestId}` : message;
+  return requestId ? t('service.errorTrackingCode', { message: t(message), requestId }) : message;
 }
 
 export function invokeBackendAction<TRequest = Record<string, unknown>, TResponse = unknown>(
@@ -68,7 +69,7 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
       const requestUid = auth?.currentUser?.uid ?? '';
       const token = await getFirebaseIdToken();
       if (!token || !requestUid || auth?.currentUser?.uid !== requestUid) {
-        throw new Error('請先登入後再操作。');
+        throw new Error('text.1d48f6a23b35');
       }
 
       const response = await fetch(apiGatewayUrl('/v1/actions'), {
@@ -81,7 +82,7 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
         signal,
       });
       if (auth?.currentUser?.uid !== requestUid) {
-        throw new Error('登入狀態已變更，已忽略先前的回應。');
+        throw new Error('text.323576571b94');
       }
       let envelope: BackendActionEnvelope<TResponse> | null = null;
       try {
@@ -90,12 +91,12 @@ export function invokeBackendAction<TRequest = Record<string, unknown>, TRespons
         // The response status below supplies the useful fallback.
       }
       if (!envelope) {
-        throw new Error('服務沒有回傳資料。');
+        throw new Error('text.64f299a8bc48');
       }
       if (!response.ok || envelope.success !== true) {
         throw new Error(envelope.success === false
           ? formatEnvelopeError(envelope)
-          : `服務暫時無法處理請求（${response.status}）。`);
+          : t('service.httpUnavailable', { status: response.status }));
       }
       if (stableOperation.storageKey) sessionStorage.removeItem(stableOperation.storageKey);
       return envelope.data;

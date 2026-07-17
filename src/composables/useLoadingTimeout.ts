@@ -5,10 +5,10 @@ export function useLoadingTimeout(loading: Ref<boolean>, timeoutMs = 12_000) {
   const { isOnline } = useNetworkStatus();
   const timedOut = ref(false);
   const hasProblem = computed(() => timedOut.value || (loading.value && !isOnline.value));
-  const problemTitle = computed(() => isOnline.value ? '網路似乎有問題' : '目前已離線');
+  const problemTitle = computed(() => isOnline.value ? 'text.8554357b1379' : 'text.b06e03be3a9c');
   const problemDescription = computed(() => isOnline.value
-    ? '資料等待時間過長，請檢查網路後再試一次。'
-    : '請確認網路連線，恢復連線後再重新整理。'
+    ? 'text.89e4b1d19f7e'
+    : 'text.5f0214b357d6'
   );
   let timer: number | null = null;
 

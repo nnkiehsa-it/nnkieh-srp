@@ -3,7 +3,7 @@
     <DetailRouteState
       :allowed="isAllowedUser"
       :loading="sessionLoading || routeIssueLoading"
-      loading-label="正在載入提案"
+      loading-label="text.49b7cc2ac6bd"
       :problem="sessionLoadingHasProblem"
       :problem-title="sessionProblemTitle"
       :problem-description="sessionProblemDescription"
@@ -29,9 +29,9 @@
 
     <ConfirmDialog
       :open="isDeleteDialogOpen"
-      title="確定要刪除這筆提案嗎？"
-      message="刪除後這筆提案將無法復原。"
-      confirm-label="確認刪除"
+      title="text.3bba33b8e1fa"
+      message="text.9e46a9fe15e3"
+      confirm-label="text.1d63b95811eb"
       :busy="isDeleting"
       @cancel="closeDeleteDialog"
       @confirm="performRouteIssueDelete"
@@ -41,12 +41,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import IssueDetailPagePanel from '@/components/IssueDetailPagePanel.vue';
 import DetailRouteState from '@/components/ui/DetailRouteState.vue';
 import { useDeleteIssue } from '@/composables/useDeleteIssue';
 import { useAuthenticatedDetailState } from '@/composables/useAuthenticatedDetailState';
+import { useDetailRouteQuery } from '@/composables/useDetailRouteQuery';
 import { useIssueRouteDetail } from '@/composables/useIssueRouteDetail';
 import { useSession } from '@/composables/useSession';
 import { useShareUrl } from '@/composables/useShareUrl';
@@ -55,7 +56,6 @@ import { normalizeIssueRouteFilterParam } from '@/constants/categories';
 import { resetAppConnection } from '@/lib/reconnect';
 
 const route = useRoute();
-const router = useRouter();
 const {
   canLoad,
   isAllowedUser,
@@ -66,7 +66,7 @@ const {
   sessionProblemTitle,
 } = useAuthenticatedDetailState();
 const { mySupportedIssueIds } = useSession();
-const { copyShareUrl } = useShareUrl();
+const { copyRouteUrl } = useShareUrl();
 const { show } = useActionFeedback();
 
 const {
@@ -88,11 +88,7 @@ const {
   performDelete,
 } = useDeleteIssue(routeIssueId);
 
-const initialTab = computed(() => route.query.tab === 'comments' ? 'comments' : 'details');
-const focusCommentId = computed(() => {
-  const value = route.query.comment;
-  return typeof value === 'string' ? value : '';
-});
+const { focusCommentId, initialTab } = useDetailRouteQuery();
 
 function goBackToIssueList() {
   closeRouteIssue();
@@ -100,14 +96,13 @@ function goBackToIssueList() {
 
 function copyRouteIssueUrl() {
   if (!routeIssue.value) return;
-  const href = router.resolve({
+  void copyRouteUrl({
     name: 'issue-detail',
     params: {
       filter: normalizeIssueRouteFilterParam(route.params.filter),
       issueId: routeIssue.value.id,
     },
-  }).href;
-  copyShareUrl(new URL(href, window.location.origin).toString());
+  });
 }
 
 async function performRouteIssueDelete() {

@@ -10,10 +10,10 @@
       <AppIcon :name="icon" :size="8" :stroke-width="1.5" />
     </div>
     <h2 class="mt-5 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">
-      {{ title }}
+      {{ t(title) }}
     </h2>
     <p v-if="description" class="mt-2 text-sm leading-6 text-ink-500 dark:text-ink-400">
-      {{ description }}
+      {{ t(description) }}
     </p>
     <button
       v-if="actionLabel"
@@ -21,7 +21,7 @@
       class="button-secondary mt-5"
       @click="emit('action')"
     >
-      {{ actionLabel }}
+      {{ t(actionLabel) }}
     </button>
   </div>
 </template>
@@ -29,6 +29,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{
   actionLabel?: string;

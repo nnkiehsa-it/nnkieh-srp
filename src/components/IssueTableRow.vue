@@ -1,53 +1,32 @@
 <template>
-  <div class="relative" role="listitem">
-    <article
-      class="issue-card list-row-trigger relative overflow-hidden"
-      data-list-row-trigger
-      @click="openDetails()"
-    >
-      <header class="flex min-w-0 items-center gap-2">
-        <span class="tag-sm shrink-0 font-semibold" :class="statusClass">
-          {{ statusLabel }}
-        </span>
-        <span class="ml-auto truncate text-xs text-ink-400 dark:text-ink-500">
-          {{ primaryTimeValueLabel }}
-        </span>
-        <div v-if="isAdmin" class="shrink-0" @click.stop="stopCardActionClick">
-          <IssueAdminMenu
-            :issue="issue"
-            :compact="true"
-            class="!space-y-0"
-            @message="(msg) => showActionFeedback(msg, 'success')"
-            @error="(err) => showActionFeedback(err, 'error')"
-            @status-changed="emit('issue-updated', $event)"
-            @delete="confirmDelete"
-          />
-        </div>
-      </header>
+  <ContentCardShell
+    :author-name="displayAuthorName"
+    :author-photo-url="displayPhotoUrl"
+    :highlight-query="highlightQuery"
+    :show-author="issue.canViewAuthor"
+    :status-class="statusClass"
+    :status-label="statusLabel"
+    :time-label="primaryTimeValueLabel"
+    :title="issue.title"
+    @open="openDetails()"
+  >
+    <template v-if="isAdmin" #admin>
+      <IssueAdminMenu
+        :issue="issue"
+        :compact="true"
+        class="!space-y-0"
+        @message="(msg) => showActionFeedback(msg, 'success')"
+        @error="(err) => showActionFeedback(err, 'error')"
+        @status-changed="emit('issue-updated', $event)"
+        @delete="confirmDelete"
+      />
+    </template>
 
-      <div class="mt-3 flex min-w-0 items-center gap-2.5">
-        <UserAvatar
-          v-if="issue.canViewAuthor"
-          :photo-url="displayPhotoUrl"
-          :name="displayAuthorName"
-          size="sm"
-          :alt-text="`${displayAuthorName} 的頭像`"
-          class="shrink-0"
-        />
-        <div class="min-w-0 flex-1">
-          <h3 class="line-clamp-2 text-[15px] font-semibold leading-6 tracking-[0.01em] text-ink-950 dark:text-ink-50 sm:text-base">
-            <SearchHighlight :text="issue.title" :query="highlightQuery" />
-          </h3>
-          <p v-if="issue.canViewAuthor" class="mt-0.5 truncate text-xs text-ink-500 dark:text-ink-400">
-            {{ displayAuthorName }}
-          </p>
-        </div>
-      </div>
-
+    <template #supplement>
       <div v-if="issue.support_enabled" class="mt-4 rounded-xl bg-ink-50/85 px-3 py-2.5 dark:bg-ink-900/55">
         <div class="flex items-center justify-between gap-3 text-xs">
           <span class="font-semibold tabular-nums text-ink-700 dark:text-ink-300">
-            {{ supportCount }} / {{ issue.support_goal ?? 0 }} 附議
+            {{ t('text.5498d9af3630', { count: supportCount, goal: issue.support_goal ?? 0 }) }}
           </span>
           <span v-if="supportRemainingLabel" class="text-ink-400 dark:text-ink-500">
             {{ supportRemainingLabel }}
@@ -60,42 +39,44 @@
           ></div>
         </div>
       </div>
-      <p v-else class="mt-4 text-xs text-ink-400 dark:text-ink-500">此提案不開放附議</p>
+      <p v-else class="mt-4 text-xs text-ink-400 dark:text-ink-500">{{ t('text.b6642bde95cb') }}</p>
+    </template>
 
-      <footer class="mt-3 flex items-center justify-end gap-1.5" @click.stop="stopCardActionClick">
-        <button
-          type="button"
-          class="button-toolbar h-8 w-8 rounded-full p-0"
-          title="查看留言"
-          aria-label="查看留言"
-          @click.stop="openDetails('comments')"
-        >
-          <AppIcon name="comment" />
-        </button>
-        <VoteButtons
-          v-if="issue.support_enabled"
-          :author-fixed="issue.isOwnIssue"
-          :issue-id="issue.id"
-          :current-user-supported="currentUserSupported"
-          :support-count="supportCount"
-          :support-closed="supportClosed"
-          :status-label="statusLabel"
-          :compact="true"
-          @supported="handleSupport"
-        />
-      </footer>
-    </article>
+    <template #actions>
+      <button
+        type="button"
+        class="button-toolbar h-8 w-8 rounded-full p-0"
+        :title="t('text.888828602ebd')"
+        :aria-label="t('text.888828602ebd')"
+        @click.stop="openDetails('comments')"
+      >
+        <AppIcon name="comment" />
+      </button>
+      <VoteButtons
+        v-if="issue.support_enabled"
+        :author-fixed="issue.isOwnIssue"
+        :issue-id="issue.id"
+        :current-user-supported="currentUserSupported"
+        :support-count="supportCount"
+        :support-closed="supportClosed"
+        :status-label="statusLabel"
+        :compact="true"
+        @supported="handleSupport"
+      />
+    </template>
 
-    <ConfirmDialog
-      :open="isDeleteDialogOpen"
-      title="確定要刪除這筆提案嗎？"
-      message="刪除後這筆提案將無法復原。"
-      confirm-label="確認刪除"
-      :busy="isDeleting"
-      @cancel="isDeleteDialogOpen = false"
-      @confirm="performDelete"
-    />
-  </div>
+    <template #dialogs>
+      <ConfirmDialog
+        :open="isDeleteDialogOpen"
+        title="text.3bba33b8e1fa"
+        message="text.9e46a9fe15e3"
+        confirm-label="text.1d63b95811eb"
+        :busy="isDeleting"
+        @cancel="isDeleteDialogOpen = false"
+        @confirm="performDelete"
+      />
+    </template>
+  </ContentCardShell>
 </template>
 
 <script setup lang="ts">
@@ -104,10 +85,10 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import IssueAdminMenu from '@/components/IssueAdminMenu.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import SearchHighlight from '@/components/ui/SearchHighlight.vue';
-import UserAvatar from '@/components/ui/UserAvatar.vue';
+import ContentCardShell from '@/components/ui/ContentCardShell.vue';
 import { useIssueItemController } from '@/composables/useIssueItemController';
 import type { IssueRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   issue: IssueRecord;
@@ -122,6 +103,7 @@ const emit = defineEmits<{
   'issue-updated': [issue: IssueRecord];
   'issue-deleted': [issueId: string];
 }>();
+const { t } = useI18n();
 
 const {
   displayAuthorName,
@@ -150,6 +132,4 @@ const {
   (issue) => emit('issue-updated', issue),
   (issueId) => emit('issue-deleted', issueId),
 );
-
-const stopCardActionClick = () => undefined;
 </script>

@@ -6,6 +6,7 @@ import {
   initializeAuth,
   type Auth,
 } from 'firebase/auth';
+import { t } from '@/i18n';
 
 const allowedDomain = String(import.meta.env.VITE_ALLOWED_DOMAIN ?? '').trim().toLowerCase();
 const firebaseVapidKey = String(import.meta.env.VITE_FIREBASE_VAPID_KEY ?? '').trim();
@@ -31,7 +32,7 @@ if (!projectId) missingConfig.push('VITE_FIREBASE_PROJECT_ID');
 if (!appId) missingConfig.push('VITE_FIREBASE_APP_ID');
 
 const firebaseInitError = missingConfig.length
-  ? `Firebase 設定缺少：${missingConfig.join(', ')}。請在本機 .env 或部署環境變數中補齊。`
+  ? t('config.firebaseMissing', { keys: missingConfig.join(', ') })
   : '';
 
 let app: FirebaseApp | null = null;

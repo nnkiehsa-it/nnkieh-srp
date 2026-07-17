@@ -1,27 +1,19 @@
 <template>
-  <DetailPageShell
+  <ContentDetailPagePanel
     v-if="announcement"
-    back-label="返回公告列表"
-    :initial-tab="initialTab"
-    details-label="公告內容"
+    back-label="text.c12e8b61ecde"
+    :author-name="announcement.author_name"
+    :author-photo-url="announcement.author_photo_url"
+    :author-uid="announcement.author_uid"
     :comment-count="announcement.comment_count"
-    :show-mobile-back-button="false"
+    :content="announcement.content"
+    details-label="text.1bb7c8022090"
+    :initial-tab="initialTab"
+    :title="announcement.title"
     @back="emit('back')"
   >
     <template #header>
-      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">公告</span>
-    </template>
-
-    <template #details="{ compact, scrollContent }">
-      <ContentDetailBody
-        :author-name="announcement.author_name"
-        :author-photo-url="announcement.author_photo_url"
-        :author-uid="announcement.author_uid"
-        :compact="compact"
-        :content="announcement.content"
-        :scroll-content="scrollContent"
-        :title="announcement.title"
-      />
+      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('text.3f9569532847') }}</span>
     </template>
 
     <template #actions="{ compact }">
@@ -46,15 +38,17 @@
         @content-unavailable="emit('contentUnavailable', $event)"
       />
     </template>
-  </DetailPageShell>
+  </ContentDetailPagePanel>
 </template>
 
 <script setup lang="ts">
 import type { AnnouncementRecord } from '@/types';
 import AnnouncementComments from '@/components/AnnouncementComments.vue';
 import AnnouncementDetailActions from '@/components/AnnouncementDetailActions.vue';
-import ContentDetailBody from '@/components/ContentDetailBody.vue';
-import DetailPageShell from '@/components/ui/DetailPageShell.vue';
+import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{
   announcement: AnnouncementRecord | null;

@@ -10,18 +10,18 @@
       :aria-busy="saving ? 'true' : undefined"
       tabindex="-1"
     >
-      <h3 :id="dialogTitleId" class="dialog-title">{{ step === 1 ? selectTitle : resultTitle }}</h3>
-      <p class="dialog-description">{{ step === 1 ? selectDescription : resultDescription }}</p>
+      <h3 :id="dialogTitleId" class="dialog-title">{{ t(step === 1 ? selectTitle : resultTitle) }}</h3>
+      <p class="dialog-description">{{ t(step === 1 ? selectDescription : resultDescription) }}</p>
 
       <div class="mt-5 space-y-4">
         <div v-if="step === 1">
-          <p class="field-label mb-2">下一個狀態</p>
+          <p class="field-label mb-2">{{ t('text.d2b22e5cd9de') }}</p>
           <div class="grid gap-2">
             <SelectionOptionButton
               v-for="option in options"
               :key="option.value"
-              :label="option.label"
-              :description="option.description"
+              :label="t(option.label)"
+              :description="t(option.description)"
               :selected="status === option.value"
               :disabled="saving"
               @select="status = option.value"
@@ -31,22 +31,22 @@
             v-if="statusWarnings[status]"
             class="mt-4 rounded-xl border border-warning/20 bg-warning-container/40 px-3 py-2 text-xs font-semibold leading-5 text-on-warning-container"
           >
-            {{ statusWarnings[status] }}
+            {{ t(statusWarnings[status]) }}
           </p>
         </div>
 
         <div v-else class="space-y-2">
-          <label class="field-label" :for="resultInputId">{{ resultLabel }}</label>
-          <div class="overflow-hidden rounded-[var(--radius-inner)] border-0 bg-surface shadow-note transition-colors focus-within:ring-2 focus-within:ring-outline/25 dark:bg-surface">
+          <label class="field-label" :for="resultInputId">{{ t(resultLabel) }}</label>
+          <div class="control-frame">
             <textarea
               :id="resultInputId"
               v-model="result"
               class="block min-h-36 w-full resize-none bg-transparent px-4 py-3 text-base leading-6 text-ink-800 outline-none placeholder:text-ink-400 disabled:cursor-not-allowed disabled:text-ink-500 dark:text-ink-100 dark:placeholder:text-ink-500 md:text-sm"
               :maxlength="resultMaxLength"
-              :placeholder="resultPlaceholder"
+              :placeholder="t(resultPlaceholder)"
               :disabled="saving"
             ></textarea>
-            <div class="flex items-center justify-end border-t border-ink-100 bg-ink-50/50 px-4 py-2 text-xs font-medium text-ink-500 dark:border-ink-800 dark:bg-ink-950/30 dark:text-ink-400">
+            <div class="control-footer justify-end text-xs font-medium text-ink-500 dark:text-ink-400">
               <span :class="{ 'text-error': result.length > resultWarningLength }">
                 {{ result.length }} / {{ resultMaxLength }}
               </span>
@@ -56,15 +56,15 @@
       </div>
 
       <p v-if="localError || error" class="mt-3 text-xs font-semibold text-error">
-        {{ localError || error }}
+        {{ t(localError || error) }}
       </p>
 
       <div class="dialog-actions">
         <button type="button" class="button-secondary" :disabled="saving" @click="handleSecondary">
-          {{ step === 1 ? '取消' : '返回' }}
+          {{ t(step === 1 ? 'text.4d0b4688c787' : 'text.11d024154013') }}
         </button>
         <button type="button" class="button-primary" :disabled="saving || !status" @click="handlePrimary">
-          <BusyButtonContent :busy="saving" :label="primaryLabel" busy-label="更新中" />
+          <BusyButtonContent :busy="saving" :label="primaryLabel" :busy-label="t('text.111227ad9eb7')" />
         </button>
       </div>
     </section>
@@ -78,6 +78,7 @@ import DialogOverlay from '@/components/ui/DialogOverlay.vue';
 import SelectionOptionButton from '@/components/ui/SelectionOptionButton.vue';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
+import { useI18n } from '@/i18n';
 
 interface StatusOption {
   description: string;
@@ -109,7 +110,7 @@ const props = withDefaults(defineProps<{
   error: '',
   initialResult: '',
   saving: false,
-  selectDescription: '請選擇下一個狀態。',
+  selectDescription: 'text.7787dc881c57',
   statusWarnings: () => ({}),
 });
 
@@ -123,7 +124,8 @@ const result = ref('');
 const localError = ref('');
 const step = ref(1);
 const requiresResult = computed(() => props.resultStatuses.includes(status.value));
-const primaryLabel = computed(() => step.value === 1 && requiresResult.value ? '下一步' : '確認');
+const primaryLabel = computed(() => step.value === 1 && requiresResult.value ? 'text.ea0ef2ae7245' : 'text.86a07295c547');
+const { t } = useI18n();
 const isOpen = toRef(props, 'open');
 
 useBodyScrollLock(isOpen);

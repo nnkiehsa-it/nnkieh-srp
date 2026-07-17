@@ -14,7 +14,7 @@
       <button
         type="button"
         class="button-remove-image cursor-pointer"
-        aria-label="移除圖片"
+        :aria-label="t('text.3e9b6f7dd375')"
         @click="emit('remove-image', image.key)"
       >
         <AppIcon name="close" :size="3" :stroke-width="2.5" />
@@ -25,6 +25,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/ui/AppIcon.vue';
+import { useI18n } from '@/i18n';
 
 export interface MarkdownEditorImage {
   alt: string;
@@ -42,4 +43,5 @@ withDefaults(defineProps<{
 const emit = defineEmits<{
   'remove-image': [key: string];
 }>();
+const { t } = useI18n();
 </script>

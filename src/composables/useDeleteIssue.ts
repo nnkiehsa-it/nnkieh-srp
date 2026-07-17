@@ -25,15 +25,15 @@ export function useDeleteIssue(issueId: MaybeRef<string>) {
   async function performDelete() {
     isDeleting.value = true;
     const targetIssueId = unref(issueId);
-    const feedbackHandle = start('正在刪除提案');
+    const feedbackHandle = start('text.ff45c4b29e59');
 
     try {
       const result = await deleteIssue(targetIssueId);
       isDeleteDialogOpen.value = false;
-      feedbackHandle.succeed('提案已刪除');
+      feedbackHandle.succeed('text.4a51a0c6bad2');
       return result.issueId;
     } catch {
-      actionError.value = '刪除失敗，請稍後再試。';
+      actionError.value = 'text.c51f84ab04cf';
       feedbackHandle.fail(actionError.value);
       return '';
     } finally {

@@ -1,7 +1,8 @@
 @layer components {
   .panel {
-    @apply border-0 bg-surface shadow-elevated dark:bg-surface;
+    @apply border-0 bg-surface dark:bg-surface;
     border-radius: var(--radius-outer);
+    box-shadow: var(--shadow-card);
     transition:
       opacity var(--motion-duration-panel) var(--motion-ease),
       transform var(--motion-duration-panel) var(--motion-ease),
@@ -14,30 +15,6 @@
 
   .panel-pad {
     padding: var(--panel-padding);
-  }
-
-  .popover-panel {
-    @apply border-0 bg-surface dark:bg-surface;
-    border-radius: var(--radius-outer);
-    box-shadow:
-      var(--shadow-floating),
-      inset 0 1px 0 rgb(255 255 255 / 0.72);
-  }
-
-  .popover-panel--compact {
-    @apply p-2;
-  }
-
-  .popover-panel--section {
-    @apply p-2.5;
-  }
-
-  .popover-panel--search {
-    @apply p-3.5;
-  }
-
-  .popover-section-label {
-    @apply px-2.5 text-[11px] font-semibold tracking-normal text-ink-400 dark:text-ink-500;
   }
 
   .tap-target {
@@ -64,7 +41,6 @@
     .app-bottom-nav__item,
     .author-avatar,
     .list-row-title-trigger,
-    .menu-item,
     .segmented-control__button {
     @apply outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-outline/70;
   }
@@ -87,7 +63,6 @@
     .app-bottom-nav__item,
     .author-avatar,
     .list-row-title-trigger,
-    .menu-item,
     .segmented-control__button {
     @apply cursor-pointer select-none outline-none;
     scale: 1;
@@ -122,7 +97,6 @@
   .app-bottom-nav__item:active:not([aria-disabled='true']),
   .author-avatar:active:not([aria-disabled='true']),
   .list-row-title-trigger:active:not(:disabled):not([aria-disabled='true']),
-  .menu-item:active:not(:disabled):not([aria-disabled='true']),
   .segmented-control__button:active:not(:disabled):not([aria-disabled='true']) {
     transform: translateY(0.5px) scale(0.985);
     scale: 0.985;

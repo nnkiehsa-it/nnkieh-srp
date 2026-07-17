@@ -1,9 +1,11 @@
+import { getLocale } from '@/i18n';
+
 export function formatDate(value: Date | null): string {
   if (!value) {
     return '';
   }
 
-  return new Intl.DateTimeFormat('zh-TW', {
+  return new Intl.DateTimeFormat(getLocale(), {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -16,7 +18,7 @@ export function formatDateOnly(value: Date | null): string {
     return '';
   }
 
-  return new Intl.DateTimeFormat('zh-TW', {
+  return new Intl.DateTimeFormat(getLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

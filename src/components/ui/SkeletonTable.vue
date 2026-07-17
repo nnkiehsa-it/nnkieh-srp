@@ -1,5 +1,5 @@
 <template>
-  <div class="issue-card-grid" aria-label="提案載入中" aria-busy="true">
+  <div class="issue-card-grid" :aria-label="t('text.f9fccfee8032')" aria-busy="true">
     <div v-for="i in rows" :key="i" class="issue-card">
       <div class="flex items-center justify-between gap-3">
         <span class="h-5 w-14 rounded-full bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
@@ -26,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 withDefaults(defineProps<{
   rows?: number;
   showAuthor?: boolean;

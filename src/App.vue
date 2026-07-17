@@ -14,7 +14,7 @@
             <Suspense>
               <component :is="Component" />
               <template #fallback>
-                <div class="flex min-h-[40dvh] items-center justify-center" aria-label="正在載入頁面" aria-busy="true">
+                <div class="flex min-h-[40dvh] items-center justify-center" :aria-label="t('text.1b2b9615c62b')" aria-busy="true">
                   <LoadingSpinner :size="8" />
                 </div>
               </template>
@@ -86,6 +86,7 @@ import { useActionFeedback } from '@/composables/useActionFeedback';
 import { computed, onBeforeUnmount, watch } from 'vue';
 import { DEFAULT_ISSUE_ROUTE_FILTER } from '@/constants/categories';
 import { preloadPrimaryRouteComponents } from '@/router/route-components';
+import { useI18n } from '@/i18n';
 
 const APP_RELEASE_MARKER = '2026-06-27-1516';
 const LAST_APP_VERSION_STORAGE_KEY = 'novae:last-app-version';
@@ -100,6 +101,7 @@ const { open: startupGateOpen, stalled: startupGateStalled } = useAppStartupGate
 const route = useRoute();
 const router = useRouter();
 const { appReady, isAdmin, user } = useSession();
+const { t } = useI18n();
 let routePreloadIdleId: number | null = null;
 let routePreloadTimer = 0;
 const idleWindow = window as unknown as {
@@ -133,22 +135,22 @@ function scheduleRoutePreload() {
 }
 
 const reloadingText = computed(() => {
-  return reloading.value === 'restart' ? '正在重啟' : '正在更新';
+  return t(reloading.value === 'restart' ? 'text.113af2e66ab8' : 'text.87c1bc6fe617');
 });
 
 const reloadingAriaLabel = computed(() => {
-  return reloading.value === 'restart' ? '正在重啟' : '正在更新';
+  return t(reloading.value === 'restart' ? 'text.113af2e66ab8' : 'text.87c1bc6fe617');
 });
 
 const startupAriaLabel = computed(() => {
-  if (reloading.value === 'restart') return '正在重啟 App';
-  if (reloading.value === 'update') return '正在更新 App';
-  return '正在啟動 App';
+  if (reloading.value === 'restart') return t('text.3db9b0015819');
+  if (reloading.value === 'update') return t('text.cab966da53cd');
+  return t('text.8ee16c627bc9');
 });
 
 const startupMessage = computed(() => {
-  if (reloading.value === 'restart') return '正在重啟';
-  if (reloading.value === 'update') return '正在更新';
+  if (reloading.value === 'restart') return t('text.113af2e66ab8');
+  if (reloading.value === 'update') return t('text.87c1bc6fe617');
   return '';
 });
 
@@ -246,7 +248,7 @@ watch(
 
       if (completedPendingUpdate || (isNewVersion && !pendingUpdateVersion)) {
         if (!installPromptMode.value) {
-          show('版本已更新', 'success');
+          show(t('text.4da74ac6db5e'), 'success');
         }
       }
       if (completedPendingUpdate) {

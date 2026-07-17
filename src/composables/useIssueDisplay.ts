@@ -6,8 +6,10 @@ import { ISSUE_CATEGORY_LABELS, issueRequiresReview } from '@/constants/categori
 import { ISSUE_STATUS_LABELS } from '@/constants/statuses';
 import { useAuthorAvatarUrl } from '@/composables/useAuthorAvatar';
 import type { IssueOperationTimeItem, IssueRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 export function useIssueDisplay(issue: Ref<IssueRecord> | (() => IssueRecord)) {
+  const { t } = useI18n();
   const resolvedIssue = computed(() => {
     return typeof issue === 'function' ? issue() : issue.value;
   });
@@ -34,14 +36,14 @@ export function useIssueDisplay(issue: Ref<IssueRecord> | (() => IssueRecord)) {
   );
 
   const derivedStatus = computed(() => getDerivedIssueStatus(resolvedIssue.value));
-  const categoryLabel = computed(() => ISSUE_CATEGORY_LABELS[resolvedIssue.value.category]);
-  const statusLabel = computed(() => ISSUE_STATUS_LABELS[derivedStatus.value]);
+  const categoryLabel = computed(() => t(ISSUE_CATEGORY_LABELS[resolvedIssue.value.category]));
+  const statusLabel = computed(() => t(ISSUE_STATUS_LABELS[derivedStatus.value]));
   const isClosed = computed(() => isClosedIssueStatus(derivedStatus.value));
 
   const primaryTimeLabel = computed(() => {
     const i = resolvedIssue.value;
-    if (isClosed.value) return '結案時間';
-    return issueRequiresReview(i.category) && i.review_approved_at ? '審核通過時間' : '提案時間';
+    if (isClosed.value) return t('text.ac75f83f5caa');
+    return t(issueRequiresReview(i.category) && i.review_approved_at ? 'text.d4d2cf96d71b' : 'text.10f550ff4416');
   });
   const primaryTimeValue = computed(() => {
     const i = resolvedIssue.value;

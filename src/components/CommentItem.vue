@@ -16,7 +16,7 @@
           :photo-url="comment.author_photo_url"
           :name="comment.author_name"
           size="sm"
-          :alt-text="`${comment.author_name} 的頭像`"
+          :alt-text="t('text.742dab1d2053', { name: comment.author_name })"
         />
       </div>
 
@@ -34,7 +34,7 @@
             <div class="comment-content-compact mt-0.5 max-w-none text-sm leading-5 text-ink-800 dark:text-ink-200">
               <MarkdownMediaContent
                 :content="comment.content"
-                :fallback-alt="`${comment.author_name} 的留言圖片`"
+                :fallback-alt="t('text.c5a30e352ff4', { name: comment.author_name })"
                 plain-text
               />
             </div>
@@ -44,8 +44,8 @@
               v-if="!isReply && canReply"
               type="button"
               class="button-toolbar h-8 w-8 rounded-full p-0 opacity-80 transition-opacity group-hover:opacity-100"
-              aria-label="回覆留言"
-              title="回覆留言"
+              :aria-label="t('text.a4e7808a49f8')"
+              :title="t('text.a4e7808a49f8')"
               @click="emit('reply')"
             >
               <AppIcon name="reply" :size="4" :stroke-width="2" />
@@ -54,8 +54,8 @@
               v-if="canDelete"
               class="shrink-0 opacity-80 transition-opacity group-hover:opacity-100"
               :delete-disabled="deleting"
-              :delete-label="deleting ? '刪除中...' : '刪除留言'"
-              title="管理留言"
+              :delete-label="t(deleting ? 'text.c987873ff725' : 'text.66aba32f0d74')"
+              :title="t('text.591c5fc87675')"
               @delete="emit('delete')"
             />
           </div>
@@ -109,6 +109,7 @@ import CompactActionMenu from '@/components/CompactActionMenu.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { formatDate } from '@/lib/format';
+import { useI18n } from '@/i18n';
 import type { DiscussionCommentRecord } from '@/types';
 
 const props = defineProps<{
@@ -122,6 +123,7 @@ const props = defineProps<{
   focusCommentId?: string;
   isReply?: boolean;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   delete: [];
@@ -140,7 +142,9 @@ const shouldExpandForFocusedReply = computed(() =>
   && props.comment.replies.some((reply) => reply.id === props.focusCommentId)
 );
 const repliesToggleLabel = computed(() => (
-  isRepliesExpanded.value ? '隱藏回覆' : `${props.comment.replies.length} 則回覆`
+  isRepliesExpanded.value
+    ? t('text.c008ac4dec55')
+    : t('comments.replies', { count: props.comment.replies.length })
 ));
 
 function setRepliesExpanded(expanded: boolean) {

@@ -1,8 +1,8 @@
 <template>
   <PageLoadFailure
     v-if="problem"
-    :title="problemTitle"
-    :description="problemDescription"
+    :title="t(problemTitle)"
+    :description="t(problemDescription)"
     :retry-disabled="problemRetryDisabled"
     @retry="emit('retryProblem')"
   />
@@ -10,18 +10,18 @@
   <div
     v-else-if="loading"
     class="flex min-h-[50dvh] items-center justify-center"
-    :aria-label="loadingLabel"
+    :aria-label="t(loadingLabel)"
     aria-busy="true"
   >
     <LoadingSpinner :size="8" />
   </div>
 
-  <div v-else-if="!allowed" class="sr-only" role="status">正在前往登入頁</div>
+  <div v-else-if="!allowed" class="sr-only" role="status">{{ t('text.d81feafadc82') }}</div>
 
   <PageLoadFailure
     v-else-if="error"
-    :title="errorTitle"
-    :description="error"
+    :title="t(errorTitle)"
+    :description="t(error)"
     @retry="emit('retryError')"
   />
 
@@ -31,6 +31,9 @@
 <script setup lang="ts">
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   allowed: boolean;
@@ -44,7 +47,7 @@ withDefaults(defineProps<{
   problemTitle: string;
 }>(), {
   error: '',
-  errorTitle: '內容讀取失敗',
+  errorTitle: 'text.8209685a5797',
   problemRetryDisabled: false,
 });
 

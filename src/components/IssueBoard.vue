@@ -14,69 +14,48 @@
     />
 
     <div ref="boardScrollRef" class="scroll-shadow-bleed scrollbar-none min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-contain pb-4">
-      <Transition name="panel-switch" mode="out-in">
-        <div :key="boardPanelKey" class="space-y-4">
-          <PageLoadFailure
-            v-if="contentLoadingHasProblem"
-            :title="contentProblemTitle"
-            :description="contentProblemDescription"
-            :retry-disabled="!contentOnline"
-            @retry="retryCurrentData"
+      <ContentListState
+        :empty="currentIssues.length === 0"
+        :empty-description="emptyStateDescription"
+        empty-title="text.2fe7a69dbaa6"
+        :error="currentError"
+        error-title="text.2aac0a2632d0"
+        :has-more="hasMoreCurrentData"
+        :loading="visibleContentLoading"
+        :loading-has-problem="contentLoadingHasProblem"
+        :loading-more="currentLoadingMore"
+        :panel-key="boardPanelKey"
+        :problem-description="contentProblemDescription"
+        :problem-title="contentProblemTitle"
+        :retry-disabled="!contentOnline"
+        @load-more="loadMoreCurrentData"
+        @retry="retryCurrentData"
+      >
+        <template #loading>
+          <IssueBoardTable
+            :issues="[]"
+            :loading="true"
+            error=""
+            :show-author="showAuthorCol"
           />
+        </template>
 
-          <template v-else-if="visibleContentLoading">
-            <IssueBoardTable
-              :issues="[]"
-              :loading="true"
-              error=""
-              :show-author="showAuthorCol"
-            />
-          </template>
+        <IssueBoardTable
+          :issues="currentIssues"
+          :loading="false"
+          error=""
+          :show-author="showAuthorCol"
+          :highlight-query="committedSearchQuery"
+          @open-details="openIssueDetails"
+          @support-changed="handleSupportChanged"
+          @issue-updated="handleIssueUpdatedFromList"
+          @issue-deleted="handleIssueDeleted"
+        />
 
-          <EmptyStatePanel
-            v-else-if="currentError && currentIssues.length === 0"
-            title="提案讀取失敗"
-            :description="currentError"
-            icon="warning"
-            tone="danger"
-            action-label="重新整理"
-            @action="retryCurrentData"
-          />
-
-          <EmptyStatePanel
-            v-else-if="currentIssues.length === 0"
-            title="沒有符合條件的提案"
-            :description="emptyStateDescription"
-            icon="inbox"
-          />
-
-          <template v-else>
-            <IssueBoardTable
-              :issues="currentIssues"
-              :loading="false"
-              error=""
-              :show-author="showAuthorCol"
-              :highlight-query="committedSearchQuery"
-              @open-details="openIssueDetails"
-              @support-changed="handleSupportChanged"
-              @issue-updated="handleIssueUpdatedFromList"
-              @issue-deleted="handleIssueDeleted"
-            />
-
-            <div v-if="currentError" class="rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container">
-              {{ currentError }}
-            </div>
-
-            <FeedLoadMoreControl
-              :has-more="hasMoreCurrentData"
-              :loading="currentLoadingMore"
-              :error="Boolean(currentError)"
-              @load-more="loadMoreCurrentData"
-            />
-            <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
-          </template>
-        </div>
-      </Transition>
+        <template #sentinel>
+          <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
+        </template>
+      </ContentListState>
     </div>
   </section>
 
@@ -95,19 +74,14 @@ import { useRoute, useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
 import IssueBoardTable from '@/components/IssueBoardTable.vue';
 import IssueComposer from '@/components/IssueComposer.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import FeedLoadMoreControl from '@/components/ui/FeedLoadMoreControl.vue';
-import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
+import ContentListState from '@/components/ui/ContentListState.vue';
 import { useIssueBoardData } from '@/composables/useIssueBoardData';
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
-import { useMinimumLoading } from '@/composables/useMinimumLoading';
-import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
+import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
-import { registerActiveNavigationRefreshHandler } from '@/composables/useActiveNavigationRefresh';
 import { DEFAULT_ISSUE_CATEGORY, ISSUE_CATEGORY_LABELS, isIssueCategory, issueIsPrivateToOwner, issueStoresAuthorPrivately } from '@/constants/categories';
-import { resetAppConnection } from '@/lib/reconnect';
 import type { IssueCategory, IssueRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 type IssueDetailsOpenPayload = {
   issue: IssueRecord;
@@ -126,14 +100,14 @@ const emit = defineEmits<{
 }>();
 
 const { canManageIssueCategory } = useSession();
-const { show, start } = useActionFeedback();
+const { show } = useActionFeedback();
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const composerCategory = ref<IssueCategory>(DEFAULT_ISSUE_CATEGORY);
 const boardScrollRef = ref<HTMLElement | null>(null);
 const restoreBoardScrollPending = ref(false);
-const manualRefreshing = ref(false);
-const composerCategoryLabel = computed(() => ISSUE_CATEGORY_LABELS[composerCategory.value]);
+const composerCategoryLabel = computed(() => t(ISSUE_CATEGORY_LABELS[composerCategory.value]));
 
 const {
   activeFilter,
@@ -163,7 +137,7 @@ const {
 } = useIssueBoardData();
 const isAdmin = computed(() => activeFilter.value !== 'my-proposals' && canManageIssueCategory(activeFilter.value));
 const createLabel = computed(() => isIssueCategory(activeFilter.value)
-  ? `新增到${activeCategoryLabel.value}`
+  ? t('text.049a485046af', { category: t(activeCategoryLabel.value) })
   : undefined);
 
 const showAuthorCol = computed(() => isAdmin.value || !issueStoresAuthorPrivately(activeFilter.value));
@@ -179,53 +153,41 @@ const boardPanelKey = computed(() => [
   isSearching.value ? committedSearchQuery.value.trim() : '',
 ].join(':'));
 const rawContentLoading = computed(() => currentLoading.value);
-const { visibleLoading: visibleContentLoading } = useMinimumLoading(rawContentLoading, {
-  trigger: contentContextKey,
-});
 const {
-  hasProblem: contentLoadingHasProblem,
   isOnline: contentOnline,
+  loadMoreSentinel,
+  loadingHasProblem: contentLoadingHasProblem,
   problemDescription: contentProblemDescription,
   problemTitle: contentProblemTitle,
-} = useLoadingTimeout(rawContentLoading, 5_000);
-const infiniteScrollDisabled = computed(() =>
-  !hasMoreCurrentData.value
-  || currentLoading.value
-  || currentLoadingMore.value
-  || Boolean(currentError.value)
-);
-async function retryCurrentData() {
-  await resetAppConnection();
-  await refreshCurrentData();
-}
-async function handleManualRefresh() {
-  if (manualRefreshing.value) return;
-  manualRefreshing.value = true;
-  const feedbackHandle = start('正在更新提案');
-  try {
-    await refreshCurrentData();
-    feedbackHandle.succeed('提案已更新');
-  } catch {
-    feedbackHandle.fail('提案更新失敗，請稍後再試');
-  } finally {
-    manualRefreshing.value = false;
-  }
-}
-registerActiveNavigationRefreshHandler(handleManualRefresh);
-const { sentinel: loadMoreSentinel } = useInfiniteScroll({
-  disabled: infiniteScrollDisabled,
-  onLoadMore: loadMoreCurrentData,
-  root: boardScrollRef,
+  retry: retryCurrentData,
+  visibleLoading: visibleContentLoading,
+} = useContentListRuntime({
+  error: currentError,
+  hasMore: hasMoreCurrentData,
+  loadMore: loadMoreCurrentData,
+  loading: rawContentLoading,
+  loadingMore: currentLoadingMore,
+  loadingTrigger: contentContextKey,
+  refresh: refreshCurrentData,
+  refreshFeedback: {
+    error: 'text.752f37f88d9a',
+    loading: 'text.4186b7ec044f',
+    success: 'text.2ee94d08bf78',
+  },
+  scrollRoot: boardScrollRef,
 });
 const emptyStateDescription = computed(() => {
   if (showEmptySearchResult.value) {
-    return `沒有找到與關鍵字「${committedSearchQuery.value}」相關的提案。`;
+    return t('text.afce950c6daa', { query: committedSearchQuery.value });
   }
   if (issueIsPrivateToOwner(activeFilter.value) && !isAdmin.value) {
-    return `${activeCategoryLabel.value}分類只會顯示你自己提出的提案；你目前還沒有符合目前狀態的提案。`;
+    return t('text.dfa2c5ebf508', { category: t(activeCategoryLabel.value) });
   }
-  const statusLabel = statusTab.value === 'active' ? '進行中' : '已結案';
-  return `目前在「${activeCategoryLabel.value}」分類中沒有${statusLabel}提案。`;
+  const statusLabel = t(statusTab.value === 'active' ? 'text.c573867b5fca' : 'text.b496f1ac5289');
+  return t('text.2cc8a6b2736f', {
+    category: t(activeCategoryLabel.value),
+    status: statusLabel,
+  });
 });
 function issueBoardScrollKey() {
   return [

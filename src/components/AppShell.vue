@@ -41,12 +41,12 @@
       v-if="isAllowedUser"
       type="button"
       class="app-sidebar__scrim"
-      aria-label="收合側邊導覽"
+      :aria-label="t('text.a3c852c726e3')"
       @click="closeSidebar"
     ></button>
 
     <div ref="mainContentRef" class="app-main-content relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain">
-      <main class="app-viewport-frame min-h-0 flex-1"><slot /></main>
+      <ViewportFrame as="main" class="min-h-0 flex-1"><slot /></ViewportFrame>
     </div>
 
     <AppMobileBottomNav
@@ -69,6 +69,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppDesktopSidebar from '@/components/app-shell/AppDesktopSidebar.vue';
 import AppMobileBottomNav from '@/components/app-shell/AppMobileBottomNav.vue';
 import AppMobileHeader from '@/components/app-shell/AppMobileHeader.vue';
+import ViewportFrame from '@/components/ui/ViewportFrame.vue';
 import { SCHOOL_NAME } from '@/constants/app';
 import { DEFAULT_ISSUE_ROUTE_FILTER, ISSUE_CATEGORY_LABELS, isIssueCategory } from '@/constants/categories';
 import { refreshFromActiveNavigation } from '@/composables/useActiveNavigationRefresh';
@@ -77,6 +78,7 @@ import { useNotificationBadge } from '@/composables/useNotificationBadge';
 import { useSession } from '@/composables/useSession';
 import type { IssueFilter } from '@/types';
 import { preloadRoutePath } from '@/router/route-components';
+import { useI18n } from '@/i18n';
 
 const SIDEBAR_EXPANDED_STORAGE_KEY = 'novae:desktop-sidebar-expanded';
 const MOBILE_NAV_HEIGHT = 60;
@@ -87,6 +89,7 @@ const { activeFilter } = useIssueRouteFilter();
 const { hasUnread } = useNotificationBadge();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const mainContentRef = ref<HTMLDivElement | null>(null);
 const hasSafeIndicator = ref(false);
 const isSidebarExpanded = ref(false);
@@ -103,32 +106,32 @@ const primaryRouteNavItems = computed(() => [
     icon: 'comment' as const,
     isActive: isIssueRouteActive.value && activeFilter.value !== 'my-proposals',
     key: 'issues',
-    label: '提案',
+    label: t('text.b9a2f9c03506'),
     to: homeRoute,
   },
   {
     icon: 'wrench' as const,
     isActive: isFacilityRouteActive.value,
     key: 'facilities',
-    label: '設備',
+    label: t('text.a6a61230ffa1'),
     to: { name: 'facilities' },
   },
   {
     icon: 'megaphone' as const,
     isActive: isAnnouncementRouteActive.value,
     key: 'announcements',
-    label: '公告',
+    label: t('text.3f9569532847'),
     to: { name: 'announcements' },
   },
 ]);
 const displayPhotoUrl = computed(() => customPhotoUrl.value || user.value?.photoURL || null);
-const userName = computed(() => user.value?.displayName || '使用者');
-const schoolLabel = computed(() => SCHOOL_NAME || '學校未設定');
+const userName = computed(() => user.value?.displayName || t('text.4a7f444ac58d'));
+const schoolLabel = computed(() => SCHOOL_NAME || t('text.b27599fc9b84'));
 const mobileCategoryFilter = computed<IssueFilter | undefined>(() =>
   route.name === 'issues' && isIssueCategory(activeFilter.value) ? activeFilter.value : undefined
 );
 const mobileCategoryLabel = computed(() => mobileCategoryFilter.value
-  ? ISSUE_CATEGORY_LABELS[mobileCategoryFilter.value]
+  ? t(ISSUE_CATEGORY_LABELS[mobileCategoryFilter.value])
   : undefined);
 const bottomGap = computed(() => hasSafeIndicator.value ? 22 : 12);
 const rootStyle = computed(() => isAllowedUser.value
@@ -143,27 +146,27 @@ const activeMobileNavKey = computed(() => {
   return '';
 });
 const mobileHeaderTitle = computed(() => {
-  if (route.name === 'issue-detail') return isMyProposalsRouteActive.value ? '我的提案' : '提案內容';
-  if (route.name === 'facility-detail') return '設備';
-  if (route.name === 'announcement-detail') return '公告內容';
-  if (route.name === 'dashboard') return '統計';
-  if (route.name === 'access-management') return '角色管理';
-  if (route.name === 'notifications') return '通知';
-  if (route.name === 'settings') return '我的';
-  if (isAnnouncementRouteActive.value) return '公告';
-  if (isFacilityRouteActive.value) return '設備';
-  if (isMyProposalsRouteActive.value) return '我的提案';
-  return '提案';
+  if (route.name === 'issue-detail') return t(isMyProposalsRouteActive.value ? 'text.16441dd78ebf' : 'text.6822d1ef16bf');
+  if (route.name === 'facility-detail') return t('text.a6a61230ffa1');
+  if (route.name === 'announcement-detail') return t('text.1bb7c8022090');
+  if (route.name === 'dashboard') return t('text.baa4b36d8a77');
+  if (route.name === 'access-management') return t('text.3d0d88d5d438');
+  if (route.name === 'notifications') return t('text.7a66c0d03631');
+  if (route.name === 'settings') return t('text.a82c993d7388');
+  if (isAnnouncementRouteActive.value) return t('text.3f9569532847');
+  if (isFacilityRouteActive.value) return t('text.a6a61230ffa1');
+  if (isMyProposalsRouteActive.value) return t('text.16441dd78ebf');
+  return t('text.b9a2f9c03506');
 });
 const showMobileBackButton = computed(() => ['issue-detail', 'facility-detail', 'announcement-detail', 'dashboard', 'access-management'].includes(route.name as string) || isMyProposalsRouteActive.value);
 const mobileBackLabel = computed(() => {
-  if (route.name === 'dashboard') return '返回我的';
-  if (route.name === 'access-management') return '返回我的';
-  if (route.name === 'issue-detail' && isMyProposalsRouteActive.value) return '返回我的提案';
-  if (isMyProposalsRouteActive.value) return '返回我的';
-  if (route.name === 'announcement-detail') return '返回公告列表';
-  if (route.name === 'facility-detail') return '返回設備列表';
-  return '返回提案列表';
+  if (route.name === 'dashboard') return t('text.ae7b94951d50');
+  if (route.name === 'access-management') return t('text.ae7b94951d50');
+  if (route.name === 'issue-detail' && isMyProposalsRouteActive.value) return t('text.afd35ebaa9f0');
+  if (isMyProposalsRouteActive.value) return t('text.ae7b94951d50');
+  if (route.name === 'announcement-detail') return t('text.c12e8b61ecde');
+  if (route.name === 'facility-detail') return t('text.326fa994df51');
+  return t('text.f3688932d28d');
 });
 
 function handleNavigationClick(isActive: boolean) {

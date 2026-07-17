@@ -11,18 +11,18 @@
       tabindex="-1"
     >
       <h3 id="review-dialog-title" class="dialog-title">
-        {{ step === 1 ? '審核此提案' : '填寫未通過原因' }}
+        {{ t(step === 1 ? 'text.f0aa1c13f393' : 'text.a406c683ad32') }}
       </h3>
       <p class="dialog-description">
-        {{ step === 1
-          ? '請審查提案內容，決定是否通過審核。審核通過後，提案將對外公開並開放附議。'
-          : '請簡要說明未通過原因，此原因會發送通知給提案者。' }}
+        {{ t(step === 1
+          ? 'text.d2d0735257c7'
+          : 'text.3bfe71bf8704') }}
       </p>
 
       <div class="mt-5 space-y-4">
         <!-- Moderation choice (Step 1) -->
         <div v-if="step === 1">
-          <p class="field-label mb-2">審核結果</p>
+          <p class="field-label mb-2">{{ t('issue.review.result') }}</p>
           <div class="grid gap-2">
             <button
               v-for="option in reviewOptions"
@@ -35,8 +35,8 @@
               @click="reviewDecision = option.value"
             >
               <span class="min-w-0">
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ option.label }}</span>
-                <span class="mt-0.5 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ option.description }}</span>
+                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t(option.label) }}</span>
+                <span class="mt-0.5 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ t(option.description) }}</span>
               </span>
               <SelectionMark :selected="reviewDecision === option.value" />
             </button>
@@ -45,17 +45,17 @@
 
         <!-- Rejection reason input (Step 2) -->
         <div v-else-if="step === 2" class="space-y-2">
-          <label class="field-label" for="review-rejection-reason">不通過原因</label>
-          <div class="overflow-hidden rounded-[var(--radius-inner)] border-0 bg-surface shadow-note transition-colors focus-within:ring-2 focus-within:ring-outline/25 dark:bg-surface">
+          <label class="field-label" for="review-rejection-reason">{{ t('issue.review.rejectionReason') }}</label>
+          <div class="control-frame">
             <textarea
               id="review-rejection-reason"
               v-model="rejectionReason"
               class="block min-h-36 w-full resize-none bg-transparent px-4 py-3 text-base leading-6 text-ink-800 outline-none placeholder:text-ink-400 disabled:cursor-not-allowed disabled:text-ink-500 dark:text-ink-100 dark:placeholder:text-ink-500 md:text-sm"
               maxlength="500"
-              placeholder="請簡要說明未通過原因，此原因會發送通知給提案者"
+              :placeholder="t('text.bef43d2d0c39')"
               :disabled="saving"
             ></textarea>
-            <div class="flex items-center justify-end border-t border-ink-100 bg-ink-50/50 px-4 py-2 text-xs font-medium text-ink-500 dark:border-ink-800 dark:bg-ink-950/30 dark:text-ink-400">
+            <div class="control-footer justify-end text-xs font-medium text-ink-500 dark:text-ink-400">
               <span :class="{ 'text-error': rejectionReason.length > 450 }">{{ rejectionReason.length }} / 500</span>
             </div>
           </div>
@@ -66,7 +66,7 @@
 
       <div class="dialog-actions">
         <button type="button" class="button-secondary" :disabled="saving" @click="handleSecondaryClick">
-          {{ step === 1 ? '取消' : '返回' }}
+          {{ t(step === 1 ? 'text.4d0b4688c787' : 'text.11d024154013') }}
         </button>
         <button
           type="button"
@@ -74,7 +74,7 @@
           :disabled="saving"
           @click="handlePrimaryClick"
         >
-          <BusyButtonContent :busy="saving" :label="idlePrimaryLabel" busy-label="更新中" />
+          <BusyButtonContent :busy="saving" :label="idlePrimaryLabel" busy-label="text.111227ad9eb7" />
         </button>
       </div>
     </section>
@@ -91,11 +91,13 @@ import { useDialogFocus } from '@/composables/useDialogFocus';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { moderateIssueStatus } from '@/services/issues';
 import type { IssueRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   open: boolean;
   issue: IssueRecord;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   close: [];
@@ -107,13 +109,13 @@ useBodyScrollLock(toRef(props, 'open'));
 const reviewOptions = [
   {
     value: 'approved' as const,
-    label: '審核通過',
-    description: '提案將會公開，並開始接受使用者附議。',
+    label: 'text.2a7d3dc76d00',
+    description: 'text.e2fdc898f6cb',
   },
   {
     value: 'rejected' as const,
-    label: '審核不通過',
-    description: '提案將不會公開，需提供不通過原因通知提案者。',
+    label: 'text.23946da527f3',
+    description: 'text.2e9f2aab11c3',
   },
 ];
 
@@ -126,9 +128,9 @@ const { start } = useActionFeedback();
 
 const idlePrimaryLabel = computed(() => {
   if (step.value === 1) {
-    return reviewDecision.value === 'approved' ? '確認' : '下一步';
+    return reviewDecision.value === 'approved' ? 'text.86a07295c547' : 'text.ea0ef2ae7245';
   }
-  return '確認審核結果';
+  return 'text.5a9ed7ff7086';
 });
 
 function handleClose() {
@@ -164,28 +166,28 @@ function handleSecondaryClick() {
 async function submitReview() {
   saving.value = true;
   errorMsg.value = '';
-  const feedbackHandle = start('正在更新提案審核');
+  const feedbackHandle = start('text.569f092b9e9f');
   try {
     if (reviewDecision.value === 'approved') {
       const updated = await moderateIssueStatus(props.issue.id, 'pending');
       emit('success', updated);
-      feedbackHandle.succeed('提案審核已通過');
+      feedbackHandle.succeed('text.2cc1e46367a5');
       emit('close');
     } else {
       const reason = rejectionReason.value.replace(/\s+/g, ' ').trim();
       if (!reason) {
-        errorMsg.value = '請輸入審核未通過原因。';
+        errorMsg.value = 'text.9d9f3b798668';
         feedbackHandle.fail(errorMsg.value);
         saving.value = false;
         return;
       }
       const updated = await moderateIssueStatus(props.issue.id, 'review-rejected', reason);
       emit('success', updated);
-      feedbackHandle.succeed('提案審核已更新');
+      feedbackHandle.succeed('text.4cf4d3a7ddd2');
       emit('close');
     }
   } catch (caught) {
-    errorMsg.value = caught instanceof Error ? caught.message : '審核處理失敗，請稍後再試。';
+    errorMsg.value = caught instanceof Error ? caught.message : 'text.7afbe972550e';
     feedbackHandle.fail(errorMsg.value);
   } finally {
     saving.value = false;

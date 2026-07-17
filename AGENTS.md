@@ -45,9 +45,12 @@
 
 ## Vue 與 UI
 
-- 重複 dialog／empty／action 優先既有共用元件。
+- `src/styles/primitives.css` 與 `components/ui/` 是 UI 規範的單一來源；重複 dialog／empty／action 優先既有共用元件。
 - 互動狀態單一來源；手機桌機同資料流、只切 layout。
-- 優先 `style.css` 的 `panel`、`field`、`button-*`、`menu-item`、`popover-panel` 等；不另起近似系統。
+- viewport 左右留白由 `AppShell`／`ViewportFrame` 統一負責；route view 只使用 `route-page` 組版，不自行加頁面級 `px-*`、`left-*`／`right-*` 或另一套 max-width。
+- 卡片、控制項、浮動層只使用 control／card／floating 三階陰影 token。卡片與 list 用 `SurfacePanel`、`surface-*`、`list-surface(-row)`；按鈕用 `AppButton` 或既有 `button-*`；dropdown 用 `DropdownMenu`／`DropdownPanel` 與 `dropdown-item`；輸入組合用 `field`／`control-frame`。
+- 相同結構若只差字串、icon、狀態、slot 或 callback，必須以 props／slots 共用；不得複製近似 button、dropdown、card、list、shadow、control 或 viewport 樣式。
+- 新 UI primitive 必須有至少兩個合理使用點，加入 `primitives.css`／`components/ui`，同步更新 `structure.md`、架構測試與官方貢獻文件；不得在領域元件建立平行設計系統。
 - 維持必要 `aria-label`／label／alt。
 
 ## 安全
@@ -60,6 +63,7 @@
 ## 驗證
 
 一般前端／重構：`npm run verify:local`。
+其中 `check:ui` 會拒絕舊 dropdown、任意陰影、手組卡片與自行管理 viewport gutter；不要跳過或以例外規避。
 後端 action、權限、RPC、RLS、migration、worker：加跑 `npm run verify:integration`；Windows 入口會自動轉入 WSL，不手動維護第二套 Windows 流程。
 大型變更／交付前：`npm run verify:all`。
 新增 backend action 必須在 `tests/integration/` 加入有 assertion 的成功與拒絕案例；角色／scope 變更至少驗證 allowed、denied、跨 scope。`action-coverage.test.ts` 只作漏測防線，不得用無 assertion 呼叫敷衍。

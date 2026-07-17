@@ -39,8 +39,8 @@ function isOnline() {
 
 function notificationLoadFailureMessage() {
   return isOnline()
-    ? '通知載入失敗，請稍後再試。'
-    : '目前已離線，請恢復網路連線後重新整理。';
+    ? 'text.f499674d9583'
+    : 'text.428cef5d3087';
 }
 
 const { user, isAdmin, roleLoading } = useSession();
@@ -163,8 +163,8 @@ function startSubscriptions() {
     if (currentVersion !== subscriptionVersion) return;
     loading.value = false;
     error.value = isOnline()
-      ? '網路回應時間過長，請重新整理。'
-      : '目前已離線，請恢復網路連線後重新整理。';
+      ? 'text.6e7e270b1f9d'
+      : 'text.428cef5d3087';
   }, 5_000);
 
   void fetchNotificationSnapshot(activeSources.value, uid, controller.signal)
@@ -217,7 +217,7 @@ function startSubscriptions() {
         currentVersion === subscriptionVersion
         && notifications.value.length === 0
       ) {
-        error.value = '通知狀態載入失敗，請稍後再試。';
+        error.value = 'text.8eb3289f954f';
       }
     }, false,
   ));

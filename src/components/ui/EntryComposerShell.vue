@@ -8,15 +8,15 @@
     >
       <div class="flex shrink-0 items-center justify-between border-b border-ink-200 pb-4 dark:border-ink-800">
         <div class="min-w-0">
-          <span class="text-xs font-semibold tracking-wide text-ink-500 dark:text-ink-400">{{ eyebrow }}</span>
-          <h2 class="mt-1 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ title }}</h2>
+          <span class="text-xs font-semibold tracking-wide text-ink-500 dark:text-ink-400">{{ t(eyebrow) }}</span>
+          <h2 class="mt-1 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t(title) }}</h2>
         </div>
         <button
           type="button"
           class="button-dialog-close shrink-0"
           :disabled="blocked"
-          title="關閉"
-          aria-label="關閉"
+          :title="t('text.ddc05404b0d6')"
+          :aria-label="t('text.ddc05404b0d6')"
           @click="requestClose"
         >
           <AppIcon name="close" :size="5" :stroke-width="2.5" />
@@ -66,7 +66,7 @@
           :preview-content="content"
           :uploading="uploading"
           :disabled="busy"
-          :busy-label="busy ? '圖片上傳中...' : '圖片壓縮中...'"
+          :busy-label="t(busy ? 'text.77650bee6e0c' : 'text.4783088c913c')"
           editor-class="flex-1 min-h-[180px]"
           textarea-class="h-full min-h-[180px]"
           preview-class="flex-1 min-h-[180px]"
@@ -76,11 +76,11 @@
         />
 
         <p v-if="error" class="mt-2 shrink-0 text-xs font-semibold text-error">
-          錯誤：{{ error }}
+          {{ t('text.77f715edace8', { error: t(error) }) }}
         </p>
 
         <div class="entry-composer__footer">
-          <p class="entry-composer__hint">{{ hint }}</p>
+          <p class="entry-composer__hint">{{ t(hint) }}</p>
           <div class="entry-composer__actions">
             <button
               type="button"
@@ -88,7 +88,7 @@
               :disabled="blocked"
               @click="requestClose"
             >
-              取消
+              {{ t('text.4d0b4688c787') }}
             </button>
             <button
               type="submit"
@@ -96,7 +96,7 @@
               :disabled="blocked || submitDisabled"
               :aria-busy="busy || undefined"
             >
-              <BusyButtonContent :busy="busy" :label="submitLabel" :busy-label="busyLabel" />
+              <BusyButtonContent :busy="busy" :label="t(submitLabel)" :busy-label="t(busyLabel)" />
             </button>
           </div>
         </div>
@@ -115,6 +115,7 @@ import MarkdownImageEditor, { type MarkdownEditorImage } from '@/components/ui/M
 import { INPUT_LIMITS } from '@/constants/input-limits';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
+import { useI18n } from '@/i18n';
 
 const entryTitle = defineModel<string>('entryTitle', { required: true });
 const content = defineModel<string>('content', { required: true });
@@ -151,11 +152,11 @@ const props = withDefaults(defineProps<{
   uploading?: boolean;
 }>(), {
   busy: false,
-  busyLabel: '發布中',
+  busyLabel: 'text.76065e012603',
   editorPlaceholder: '',
   error: '',
   locationInputId: '',
-  locationLabel: '地點',
+  locationLabel: 'text.4260682efe89',
   locationMaxLength: 120,
   locationPlaceholder: '',
   locationWarningLength: 108,
@@ -173,6 +174,7 @@ const emit = defineEmits<{
 }>();
 
 const blocked = computed(() => props.busy || props.uploading);
+const { t } = useI18n();
 const isOpen = toRef(props, 'open');
 useBodyScrollLock(isOpen);
 

@@ -3,13 +3,13 @@
     <DetailRouteState
       :allowed="isAllowedUser"
       :loading="sessionLoading || loading"
-      loading-label="正在載入設備"
+      loading-label="text.33bd01546f0c"
       :problem="sessionLoadingHasProblem"
       :problem-title="sessionProblemTitle"
       :problem-description="sessionProblemDescription"
       :problem-retry-disabled="!sessionOnline"
       :error="error"
-      error-title="設備讀取失敗"
+      error-title="text.a4a8f255b50c"
       @retry-problem="reloadPage"
       @retry-error="retryFacility"
     >
@@ -21,7 +21,7 @@
         :next-status-action-label="nextStatusActionLabel"
         :operation-time-items="operationTimeItems"
         :status-class="statusClass"
-        :status-label="labels[facility.status]"
+        :status-label="t(FACILITY_STATUS_LABELS[facility.status])"
         @back="goBackToFacilities"
         @delete="openDeleteDialog"
         @manage-status="statusOpen = true"
@@ -42,9 +42,9 @@
 
     <ConfirmDialog
       :open="deleteDialogOpen"
-      title="確定要刪除這筆設備嗎？"
-      message="刪除後這筆設備案件將無法復原。"
-      confirm-label="確認刪除"
+      title="text.6a09e03ffa6a"
+      message="text.97ac026665a6"
+      confirm-label="text.1d63b95811eb"
       :busy="deleting"
       @cancel="closeDeleteDialog"
       @confirm="confirmDelete"
@@ -64,6 +64,8 @@ import { useAuthenticatedDetailState } from '@/composables/useAuthenticatedDetai
 import { useFacilityDetail } from '@/composables/useFacilityDetail';
 import { useShareUrl } from '@/composables/useShareUrl';
 import { useStatusStyling } from '@/composables/useStatusStyling';
+import { FACILITY_STATUS_LABELS, isFacilityClosed } from '@/constants/statuses';
+import { useI18n } from '@/i18n';
 import { formatDate } from '@/lib/format';
 import { resetAppConnection } from '@/lib/reconnect';
 import type { FacilityStatus, OperationTimeListItem } from '@/types';
@@ -78,8 +80,9 @@ const {
   sessionProblemDescription,
   sessionProblemTitle,
 } = useAuthenticatedDetailState();
-const { copyShareUrl } = useShareUrl();
+const { copyRouteUrl } = useShareUrl();
 const { show, start } = useActionFeedback();
+const { t } = useI18n();
 
 const {
   affecting,
@@ -97,42 +100,32 @@ const statusSaving = ref(false);
 const statusError = ref('');
 const deleteDialogOpen = ref(false);
 const deleting = ref(false);
-const labels: Record<FacilityStatus, string> = {
-  pending: '待受理',
-  processing: '處理中',
-  completed: '已完成',
-  'unable-to-handle': '無法處理',
-};
-const closed = computed(() =>
-  facility.value
-    ? facility.value.status === 'completed' || facility.value.status === 'unable-to-handle'
-    : false,
-);
+const closed = computed(() => facility.value ? isFacilityClosed(facility.value.status) : false);
 const nextStatusActionLabel = computed(() =>
-  facility.value?.status === 'pending' ? '開始處理' : '完成／無法處理',
+  facility.value?.status === 'pending' ? 'text.fe9a26f3f1a6' : 'text.e6206856f534',
 );
 const operationTimeItems = computed<OperationTimeListItem[]>(() => {
   if (!facility.value) return [];
   const items: OperationTimeListItem[] = [];
   if (facility.value.created_at) {
     items.push({
-      label: '待受理時間',
-      shortLabel: '待受理',
+      label: 'text.7a149ac0b37c',
+      shortLabel: 'text.11ba133668d8',
       valueLabel: formatDate(facility.value.created_at),
     });
   }
   if (facility.value.started_at) {
     items.push({
-      label: '開始處理時間',
-      shortLabel: '處理',
+      label: 'text.e4e4bfef2b0e',
+      shortLabel: 'text.fda275e0bcc3',
       valueLabel: formatDate(facility.value.started_at),
     });
   }
   if (facility.value.closed_at) {
     const unable = facility.value.status === 'unable-to-handle';
     items.push({
-      label: unable ? '無法處理時間' : '完成時間',
-      shortLabel: unable ? '無法處理' : '完成',
+      label: unable ? 'text.ed8904acabca' : 'text.96cd624b9223',
+      shortLabel: unable ? 'text.900950604945' : 'text.33246f6a5e5b',
       valueLabel: formatDate(facility.value.closed_at),
     });
   }
@@ -147,18 +140,17 @@ function goBackToFacilities() {
 
 function copyFacilityUrl() {
   if (!facility.value) return;
-  const href = router.resolve({
+  void copyRouteUrl({
     name: 'facility-detail',
     params: { facilityId: facility.value.id },
-  }).href;
-  void copyShareUrl(new URL(href, window.location.origin).toString());
+  });
 }
 
 async function handleToggleAffected() {
   try {
     await toggleAffected();
   } catch (caught) {
-    show(caught instanceof Error ? caught.message : '操作失敗，請稍後再試', 'error');
+    show(caught instanceof Error ? caught.message : 'text.d624cbb8862d', 'error');
   }
 }
 
@@ -173,13 +165,13 @@ async function submitStatus(nextStatus: FacilityStatus, result: string) {
   if (statusSaving.value) return;
   statusSaving.value = true;
   statusError.value = '';
-  const feedback = start('正在更新設備狀態');
+  const feedback = start('text.25575ef1477d');
   try {
     await changeStatus(nextStatus, result);
     statusOpen.value = false;
-    feedback.succeed('設備狀態已更新');
+    feedback.succeed('text.b4b0f8ae9dca');
   } catch (caught) {
-    statusError.value = caught instanceof Error ? caught.message : '更新失敗，請稍後再試。';
+    statusError.value = caught instanceof Error ? caught.message : 'text.e45a87db77dc';
     feedback.fail(statusError.value);
   } finally {
     statusSaving.value = false;
@@ -197,14 +189,14 @@ function closeDeleteDialog() {
 async function confirmDelete() {
   if (!facility.value || deleting.value) return;
   deleting.value = true;
-  const feedback = start('正在刪除設備案件');
+  const feedback = start('text.6dc42c349e2a');
   try {
     await remove();
     deleteDialogOpen.value = false;
-    feedback.succeed('設備案件已刪除');
+    feedback.succeed('text.43d22c84476a');
     goBackToFacilities();
   } catch (caught) {
-    feedback.fail(caught instanceof Error ? caught.message : '設備刪除失敗');
+    feedback.fail(caught instanceof Error ? caught.message : 'text.eef3c65bda12');
   } finally {
     deleting.value = false;
   }

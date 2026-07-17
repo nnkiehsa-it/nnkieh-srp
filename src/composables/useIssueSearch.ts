@@ -5,6 +5,7 @@ import { fetchIssuesForTitleSearch } from '@/services/issues';
 import type { IssueCursor, IssueFilter, IssueRecord, IssueSortOption, IssueStatusBucket } from '@/types';
 import { sortIssues } from '@/lib/issue-sort';
 import { isAbortFailure } from '@/lib/request';
+import { useI18n } from '@/i18n';
 
 const MIN_GLOBAL_SEARCH_LENGTH = 3;
 
@@ -16,6 +17,7 @@ export function useIssueSearch(options: {
   sortOption: Ref<IssueSortOption>;
   supportedIssueIds: Ref<Set<string>>;
 }) {
+  const { t } = useI18n();
   const searchQuery = ref('');
   const committedSearchQuery = ref('');
   const searchState = reactive({
@@ -41,14 +43,14 @@ export function useIssueSearch(options: {
   );
   const searchResultCount = computed(() => searchState.issues.length);
   const searchHint = computed(() => {
-    if (normalizedSearchQuery.value !== normalizedCommittedSearchQuery.value) return '按 Enter 搜尋。';
-    if (!isSearching.value) return '輸入關鍵字後按 Enter 搜尋。';
+    if (normalizedSearchQuery.value !== normalizedCommittedSearchQuery.value) return 'text.fef60be5996c';
+    if (!isSearching.value) return 'text.df27f3893c8e';
     if (normalizedCommittedSearchQuery.value.length < MIN_GLOBAL_SEARCH_LENGTH) {
-      return '目前只搜尋已載入的提案；輸入至少 3 個字可搜尋更多。';
+      return 'text.285db2de10ab';
     }
-    if (searchState.loading) return '搜尋中...';
-    if (searchState.limited) return `找到 ${searchResultCount.value} 筆，已優先檢查最相關的索引候選。`;
-    return `共 ${searchResultCount.value} 筆標題結果`;
+    if (searchState.loading) return 'text.185435b7f1bd';
+    if (searchState.limited) return t('issue.search.limitedResults', { count: searchResultCount.value });
+    return t('issue.search.results', { count: searchResultCount.value });
   });
 
   function cancelPendingSearch() {
@@ -190,7 +192,7 @@ export function useIssueSearch(options: {
       } catch (caught) {
         if (isAbortFailure(caught)) return;
         if (currentToken !== requestToken) return;
-        searchState.error = '搜尋失敗，請稍後再試。';
+        searchState.error = 'text.04110b344242';
       } finally {
         if (currentToken === requestToken) {
           searchState.loading = false;
@@ -243,7 +245,7 @@ export function useIssueSearch(options: {
       applySearchFilter(titleQuery);
     } catch (caught) {
       if (isAbortFailure(caught)) return;
-      searchState.error = '載入更多搜尋結果失敗，請稍後再試。';
+      searchState.error = 'text.2c2bfb2fcec2';
     } finally {
       if (currentToken === requestToken) searchState.loadingMore = false;
       if (requestController === controller) requestController = null;

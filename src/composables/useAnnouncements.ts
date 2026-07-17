@@ -118,8 +118,8 @@ export function useAnnouncements(options: UseAnnouncementsOptions = {}) {
       if (isAbortFailure(caught)) return;
       if (currentVersion === getVersion(state) && state.announcements.length === 0) {
         state.error = isOnline.value
-          ? '公告載入失敗，請稍後再試。'
-          : '目前已離線，請恢復網路連線後重新整理。';
+          ? 'text.ba8f81bdccef'
+          : 'text.428cef5d3087';
       }
     } finally {
       if (currentVersion === getVersion(state)) {
@@ -154,8 +154,8 @@ export function useAnnouncements(options: UseAnnouncementsOptions = {}) {
       if (isAbortFailure(caught)) return;
       if (currentVersion === getVersion(state)) {
         state.error = isOnline.value
-          ? '載入更多公告失敗，請稍後再試。'
-          : '目前已離線，請恢復網路連線後重新整理。';
+          ? 'text.174dbaa4b57c'
+          : 'text.428cef5d3087';
       }
     } finally {
       if (currentVersion === getVersion(state)) {

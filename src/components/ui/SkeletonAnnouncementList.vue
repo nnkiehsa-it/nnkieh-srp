@@ -1,5 +1,5 @@
 <template>
-  <div class="issue-card-grid" aria-label="公告載入中" aria-busy="true">
+  <div class="issue-card-grid" :aria-label="t('text.f63e4b620c6c')" aria-busy="true">
     <div v-for="i in count" :key="i" class="issue-card">
       <div class="flex items-center justify-between gap-3">
         <span class="h-5 w-12 rounded-full bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
@@ -22,6 +22,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 withDefaults(defineProps<{
   count?: number;
   canManage?: boolean;

@@ -12,9 +12,9 @@
       tabindex="-1"
     >
       <div v-if="title || eyebrow" class="min-w-0">
-        <p v-if="eyebrow && !title" id="confirm-dialog-title" class="dialog-title !mt-0">{{ eyebrow }}</p>
-        <p v-else-if="eyebrow" class="dialog-eyebrow">{{ eyebrow }}</p>
-        <h3 v-if="title" id="confirm-dialog-title" class="dialog-title">{{ title }}</h3>
+        <p v-if="eyebrow && !title" id="confirm-dialog-title" class="dialog-title !mt-0">{{ t(eyebrow) }}</p>
+        <p v-else-if="eyebrow" class="dialog-eyebrow">{{ t(eyebrow) }}</p>
+        <h3 v-if="title" id="confirm-dialog-title" class="dialog-title">{{ t(title) }}</h3>
       </div>
 
       <p
@@ -22,7 +22,7 @@
         class="dialog-description"
         :class="title || eyebrow ? '' : '!mt-0'"
       >
-        {{ message }}
+        {{ t(message) }}
       </p>
 
       <div class="dialog-actions">
@@ -33,7 +33,7 @@
           data-autofocus
           @click="handleCancel"
         >
-          {{ cancelLabel }}
+          {{ t(cancelLabel) }}
         </button>
         <button
           type="button"
@@ -41,7 +41,7 @@
           :disabled="busy"
           @click="emit('confirm')"
         >
-          <BusyButtonContent :busy="busy" :label="confirmLabel" busy-label="處理中" />
+          <BusyButtonContent :busy="busy" :label="t(confirmLabel)" :busy-label="t('text.ae16f4a52d69')" />
         </button>
       </div>
     </section>
@@ -54,6 +54,7 @@ import DialogOverlay from '@/components/ui/DialogOverlay.vue';
 import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
+import { useI18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   open: boolean;
@@ -67,8 +68,8 @@ const props = withDefaults(defineProps<{
 }>(), {
   title: '',
   eyebrow: '',
-  cancelLabel: '取消',
-  confirmLabel: '確認',
+  cancelLabel: 'text.4d0b4688c787',
+  confirmLabel: 'text.86a07295c547',
   busy: false,
   danger: true,
 });
@@ -79,6 +80,7 @@ const emit = defineEmits<{
   cancel: [];
   confirm: [];
 }>();
+const { t } = useI18n();
 
 const { dialogRef } = useDialogFocus(toRef(props, 'open'), {
   onClose: handleCancel,

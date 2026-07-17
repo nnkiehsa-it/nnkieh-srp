@@ -9,7 +9,7 @@
 - `README.md` — 中英文專案摘要與快速入口
 - `LICENSE` / `CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` — MIT 授權與社群政策入口
 - 官方網站、完整文件、更新紀錄與分類設定產生器由 [`tavricccc/novae-website`](https://github.com/tavricccc/novae-website) 獨立維護與發布
-- `config/issue-categories.config.json` — 提案分類與分類管理權限選項的單一設定入口
+- `config/issue-categories.config.json` — 提案分類、前端語系 `labelKey` 與分類管理權限選項的單一設定入口
 - `config/rate-limits.config.json` — 限流與圖片壓縮設定入口
 - `config/backend-actions.config.json` — Cloudflare gateway 的 action 群組與細部限流映射
 - `config/data-retention.config.json` — 已結案內容、通知、事件、log、暫存與維護紀錄保留期的單一設定入口
@@ -47,10 +47,12 @@
 ## src 入口與路由
 
 - `main.ts` — 掛載 app、resume、PWA、session
+- `i18n/` — 繁體中文／英文語系目錄、系統語言首次偵測、localStorage 語言偏好、日期 locale 與共用 `t()`；所有前端可見字串只放語系目錄
 - `App.vue` — startup gate + AppShell + page-content 轉場
 - `sw.ts` — PWA SW、快取策略、FCM 背景通知
-- `style.css` — 全域樣式載入入口
+- `style.css` — 全域樣式載入入口；依序載入 base、primitives 與領域樣式
 - `styles/base.css` — design tokens、全域基礎與頁面骨架
+- `styles/primitives.css` — viewport、control／card／floating 表面與陰影、list、dropdown、control frame 的單一可復用視覺契約
 - `styles/components.css` / `controls.css` — 共用表面、互動狀態、按鈕與欄位
 - `styles/navigation.css` — 桌面側欄與手機底部導覽
 - `styles/content.css` / `responsive.css` — 列表、設定、統計、Dialog 與跨裝置覆寫
@@ -72,13 +74,15 @@
 
 ## components/ui（無業務）
 
+- `AppButton.vue` / `SurfacePanel.vue` / `DropdownPanel.vue` / `DropdownMenu.vue` / `ViewportFrame.vue` — 按鈕、表面／卡片、dropdown 與全域 viewport gutter 的規範入口；領域元件只用 props／slots 組合
 - `LoadingSpinner.vue` / `BusyButtonContent.vue` / `FeedLoadMoreControl.vue` / `SelectionOptionButton.vue` — spinner、busy 按鈕內容、共用載入更多與一致的選取列控制
 - `EntryComposerShell.vue` / `CountedTextField.vue` — 提案、公告、設備共用的發布骨架、字數欄位與 Markdown 圖片編輯器設定
+- `ContentCardCollection.vue` / `ContentCardShell.vue` — 提案、公告、設備共用的列表狀態、卡片表面、作者／標題／時間／狀態與操作區；領域元件只填資料及差異 slots
 - `DetailRouteState.vue` — 提案、公告、設備詳情共用的登入等待、loading、逾時、離線及讀取錯誤狀態
 - `StatusTransitionDialog.vue` — 提案與設備共用的狀態選擇、結果填寫、字數、錯誤及 busy 流程；各領域只提供狀態與文案
 - `AppIcon.vue` / `BrandMark.vue` / `UserAvatar.vue` / `DecorativeGlow.vue`
-- `EmptyStatePanel.vue` / `PageLoadFailure.vue` / `SearchHighlight.vue`
-- `PillSegmentedControl.vue` / `SelectionMark.vue` / `DetailActionButton.vue` / `DetailPageShell.vue` / `OperationTimeList.vue`（詳情頁共用狀態時間列）
+- `EmptyStatePanel.vue` / `PageLoadFailure.vue` / `ContentListState.vue` / `SearchHighlight.vue`（三領域共用載入失敗、不可用、錯誤、空內容與分頁狀態殼）
+- `PillSegmentedControl.vue` / `SelectionMark.vue` / `DetailActionButton.vue` / `DetailActionGroup.vue` / `DetailPageShell.vue` / `OperationTimeList.vue`（詳情頁共用操作列、分享／刪除動作與狀態時間列）
 - `DialogOverlay.vue` / `GoogleLoginButton.vue`
 - Markdown：`MarkdownImageEditor.vue`、`MarkdownToolbar.vue`、`MarkdownImagePreviews.vue`、`MarkdownImageToolbarStatus.vue`、`MarkdownTableBlockCard.vue`、`TableGridPicker.vue`、`VisualTableEditor.vue`
 - Skeleton：`SkeletonTable`、`SkeletonAnnouncementList`、`SkeletonCommentList`、`SkeletonDashboard`
@@ -92,7 +96,7 @@
 - Dialog：`ConfirmDialog`、`AppInstallPromptDialog`、`AppUpdatePromptDialog`、`PushPermissionPromptDialog`、`IssueComposer`、`FacilityComposer`、`FacilityStatusDialog`、`AnnouncementComposerDialog`、`IssueReviewDialog`、`IssueStatusDialog`
 - 留言：`CommentThreadPanel`、`CommentItem`、`CommentComposer`、`IssueComments`、`AnnouncementComments`
 - 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`
-- 詳情內容：`ContentDetailBody` — 提案、公告、設備共用標題、作者、補充訊息與 Markdown 內容排版
+- 詳情內容：`ContentDetailPagePanel` / `ContentDetailBody` — 提案、公告、設備共用完整 DetailPageShell、標題、作者、補充訊息與 Markdown 內容排版；留言、操作與領域標籤以 slots 注入
 - 看板：`IssueBoard`、`BoardControls`、`IssueCategorySelector`、`IssueBoardTable`、`IssueTableRow`、`IssueAdminMenu`、`IssueDetailPagePanel`、`IssueDetailSupportFooter`
 - 公告：`AnnouncementTable`、`AnnouncementTableRow`、`AnnouncementDetailPagePanel`、`AnnouncementDetailActions`、`CompactActionMenu`
 - 設備：`FacilityComposer`、`FacilityStatusDialog`、`FacilityAdminMenu`、`FacilityTable`、`FacilityTableRow`、`FacilityDetailPagePanel`、`FacilityDetailActions`；三領域共用 Composer、詳情內容、loading／錯誤、Skeleton、操作列與確認 Dialog，僅保留地點及設備狀態等領域差異
@@ -105,10 +109,10 @@
 - 看板：`useIssueBoardData`、`useIssueBuckets`、`useIssueBoardPagination`、`useIssueSearch`、`useUserIssuesData`、`useIssueRouteFilter`、`useDocumentTitle`、`useFilter`
 - 詳情／列：`useIssueRouteDetail`、`useIssueDisplay`、`useIssueSupport`、`useIssueItemController`、`useIssueComposerForm`、`useVoteSupport`、`useDeleteIssue`、`useStatusStyling`
 - 留言：`useIssueComments`、`useAnnouncementComments`、`useDiscussionComments`（共用 core，依提案／公告領域權限判斷管理操作）
-- 公告：`useAnnouncements`、`useAnnouncementManagement`
+- 公告：`useAnnouncements`、`useAnnouncementManagement`、`useAnnouncementDetail`（詳情讀取、快取、Realtime、按讚與刪除流程）
 - 設備：`useFacilities`、`useFacilityDetail`、`useFacilityComposerForm`
-- 通知／推播：`useNotificationBadge`、`useNotifications`、`useNotificationNavigation`、`usePushNotifications`、`usePushPermissionPrompt`
-- UI 流程：`useActionFeedback`、`useActiveNavigationRefresh`、`useAuthenticatedDetailState`、`useBodyScrollLock`、`useDialogFocus`、`useDialogThemeColor`、`useDropdownPosition`、`useClickOutside`、`useInfiniteScroll`、`useMinimumLoading`、`useLoadingTimeout`、`useTimedMessage`、`useNetworkStatus`、`useCompactTableLayout`
+- 通知／推播：`useNotificationBadge`、`useNotifications`、`useNotificationNavigation`、`useNotificationDisplay`（依目前語系組合通知標題、狀態與舊資料內容）、`usePushNotifications`、`usePushPermissionPrompt`
+- UI 流程：`useActionFeedback`、`useActiveNavigationRefresh`、`useAuthenticatedDetailState`、`useDetailRouteQuery`、`useContentListRuntime`（三領域共用最短載入、逾時／斷線、重試、無限捲動與導覽重新整理）、`useBodyScrollLock`、`useDialogFocus`、`useDialogThemeColor`、`useDropdownPosition`、`useClickOutside`、`useInfiniteScroll`、`useMinimumLoading`、`useLoadingTimeout`、`useTimedMessage`、`useNetworkStatus`、`useCompactTableLayout`
 - App：`useAppResume`、`useAppStartupGate`、`useAppUpdate`、`useAppInstallPrompt`、`useShareUrl`、`useAuthorAvatar`
 - Markdown／圖：`useMarkdown`、`useResolvedMarkdown`、`useImageUpload`、`useMarkdownImageUpload`、`useMarkdownImageEditor`
 - Dashboard：`usePlatformDashboard`、`useDashboardMetrics`
@@ -119,7 +123,7 @@
 
 - `generated/issue-categories.ts` — 分類 codegen
 - `constants/app.ts` / `constants/input-limits.ts` — Novae 品牌名稱、學校顯示設定與前端輸入長度
-- `constants/categories.ts` / `statuses.ts`
+- `constants/categories.ts` / `statuses.ts` — 提案／設備狀態 label 與結案判斷的單一來源
 - `lib/` — `firebase`、`firebase-messaging`、`firebase-app-check`、`auth-token`、`supabase`、`request`、`request-id`、`route-request`、`reconnect`、`route`、`page-size`、`format`、`search`、`issue-status`、`issue-timeline`、`issue-sort`、`persistent-cache`（IndexedDB 跨 reload 快取）、`in-app-browser`、`pwa-install`、`caret`、`markdown-*`、`image-processing`
 - `types/index.ts` / `types/pwa.d.ts` — 共通型別及獨立 `FacilityStatus`／`FacilitySummary`／`FacilityRecord`／`FacilityInput`／`FacilityPageResult`
 
@@ -138,6 +142,8 @@
 - `.nvmrc` / `.node-version` / `package.json#engines` — 本機、版本管理器與套件安裝統一使用 Node.js 24 LTS
 - `public/` — favicon、PWA icons
 - `scripts/generate-issue-categories.mjs` / `generate-rate-limits.mjs` / `generate-data-retention.mjs` / `generate-backend-actions.mjs` / `issue-category-config.mjs`
+- `scripts/check-i18n.mjs` — 驗證中英文 key 完整對齊、英文無中文殘留、Vue 模板無任何語言的靜態可見文案／屬性、前端無硬編碼中文字串、無缺漏或直接顯示的 `text.*` key；納入 `verify:local`
+- `scripts/check-ui-primitives.mjs` — 阻止舊 dropdown 類別、任意陰影、手組卡片與各頁自行設定 viewport gutter，並確認共用 primitive 與三階陰影 token 完整；納入 `verify:local`
 - `scripts/verify-integration-local.mjs` / `verify-integration-local.sh` — Windows 自動轉入 WSL、Linux/CI 直接執行的本地 Supabase 全自動重設、database lint、Edge 啟動與整合驗證入口；一律注入固定隔離測試值而不載入正式 provider credentials，CI 直接使用 `setup-deno` 加入 PATH 的官方最新版 Deno
 - `tests/architecture.test.mjs` — 靜態架構回歸
 - `tests/integration/` — 全 backend action、管理員／一般／領域與分類權限、冪等、RLS、通知偏好、worker lifecycle 與 Edge HTTP trust boundary；`action-coverage.test.ts` 防止新增 action 未被領域測試引用，精簡 `README.md` 只保留入口，完整維護規則位於官方網站貢獻指南

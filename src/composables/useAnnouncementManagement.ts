@@ -90,15 +90,15 @@ export function useAnnouncementManagement() {
   async function publishAnnouncement(payload: { title: string; content: string; uploadedImages: UploadedImage[] }) {
     saving.value = true;
     composerError.value = '';
-    const feedbackHandle = start('正在發布公告');
+    const feedbackHandle = start('text.e12c3096882b');
     try {
       const announcement = await createAnnouncement(payload);
       upsertAnnouncement(announcement);
       composerOpen.value = false;
-      feedbackHandle.succeed('公告已發布');
+      feedbackHandle.succeed('text.96f7a878261c');
     } catch (caught) {
       await deleteUploadedImages(payload.uploadedImages.map((image) => image.storagePath)).catch(() => undefined);
-      composerError.value = caught instanceof Error ? caught.message : '公告發布失敗。';
+      composerError.value = caught instanceof Error ? caught.message : 'text.3b3b2ca1a9c5';
       feedbackHandle.fail(composerError.value);
     } finally {
       saving.value = false;
@@ -119,14 +119,14 @@ export function useAnnouncementManagement() {
     if (!announcement) return;
 
     deleting.value = true;
-    const feedbackHandle = start('正在刪除公告');
+    const feedbackHandle = start('text.fd96c8ab3b77');
     try {
       await deleteAnnouncement(announcement.id);
       removeAnnouncement(announcement.id);
       deletePendingAnnouncement.value = null;
-      feedbackHandle.succeed('公告已刪除');
+      feedbackHandle.succeed('text.d775aeaef828');
     } catch (caught) {
-      feedbackHandle.fail(caught instanceof Error ? caught.message : '公告刪除失敗');
+      feedbackHandle.fail(caught instanceof Error ? caught.message : 'text.095ecba4f5a7');
     } finally {
       deleting.value = false;
     }
@@ -135,7 +135,7 @@ export function useAnnouncementManagement() {
   async function handleToggleLike(announcement: AnnouncementRecord | null) {
     if (!announcement) return;
     if (!isAllowedUser.value) {
-      show('請先登入再按讚', 'error');
+      show('text.d5ba2d103edd', 'error');
       return;
     }
     if (liking.value) return;
@@ -167,7 +167,7 @@ export function useAnnouncementManagement() {
       if (isContentUnavailableError(caught)) {
         handleAnnouncementUnavailable(announcement.id);
       }
-      show(caught instanceof Error ? caught.message : '操作失敗，請稍後再試', 'error');
+      show(caught instanceof Error ? caught.message : 'text.d624cbb8862d', 'error');
     } finally {
       liking.value = false;
       likingAnnouncementId.value = '';

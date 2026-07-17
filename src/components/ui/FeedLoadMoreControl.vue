@@ -8,13 +8,16 @@
       @click="emit('loadMore')"
     >
       <LoadingSpinner v-if="loading" :size="3.5" />
-      {{ loading ? '載入中…' : error ? '重試載入' : '載入更多' }}
+      {{ t(loading ? 'text.c38b87dd6ecf' : error ? 'text.39ca7f49ea82' : 'text.0ff983d5aa98') }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   error?: boolean;

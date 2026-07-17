@@ -24,46 +24,46 @@ export function useFacilityComposerForm(open: Ref<boolean>, onClose: () => void,
       await images.discardImages();
       onClose();
     } catch {
-      images.uploadError.value = '圖片刪除失敗，請稍後再試。';
+      images.uploadError.value = 'text.195dfc8d76ad';
       show(images.uploadError.value, 'error');
     }
   }
 
   async function submit() {
     if (!form.title.trim()) {
-      error.value = '請輸入問題標題。';
+      error.value = 'text.25224809f8d7';
       show(error.value, 'error');
       return;
     }
     if (!form.location.trim()) {
-      error.value = '請輸入設備地點。';
+      error.value = 'text.75b1e5284e31';
       show(error.value, 'error');
       return;
     }
     if (!images.contentWithImages.value.trim()) {
-      error.value = '請輸入詳細說明或加入圖片。';
+      error.value = 'text.b42b017e3846';
       show(error.value, 'error');
       return;
     }
     submitting.value = true;
-    const feedback = start('正在送出設備案件');
+    const feedback = start('text.116aec1ac960');
     let uploaded: Awaited<ReturnType<typeof images.uploadImagesAndBuildContent>>['uploadedImages'] = [];
     try {
-      if (images.imageUrls.value.length > 0) feedback.update('正在上傳圖片');
+      if (images.imageUrls.value.length > 0) feedback.update('text.b7cbf062d7cc');
       const result = await images.uploadImagesAndBuildContent();
       uploaded = result.uploadedImages;
-      feedback.update('正在建立設備案件');
+      feedback.update('text.deb253fe6fcd');
       const facility = await createFacility({ title: form.title.trim(), location: form.location.trim(), content: result.content });
-      reset(); onSubmitted(facility); onClose(); feedback.succeed('設備已送出');
+      reset(); onSubmitted(facility); onClose(); feedback.succeed('text.453ff81884c7');
     } catch (caught) {
       if (uploaded.length) await images.deleteUploadedImages(uploaded);
-      error.value = caught instanceof Error ? caught.message : '送出失敗。';
+      error.value = caught instanceof Error ? caught.message : 'text.7a42c57da429';
       feedback.fail(error.value);
     } finally { submitting.value = false; }
   }
 
   return {
-    editorImages: computed(() => images.imageUrls.value.map((src, index) => ({ src, alt: '設備附加圖片預覽', key: `${src}:${index}` }))),
+    editorImages: computed(() => images.imageUrls.value.map((src, index) => ({ src, alt: 'text.fde8a2524ab4', key: `${src}:${index}` }))),
     error,
     form,
     images,

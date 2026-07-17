@@ -1,10 +1,19 @@
 <template>
-  <DetailPageShell
+  <ContentDetailPagePanel
+    :author-name="displayAuthorName"
+    :author-photo-url="displayPhotoUrl"
     :initial-tab="initialTab"
-    back-label="返回提案列表"
-    details-label="提案內容"
+    back-label="text.f3688932d28d"
     :comment-count="mobileCommentCount"
-    :show-mobile-back-button="false"
+    :content="issue.content"
+    details-label="text.6822d1ef16bf"
+    :notice-content="issue.status === 'review-rejected' ? issue.review_rejection_reason : issue.result_content"
+    :notice-fallback-alt="t('issue.resultImage', { title: issue.title })"
+    :notice-markdown="issue.status !== 'review-rejected'"
+    :notice-title="issue.status === 'review-rejected' ? 'text.62d3adb6b8ac' : 'text.d23a5e98eed7'"
+    :notice-tone="issue.status === 'review-rejected' ? 'error' : 'success'"
+    :show-author="showAuthor"
+    :title="issue.title"
     @back="emit('back')"
   >
     <template #header>
@@ -18,26 +27,9 @@
         v-if="issue.support_enabled && issue.support_met_at"
         class="tag bg-success-container font-semibold text-on-success-container shadow-note"
       >
-        <span class="hidden md:inline">已達附議門檻</span>
-        <span class="md:hidden">已達門檻</span>
+        <span class="hidden md:inline">{{ t('text.03952223b21b') }}</span>
+        <span class="md:hidden">{{ t('text.d988e57f8a58') }}</span>
       </span>
-    </template>
-
-    <template #details="{ compact, scrollContent }">
-      <ContentDetailBody
-        :author-name="displayAuthorName"
-        :author-photo-url="displayPhotoUrl"
-        :compact="compact"
-        :content="issue.content"
-        :notice-content="issue.status === 'review-rejected' ? issue.review_rejection_reason : issue.result_content"
-        :notice-fallback-alt="`${issue.title} 的提案結果圖片`"
-        :notice-markdown="issue.status !== 'review-rejected'"
-        :notice-title="issue.status === 'review-rejected' ? '審核未通過原因' : '提案結果'"
-        :notice-tone="issue.status === 'review-rejected' ? 'error' : 'success'"
-        :scroll-content="scrollContent"
-        :show-author="showAuthor"
-        :title="issue.title"
-      />
     </template>
 
     <template #actions="{ compact }">
@@ -82,21 +74,21 @@
           <div class="flex min-w-0 items-center gap-2">
             <AppIcon name="comment" class="shrink-0 text-ink-500" />
             <h4 class="truncate whitespace-nowrap text-base font-semibold text-ink-900 dark:text-ink-100">
-              討論留言
+              {{ t('text.2d4dc6e81d39') }}
             </h4>
           </div>
         </div>
         <div class="flex min-h-0 flex-1 items-center py-2 pr-1">
           <EmptyStatePanel
             class="!px-3 !py-7"
-            title="目前不開放留言"
-            description="提案完成審核後才會開放留言討論。"
+            :title="t('text.7edc07b76e30')"
+            :description="t('text.19b1bbc3a4f8')"
             icon="comment"
           />
         </div>
       </section>
     </template>
-  </DetailPageShell>
+  </ContentDetailPagePanel>
 
   <!-- Moderation Dialogs -->
   <IssueReviewDialog
@@ -124,14 +116,14 @@ import { useStatusStyling } from '@/composables/useStatusStyling';
 import { getSupportProgressPercent, getSupportRemainingLabel } from '@/lib/issue-status';
 import type { IssueRecord } from '@/types';
 
-import DetailPageShell from '@/components/ui/DetailPageShell.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import ContentDetailBody from '@/components/ContentDetailBody.vue';
+import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
 import IssueDetailSupportFooter from '@/components/IssueDetailSupportFooter.vue';
 import IssueComments from '@/components/IssueComments.vue';
 import { useSession } from '@/composables/useSession';
 import { issueAllowsCommentsForStatus } from '@/constants/categories';
+import { useI18n } from '@/i18n';
 
 // Shared Moderation Dialogs
 import IssueReviewDialog from '@/components/IssueReviewDialog.vue';
@@ -168,6 +160,7 @@ const isReviewDialogOpen = ref(false);
 const isStatusDialogOpen = ref(false);
 const statusDialogInitialAction = ref<'processing' | 'closed'>('processing');
 const mobileCommentCount = ref(0);
+const { t } = useI18n();
 
 const {
   displayAuthorName,

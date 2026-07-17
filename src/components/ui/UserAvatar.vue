@@ -2,7 +2,7 @@
   <img
     v-if="photoUrl"
     :src="photoUrl"
-    :alt="altText"
+    :alt="t(altText)"
     class="rounded-full border border-ink-300 object-cover dark:border-ink-700"
     :class="imageSizeClass"
   />
@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   photoUrl: string | null | undefined;
@@ -25,8 +26,9 @@ const props = withDefaults(defineProps<{
   altText?: string;
 }>(), {
   size: 'md',
-  altText: '使用者頭像',
+  altText: 'text.59dd30bfe0e0',
 });
+const { t } = useI18n();
 
 const imageSizeClass = computed(() => {
   if (props.size === 'sm') return 'h-7 w-7';
@@ -47,6 +49,6 @@ const textSizeClass = computed(() => {
 });
 
 const fallbackText = computed(() => {
-  return props.name ? props.name.slice(0, 1) : '匿';
+  return props.name ? props.name.slice(0, 1) : t('text.4e0a3caa2257');
 });
 </script>

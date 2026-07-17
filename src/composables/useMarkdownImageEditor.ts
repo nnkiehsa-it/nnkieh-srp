@@ -6,6 +6,7 @@ import {
 import {
   type MarkdownEditorCommandId,
 } from '@/lib/markdown-editor-commands';
+import { useI18n } from '@/i18n';
 
 export interface MarkdownEditorImage {
   alt: string;
@@ -42,12 +43,13 @@ export interface MarkdownImageEditorEmit {
   (e: 'update:showPreview', showPreview: boolean): void;
 }
 
-const DEFAULT_HELPER_TEXT = '可輸入文字或加入圖片，使用工具列插入格式';
+const DEFAULT_HELPER_TEXT = 'text.59b7d9560810';
 
 export function useMarkdownImageEditor(
   props: MarkdownImageEditorProps,
   emit: MarkdownImageEditorEmit,
 ) {
+  const { t } = useI18n();
   const fileInputRef = ref<HTMLInputElement | null>(null);
   const editorRootRef = ref<HTMLDivElement | null>(null);
   const tablePickerRef = ref<any>(null);
@@ -425,7 +427,7 @@ export function useMarkdownImageEditor(
     let headerRow = '|';
     let alignRow = '|';
     for (let c = 0; c < cols; c++) {
-      headerRow += ` 標題 ${c + 1} |`;
+      headerRow += ` ${t('markdown.defaultHeader', { number: c + 1 })} |`;
       alignRow += ' --- |';
     }
 
@@ -433,7 +435,7 @@ export function useMarkdownImageEditor(
     for (let r = 0; r < rows - 1; r++) {
       let rowText = '|';
       for (let c = 0; c < cols; c++) {
-        rowText += ' 內容 |';
+        rowText += ` ${t('markdown.defaultCell', { number: c + 1 })} |`;
       }
       bodyRows += '\n' + rowText;
     }

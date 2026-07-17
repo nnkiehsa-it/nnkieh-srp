@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
   photoUrl?: string | null;
   size?: 'sm' | 'md' | 'lg';
 }>(), {
-  altText: '使用者頭像',
+  altText: 'text.59dd30bfe0e0',
   authorUid: null,
   photoUrl: null,
   size: 'md',

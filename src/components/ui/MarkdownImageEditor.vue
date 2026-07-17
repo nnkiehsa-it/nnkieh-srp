@@ -2,7 +2,7 @@
   <div ref="editorRootRef" class="relative flex flex-col min-h-0 h-full space-y-2">
     <!-- Header row with label and tabs/image action -->
     <div class="flex items-center justify-between gap-3 shrink-0">
-      <span :id="labelId" class="field-label">{{ label }}</span>
+      <span :id="labelId" class="field-label">{{ t(label) }}</span>
       <div class="flex flex-wrap items-center justify-end gap-2">
         <input
           ref="fileInputRef"
@@ -11,7 +11,7 @@
           autocomplete="off"
           class="hidden"
           multiple
-          aria-label="選擇圖片"
+          :aria-label="t('text.a4f0c2aa2572')"
           @change="emit('image-picked', $event)"
         >
         
@@ -22,14 +22,14 @@
             :class="['button-toolbar', { 'button-toolbar--active': !showPreview }]"
             @click="emit('update:showPreview', false)"
           >
-            編輯
+            {{ t('markdown.edit') }}
           </button>
           <button
             type="button"
             :class="['button-toolbar', { 'button-toolbar--active': showPreview }]"
             @click="emit('update:showPreview', true)"
           >
-            預覽
+            {{ t('markdown.preview') }}
           </button>
         </template>
         <!-- On mobile, show switcher tabs even if split is true -->
@@ -39,14 +39,14 @@
             :class="['button-toolbar md:hidden', { 'button-toolbar--active': !showPreview }]"
             @click="emit('update:showPreview', false)"
           >
-            編輯
+            {{ t('markdown.edit') }}
           </button>
           <button
             type="button"
             :class="['button-toolbar md:hidden', { 'button-toolbar--active': showPreview }]"
             @click="emit('update:showPreview', true)"
           >
-            預覽
+            {{ t('markdown.preview') }}
           </button>
         </template>
       </div>
@@ -61,7 +61,7 @@
           @command="executeToolbarCommand"
         >
           <MarkdownImageToolbarStatus
-            :busy-label="busyLabel"
+            :busy-label="t(busyLabel)"
             :disabled="disabled || uploading || images.length >= maxImages"
             :image-count="images.length"
             :max-images="maxImages"
@@ -82,14 +82,14 @@
             v-if="activeMode === 'table'"
             class="flex items-center justify-between px-3 py-1 bg-ink-50/30 dark:bg-ink-950/10 border-b border-ink-100 dark:border-ink-850 text-[11px] text-ink-500 shrink-0 select-none"
           >
-            <span>表格編輯</span>
+            <span>{{ t('markdown.tableMode') }}</span>
             <button
               type="button"
               class="px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1 text-ink-500 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800/40"
               @click="exitTableMode"
             >
               <AppIcon name="edit" :size="3" />
-              <span>返回文字編輯</span>
+              <span>{{ t('markdown.returnToText') }}</span>
             </button>
           </div>
           <div
@@ -107,7 +107,7 @@
                 class="w-full resize-none bg-transparent text-base text-ink-800 outline-none focus:ring-0 dark:text-ink-100 md:text-sm"
                 autocomplete="off"
                 :maxlength="maxLength"
-                :placeholder="placeholder"
+                :placeholder="t(placeholder)"
                 :disabled="disabled || uploading"
                 @focus="handleTextBlockFocus(block.id)"
                 @input="onTextBlockInput(block.id, $event)"
@@ -147,10 +147,10 @@
 
       <!-- Right Column: Split Live Preview -->
       <div class="flex flex-col min-h-0 border border-ink-200 dark:border-ink-800 rounded-xl bg-white dark:bg-ink-900 p-4 overflow-y-auto">
-        <h3 class="text-xs font-bold text-ink-400 dark:text-ink-500 mb-3 uppercase tracking-wider shrink-0">即時渲染預覽</h3>
+        <h3 class="text-xs font-bold text-ink-400 dark:text-ink-500 mb-3 uppercase tracking-wider shrink-0">{{ t('markdown.livePreview') }}</h3>
         <div class="flex-1 min-h-0">
           <MarkdownRenderer v-if="previewContent.trim()" :content="previewContent" />
-          <span v-else class="text-sm italic text-ink-400">沒有可預覽的內容</span>
+          <span v-else class="text-sm italic text-ink-400">{{ t('markdown.noPreview') }}</span>
         </div>
       </div>
     </div>
@@ -166,7 +166,7 @@
         @command="executeToolbarCommand"
       >
         <MarkdownImageToolbarStatus
-          :busy-label="busyLabel"
+          :busy-label="t(busyLabel)"
           :disabled="disabled || uploading || images.length >= maxImages"
           :image-count="images.length"
           :max-images="maxImages"
@@ -188,14 +188,14 @@
           v-if="activeMode === 'table'"
           class="flex items-center justify-between px-3 py-1 bg-ink-50/30 dark:bg-ink-950/10 border-b border-ink-100 dark:border-ink-850 text-[11px] text-ink-500 shrink-0 select-none"
         >
-          <span>表格編輯</span>
+          <span>{{ t('markdown.tableMode') }}</span>
           <button
             type="button"
             class="px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1 text-ink-500 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800/40"
             @click="exitTableMode"
           >
             <AppIcon name="edit" :size="3" />
-            <span>返回文字編輯</span>
+            <span>{{ t('markdown.returnToText') }}</span>
           </button>
         </div>
         <div
@@ -213,7 +213,7 @@
               class="w-full resize-none border-none bg-transparent text-base text-ink-800 outline-none focus:ring-0 dark:text-ink-100 md:text-sm"
               autocomplete="off"
               :maxlength="maxLength"
-              :placeholder="placeholder"
+              :placeholder="t(placeholder)"
               :disabled="disabled || uploading"
               @focus="handleTextBlockFocus(block.id)"
               @input="onTextBlockInput(block.id, $event)"
@@ -258,7 +258,7 @@
       :class="previewClass"
     >
       <MarkdownRenderer v-if="previewContent.trim()" :content="previewContent" />
-      <span v-else class="text-sm italic text-ink-400">沒有可預覽的內容</span>
+      <span v-else class="text-sm italic text-ink-400">{{ t('markdown.noPreview') }}</span>
     </div>
 
     <!-- Responsive Fallback layout for split screen mobile view -->
@@ -276,7 +276,7 @@
           @command="executeToolbarCommand"
         >
           <MarkdownImageToolbarStatus
-            :busy-label="busyLabel"
+            :busy-label="t(busyLabel)"
             :disabled="disabled || uploading || images.length >= maxImages"
             :image-count="images.length"
             :max-images="maxImages"
@@ -297,14 +297,14 @@
             v-if="activeMode === 'table'"
             class="flex items-center justify-between px-3 py-1 bg-ink-50/30 dark:bg-ink-950/10 border-b border-ink-100 dark:border-ink-850 text-[11px] text-ink-500 shrink-0 select-none"
           >
-            <span>表格編輯</span>
+            <span>{{ t('markdown.tableMode') }}</span>
             <button
               type="button"
               class="px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1 text-ink-500 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800/40"
               @click="exitTableMode"
             >
               <AppIcon name="edit" :size="3" />
-              <span>返回文字編輯</span>
+              <span>{{ t('markdown.returnToText') }}</span>
             </button>
           </div>
           <div
@@ -322,7 +322,7 @@
                 class="w-full resize-none bg-transparent text-base text-ink-800 outline-none focus:ring-0 dark:text-ink-100 md:text-sm"
                 autocomplete="off"
                 :maxlength="maxLength"
-                :placeholder="placeholder"
+                :placeholder="t(placeholder)"
                 :disabled="disabled || uploading"
                 @focus="handleTextBlockFocus(block.id)"
                 @input="onTextBlockInput(block.id, $event)"
@@ -366,13 +366,13 @@
         :class="previewClass"
       >
         <MarkdownRenderer v-if="previewContent.trim()" :content="previewContent" />
-        <span v-else class="text-sm italic text-ink-400">沒有可預覽的內容</span>
+        <span v-else class="text-sm italic text-ink-400">{{ t('markdown.noPreview') }}</span>
       </div>
     </div>
 
     <!-- Bottom counter/helper text row -->
     <div class="flex justify-between text-xs text-ink-500 dark:text-ink-400 shrink-0">
-      <span>{{ effectiveHelperText }}</span>
+      <span>{{ t(effectiveHelperText) }}</span>
       <span class="font-medium" :class="{ 'text-error': content.length > warningLength }">
         {{ content.length }} / {{ maxLength }}
       </span>
@@ -393,6 +393,7 @@ import {
   useMarkdownImageEditor,
   type MarkdownEditorImage,
 } from '@/composables/useMarkdownImageEditor';
+import { useI18n } from '@/i18n';
 
 export type { MarkdownEditorImage };
 
@@ -417,10 +418,10 @@ const props = withDefaults(defineProps<{
   warningLength: number;
   split?: boolean;
 }>(), {
-  busyLabel: '圖片處理中...',
+  busyLabel: 'text.ca1d70f0ffd1',
   disabled: false,
   editorClass: '',
-  helperText: '可輸入文字或加入圖片，使用工具列插入格式',
+  helperText: 'text.59b7d9560810',
   maxImagesLabel: '',
   placeholder: '',
   previewClass: '',
@@ -428,6 +429,7 @@ const props = withDefaults(defineProps<{
   uploading: false,
   split: false,
 });
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'image-picked': [event: Event];

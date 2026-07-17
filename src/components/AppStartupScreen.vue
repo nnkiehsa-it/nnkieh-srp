@@ -12,8 +12,8 @@
       </div>
 
       <div v-if="stalled" class="startup-screen__recovery">
-        <p>啟動等待時間過長，請確認網路後重新載入。</p>
-        <button type="button" class="button-primary" @click="emit('retry')">重新載入</button>
+        <p>{{ t('text.57c54d8966b7') }}</p>
+        <button type="button" class="button-primary" @click="emit('retry')">{{ t('text.0c9157b5bfac') }}</button>
       </div>
       <LoadingSpinner v-else :size="6" class="startup-screen__loader" />
     </div>
@@ -24,10 +24,12 @@
 import BrandMark from '@/components/ui/BrandMark.vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { APP_NAME, SCHOOL_NAME } from '@/constants/app';
+import { useI18n } from '@/i18n';
 
 const emit = defineEmits<{
   retry: [];
 }>();
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{
   ariaLabel?: string;
@@ -35,7 +37,7 @@ const props = withDefaults(defineProps<{
   stalled?: boolean;
   title?: string;
 }>(), {
-  ariaLabel: '正在啟動 App',
+  ariaLabel: 'text.8ee16c627bc9',
   message: '',
   stalled: false,
   title: '',

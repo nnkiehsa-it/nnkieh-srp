@@ -49,6 +49,6 @@ export async function fetchIssueRecordById(
     return issue;
   } catch (error) {
     if (error instanceof RequestFailure) throw error;
-    throw new Error('找不到這篇提案。', { cause: error });
+    throw new Error('text.1fbef2c8651c', { cause: error });
   } });
 }

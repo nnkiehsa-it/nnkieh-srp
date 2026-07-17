@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-5" aria-label="平台統計載入中" aria-busy="true">
+  <div class="space-y-5" :aria-label="t('text.19694d95dc08')" aria-busy="true">
     <header class="space-y-3 pb-2">
       <span class="block h-6 w-24 rounded-full bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
       <span class="block h-9 w-44 rounded bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
@@ -7,16 +7,16 @@
     </header>
 
     <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <article v-for="index in 4" :key="index" class="min-h-32 space-y-4 rounded-[var(--radius-outer)] border-0 bg-surface p-5 shadow-elevated dark:bg-surface">
+      <SurfacePanel v-for="index in 4" :key="index" as="article" padding="lg" class="min-h-32 space-y-4">
         <span class="block h-3 w-20 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
         <span class="block h-8 w-24 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
         <span class="block h-4 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
-      </article>
+      </SurfacePanel>
     </section>
 
     <section class="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)]">
       <div class="grid gap-5">
-        <section class="dashboard-surface">
+        <SurfacePanel as="section" padding="lg">
           <div class="flex items-center justify-between gap-4">
             <div class="space-y-2">
               <span class="block h-5 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
@@ -31,9 +31,9 @@
               <span class="h-4 w-10 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
             </div>
           </div>
-        </section>
+        </SurfacePanel>
 
-        <section class="dashboard-surface">
+        <SurfacePanel as="section" padding="lg">
           <div class="flex items-center justify-between gap-4">
             <div class="space-y-2">
               <span class="block h-5 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
@@ -49,11 +49,11 @@
               <span class="h-4 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
             </div>
           </div>
-        </section>
+        </SurfacePanel>
       </div>
 
       <div class="grid gap-5">
-        <section v-for="index in 2" :key="index" class="dashboard-surface min-h-52">
+        <SurfacePanel v-for="index in 2" :key="index" as="section" padding="lg" class="min-h-52">
           <div class="space-y-2">
             <span class="block h-5 w-32 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
             <span class="block h-3.5 w-40 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
@@ -65,8 +65,15 @@
               <span class="h-5 w-10 rounded bg-ink-200/60 dark:bg-ink-700/50 animate-skeleton"></span>
             </div>
           </div>
-        </section>
+        </SurfacePanel>
       </div>
     </section>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useI18n } from '@/i18n';
+import SurfacePanel from '@/components/ui/SurfacePanel.vue';
+
+const { t } = useI18n();
+</script>

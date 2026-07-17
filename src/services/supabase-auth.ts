@@ -2,6 +2,7 @@ import type { User } from 'firebase/auth';
 import { hasSupabaseConfig } from '@/lib/supabase';
 import { withRequestTimeout } from '@/lib/request';
 import { apiGatewayUrl, hasApiGatewayConfig } from '@/lib/api-gateway';
+import { t } from '@/i18n';
 
 interface SyncUserResponse {
   error?: string;
@@ -34,7 +35,7 @@ export async function ensureSupabaseAuthenticatedRole(user: User) {
 
   const token = await withRequestTimeout(
     () => user.getIdTokenResult(),
-    { label: 'Supabase 登入初始化' },
+    { label: 'text.c734c57eb882' },
   );
   if (token.claims.role === 'authenticated' && wasRecentlySynced(user.uid)) return;
 
@@ -48,7 +49,7 @@ export async function ensureSupabaseAuthenticatedRole(user: User) {
       },
       signal,
     }),
-    { label: 'Supabase 登入初始化' },
+    { label: 'text.c734c57eb882' },
   );
   let data: SyncUserResponse | null = null;
   try {
@@ -58,26 +59,26 @@ export async function ensureSupabaseAuthenticatedRole(user: User) {
   }
 
   if (!response.ok || data?.ok !== true) {
-    throw new Error(data?.error || `Supabase 登入初始化失敗（${response.status}）。`);
+    throw new Error(data?.error || t('service.supabaseAuthFailed', { status: response.status }));
   }
   rememberSync(user.uid);
 
   if (token.claims.role !== 'authenticated') {
     let refreshedToken = await withRequestTimeout(
       () => user.getIdTokenResult(true),
-      { label: 'Supabase 登入更新' },
+      { label: 'text.967e196b7750' },
     );
     let attempts = 0;
     while (refreshedToken.claims.role !== 'authenticated' && attempts < 3) {
       await new Promise((resolve) => setTimeout(resolve, 800));
       refreshedToken = await withRequestTimeout(
         () => user.getIdTokenResult(true),
-        { label: 'Supabase 登入更新重試' },
+        { label: 'text.f3c66dafe54d' },
       );
       attempts++;
     }
     if (refreshedToken.claims.role !== 'authenticated') {
-      throw new Error('Supabase 登入初始化尚未完成。');
+      throw new Error('text.e51eab2fca5e');
     }
   }
 }

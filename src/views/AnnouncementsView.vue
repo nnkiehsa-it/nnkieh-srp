@@ -1,81 +1,59 @@
 <template>
   <section class="route-page space-y-5">
     <div class="flex items-center justify-end gap-3 md:justify-between">
-      <h2 class="hidden shrink-0 text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block">公告</h2>
+      <h2 class="hidden shrink-0 text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block">{{ t('text.3f9569532847') }}</h2>
       <button
         v-if="isAdmin"
         type="button"
         class="button-contextual h-8 w-8 min-w-8 shrink-0 p-0"
-        aria-label="新增公告"
-        title="新增公告"
+        :aria-label="t('text.e9cf7e935c45')"
+        :title="t('text.e9cf7e935c45')"
         @click="openComposer"
       >
         <AppIcon name="plus" :size="4" />
       </button>
     </div>
 
-    <div>
-      <Transition name="panel-switch" mode="out-in">
-        <div :key="announcementPanelKey" class="space-y-3">
-          <PageLoadFailure
-            v-if="announcementLoadingHasProblem"
-            :title="announcementProblemTitle"
-            :description="announcementProblemDescription"
-            :retry-disabled="!announcementOnline"
-            @retry="retryAnnouncements"
-          />
+    <ContentListState
+      :empty="announcements.length === 0"
+      empty-description="text.0e2feb058100"
+      empty-icon="chart"
+      empty-title="text.ed642d8a7837"
+      :error="error"
+      error-title="text.865ab62b6ac2"
+      :has-more="hasMore"
+      :loading="visibleAnnouncementLoading"
+      :loading-has-problem="announcementLoadingHasProblem"
+      :loading-more="loadingMore"
+      :panel-key="announcementPanelKey"
+      :problem-description="announcementProblemDescription"
+      :problem-title="announcementProblemTitle"
+      :retry-disabled="!announcementOnline"
+      spacing-class="space-y-3"
+      :unavailable="!isAllowedUser"
+      unavailable-description="text.4feee24a57f9"
+      unavailable-title="text.928ccceeceec"
+      @load-more="loadMoreAnnouncements"
+      @retry="retryAnnouncements"
+    >
+      <template #loading>
+        <SkeletonAnnouncementList :can-manage="isAdmin" />
+      </template>
 
-          <SkeletonAnnouncementList v-else-if="visibleAnnouncementLoading" :can-manage="isAdmin" />
+      <AnnouncementTable
+        :announcements="announcements"
+        :can-manage="isAdmin"
+        :liking-announcement-id="likingAnnouncementId"
+        @delete="handleListDelete"
+        @open="openAnnouncementDetails"
+        @open-comments="(announcement) => openAnnouncementDetails(announcement, 'comments')"
+        @toggle-like="handleToggleLike"
+      />
 
-          <EmptyStatePanel
-            v-else-if="!isAllowedUser"
-            title="無法查看公告"
-            description="請先使用校內帳號登入。"
-            icon="lock"
-          />
-
-          <EmptyStatePanel
-            v-else-if="error && announcements.length === 0"
-            title="公告讀取失敗"
-            :description="error"
-            icon="warning"
-            tone="danger"
-            action-label="重新整理"
-            @action="retryAnnouncements"
-          />
-
-          <EmptyStatePanel
-            v-else-if="announcements.length === 0"
-            title="目前沒有公告"
-            description="公告發布後會顯示在這裡。"
-            icon="chart"
-          />
-
-          <template v-else>
-            <AnnouncementTable
-              :announcements="announcements"
-              :can-manage="isAdmin"
-              :liking-announcement-id="likingAnnouncementId"
-              @delete="handleListDelete"
-              @open="openAnnouncementDetails"
-              @open-comments="(announcement) => openAnnouncementDetails(announcement, 'comments')"
-              @toggle-like="handleToggleLike"
-            />
-
-            <div v-if="error" class="mt-3 rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container">
-              {{ error }}
-            </div>
-            <FeedLoadMoreControl
-              :has-more="hasMore"
-              :loading="loadingMore"
-              :error="Boolean(error)"
-              @load-more="loadMoreAnnouncements"
-            />
-            <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
-          </template>
-        </div>
-      </Transition>
-    </div>
+      <template #sentinel>
+        <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
+      </template>
+    </ContentListState>
 
     <AnnouncementComposerDialog
       :error="composerError"
@@ -87,9 +65,9 @@
 
     <ConfirmDialog
       :open="Boolean(deletePendingAnnouncement)"
-      title="確定要刪除這則公告嗎？"
-      message="刪除後這則公告將無法復原。"
-      confirm-label="確認刪除"
+      title="text.06c04e55b00b"
+      message="text.1beff74e806c"
+      confirm-label="text.1d63b95811eb"
       :busy="deleting"
       @cancel="closeDeleteDialog"
       @confirm="confirmDelete"
@@ -98,22 +76,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import AnnouncementComposerDialog from '@/components/AnnouncementComposerDialog.vue';
 import AnnouncementTable from '@/components/AnnouncementTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import FeedLoadMoreControl from '@/components/ui/FeedLoadMoreControl.vue';
+import ContentListState from '@/components/ui/ContentListState.vue';
 import SkeletonAnnouncementList from '@/components/ui/SkeletonAnnouncementList.vue';
-import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 import { useAnnouncementManagement } from '@/composables/useAnnouncementManagement';
-import { useMinimumLoading } from '@/composables/useMinimumLoading';
-import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
-import { resetAppConnection } from '@/lib/reconnect';
-import { useActionFeedback } from '@/composables/useActionFeedback';
-import { registerActiveNavigationRefreshHandler } from '@/composables/useActiveNavigationRefresh';
+import { useContentListRuntime } from '@/composables/useContentListRuntime';
+import { useI18n } from '@/i18n';
 
 const {
   announcements,
@@ -142,41 +114,29 @@ const {
   handleToggleLike,
 } = useAnnouncementManagement();
 
-const { start } = useActionFeedback();
-const manualRefreshing = ref(false);
+const { t } = useI18n();
 const rawAnnouncementLoading = computed(() => sessionLoading.value || loading.value);
 const announcementPanelKey = 'announcements';
-const { visibleLoading: visibleAnnouncementLoading } = useMinimumLoading(rawAnnouncementLoading);
 const {
-  hasProblem: announcementLoadingHasProblem,
   isOnline: announcementOnline,
+  loadMoreSentinel,
+  loadingHasProblem: announcementLoadingHasProblem,
   problemDescription: announcementProblemDescription,
   problemTitle: announcementProblemTitle,
-} = useLoadingTimeout(rawAnnouncementLoading, 5_000);
-const infiniteScrollDisabled = computed(() =>
-  !hasMore.value || loading.value || loadingMore.value || Boolean(error.value) || !isAllowedUser.value
-);
-async function retryAnnouncements() {
-  await resetAppConnection();
-  await refreshAnnouncements();
-}
-async function handleManualRefresh() {
-  if (manualRefreshing.value) return;
-  manualRefreshing.value = true;
-  const feedbackHandle = start('正在更新公告');
-  try {
-    await refreshAnnouncements();
-    feedbackHandle.succeed('公告已更新');
-  } catch {
-    feedbackHandle.fail('公告更新失敗，請稍後再試');
-  } finally {
-    manualRefreshing.value = false;
-  }
-}
-registerActiveNavigationRefreshHandler(handleManualRefresh);
-
-const { sentinel: loadMoreSentinel } = useInfiniteScroll({
-  disabled: infiniteScrollDisabled,
-  onLoadMore: loadMoreAnnouncements,
+  retry: retryAnnouncements,
+  visibleLoading: visibleAnnouncementLoading,
+} = useContentListRuntime({
+  canLoad: isAllowedUser,
+  error,
+  hasMore,
+  loadMore: loadMoreAnnouncements,
+  loading: rawAnnouncementLoading,
+  loadingMore,
+  refresh: refreshAnnouncements,
+  refreshFeedback: {
+    error: 'text.a5226452666e',
+    loading: 'text.82410863c281',
+    success: 'text.a31f733e2c84',
+  },
 });
 </script>

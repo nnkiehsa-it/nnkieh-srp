@@ -148,8 +148,8 @@ export function useIssueBuckets(deps: BucketDeps) {
       if (isAbortFailure(caught)) return;
       if (bucket.issues.length === 0 || options.append) {
         bucket.error = isOnline.value
-          ? options.append ? '載入更多提案失敗，請稍後再試。' : '提案載入失敗，請稍後再試。'
-          : '目前已離線，請恢復網路連線後重新整理。';
+          ? options.append ? 'text.08d3b4ac7120' : 'text.d2420979db9a'
+          : 'text.428cef5d3087';
       }
     } finally {
       if (version === getBucketVersion(bucket)) {

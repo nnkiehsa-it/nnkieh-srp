@@ -58,7 +58,7 @@ export function useIssueItemController(
 
   function confirmDelete() {
     if (!isAdmin.value) {
-      show('你沒有刪除此提案的權限', 'error');
+      show('text.3a94fc408996', 'error');
       return;
     }
     openDeleteDialog();

@@ -8,7 +8,7 @@
       @retry="reloadPage"
     />
 
-    <div v-else-if="sessionLoading" class="space-y-6" aria-label="正在載入提案" aria-busy="true">
+    <div v-else-if="sessionLoading" class="space-y-6" :aria-label="t('text.49b7cc2ac6bd')" aria-busy="true">
       <div class="flex items-center justify-between border-b border-ink-200/80 pb-4 dark:border-ink-800/80">
         <span class="h-7 w-16 rounded bg-ink-200/60 animate-skeleton dark:bg-ink-700/50"></span>
         <div class="flex gap-2">
@@ -23,7 +23,7 @@
       />
     </div>
 
-    <div v-else-if="!isAllowedUser" class="sr-only" role="status">正在前往登入頁</div>
+    <div v-else-if="!isAllowedUser" class="sr-only" role="status">{{ t('auth.redirectingToLogin') }}</div>
 
     <IssueBoard
       v-if="isAllowedUser"
@@ -36,6 +36,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from '@/i18n';
 import IssueBoard from '@/components/IssueBoard.vue';
 import IssueBoardTable from '@/components/IssueBoardTable.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
@@ -43,6 +44,7 @@ import { useSession } from '@/composables/useSession';
 import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
 import { resetAppConnection } from '@/lib/reconnect';
 
+const { t } = useI18n();
 const { initialized, isAllowedUser, loading } = useSession();
 const sessionLoading = computed(() => loading.value || !initialized.value);
 const {

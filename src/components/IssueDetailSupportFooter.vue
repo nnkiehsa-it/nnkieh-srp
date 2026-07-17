@@ -1,10 +1,18 @@
 <template>
-  <div class="mt-4 shrink-0 border-t border-ink-100 pb-1 dark:border-ink-800" :class="compact ? 'space-y-3 px-1 pt-3' : 'space-y-3 pt-3'">
-    <div v-if="issue.support_enabled" class="space-y-3">
+  <DetailActionGroup
+    :compact="compact"
+    delete-title="text.0a0ba8eb57f8"
+    :operation-time-items="operationTimeItems"
+    :separate-operation-times="issue.support_enabled"
+    :show-delete="canManage"
+    @delete="emit('delete')"
+    @share="emit('share')"
+  >
+    <template v-if="issue.support_enabled" #header>
       <div class="space-y-2">
         <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-600 dark:text-ink-300">
           <span class="text-sm font-bold text-ink-900 dark:text-ink-50">
-            附議進度 {{ supportCount }} / {{ issue.support_goal ?? 0 }}
+            {{ t('issue.support.progress', { count: supportCount, goal: issue.support_goal ?? 0 }) }}
           </span>
           <span v-if="supportRemainingLabel" class="whitespace-nowrap text-xs font-bold text-ink-500 dark:text-ink-400">
             ({{ supportRemainingLabel }})
@@ -17,100 +25,44 @@
           ></div>
         </div>
       </div>
+    </template>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <VoteButtons
-          class="shrink-0"
-          :issue-id="issue.id"
-          :current-user-supported="currentUserSupported"
-          :support-count="supportCount"
-          :support-closed="supportClosed"
-          :status-label="statusLabel"
-          :compact="compact"
-          :author-fixed="issue.isOwnIssue"
-          @content-unavailable="emit('contentUnavailable', $event)"
-          @supported="emit('supported', $event)"
-        />
-        <DetailActionButton
-          label="分享"
-          :compact="compact"
-          title="複製分享連結"
-          aria-label="複製分享連結"
-          @click="emit('share')"
-        >
-          <AppIcon name="share" />
-        </DetailActionButton>
-        <DetailActionButton
-          v-if="isAdmin && !isClosed"
-          :label="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-          :compact="compact"
-          :title="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-          :aria-label="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-          @click="isUnderReview ? emit('moderate') : emit('edit-result')"
-        >
-          <AppIcon name="edit" />
-        </DetailActionButton>
-        <DetailActionButton
-          v-if="canManage"
-          danger
-          label="刪除"
-          :compact="compact"
-          title="刪除提案"
-          aria-label="刪除提案"
-          @click="emit('delete')"
-        >
-          <AppIcon name="trash" />
-        </DetailActionButton>
-      </div>
-    </div>
-    <div v-else class="flex flex-wrap justify-start gap-2">
-      <DetailActionButton
-        label="分享"
+    <template v-if="issue.support_enabled" #primary>
+      <VoteButtons
+        class="shrink-0"
+        :issue-id="issue.id"
+        :current-user-supported="currentUserSupported"
+        :support-count="supportCount"
+        :support-closed="supportClosed"
+        :status-label="statusLabel"
         :compact="compact"
-        title="複製分享連結"
-        aria-label="複製分享連結"
-        @click="emit('share')"
-      >
-        <AppIcon name="share" />
-      </DetailActionButton>
-      <DetailActionButton
-        v-if="isAdmin && !isClosed"
-        :label="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-        :compact="compact"
-        :title="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-        :aria-label="isUnderReview ? '審核提案' : '變更提案狀態/結果'"
-        @click="isUnderReview ? emit('moderate') : emit('edit-result')"
-      >
-        <AppIcon name="edit" />
-      </DetailActionButton>
-      <DetailActionButton
-        v-if="canManage"
-        danger
-        label="刪除"
-        :compact="compact"
-        title="刪除提案"
-        aria-label="刪除提案"
-        @click="emit('delete')"
-      >
-        <AppIcon name="trash" />
-      </DetailActionButton>
-    </div>
+        :author-fixed="issue.isOwnIssue"
+        @content-unavailable="emit('contentUnavailable', $event)"
+        @supported="emit('supported', $event)"
+      />
+    </template>
 
-    <OperationTimeList
-      :items="operationTimeItems"
+    <DetailActionButton
+      v-if="isAdmin && !isClosed"
+      :label="isUnderReview ? 'text.332bad1cbb2b' : 'text.7b3712783bc1'"
       :compact="compact"
-      :class="issue.support_enabled ? (compact ? 'mt-2 border-t border-ink-100 pt-2 dark:border-ink-800' : 'mt-3 border-t border-ink-100 pt-3 dark:border-ink-800') : ''"
-    />
-  </div>
+      :title="isUnderReview ? 'text.332bad1cbb2b' : 'text.7b3712783bc1'"
+      :aria-label="isUnderReview ? 'text.332bad1cbb2b' : 'text.7b3712783bc1'"
+      @click="isUnderReview ? emit('moderate') : emit('edit-result')"
+    >
+      <AppIcon name="edit" />
+    </DetailActionButton>
+  </DetailActionGroup>
 </template>
 
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue';
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
+import DetailActionGroup from '@/components/ui/DetailActionGroup.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import OperationTimeList from '@/components/ui/OperationTimeList.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
 import type { IssueOperationTimeItem, IssueRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   canManage?: boolean;
@@ -125,6 +77,7 @@ const props = defineProps<{
   supportProgressStyle: CSSProperties;
   supportRemainingLabel: string;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   contentUnavailable: [issueId: string];

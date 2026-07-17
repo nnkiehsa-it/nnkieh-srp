@@ -65,8 +65,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: APP_NAME,
           short_name: APP_NAME,
-          description: '讓每一個學生的提案與倡議匯聚成改變校園的力量',
-          lang: 'zh-Hant',
+        description: 'Novae',
           start_url: '/',
           scope: '/',
           display: 'standalone',

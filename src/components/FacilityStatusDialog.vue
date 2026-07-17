@@ -6,15 +6,15 @@
     :error="error"
     :options="availableOptions"
     :initial-status="availableOptions[0]?.value ?? ''"
-    select-title="更新設備狀態"
-    result-title="填寫設備處理結果"
-    result-description="結案時請填寫使用者看得到的處理結果。"
+    select-title="text.c73fda418c26"
+    result-title="text.51930ab090b0"
+    result-description="text.e68b6d5dfc78"
     result-input-id="facility-result-content"
-    result-label="處理結果"
+    result-label="text.acf9101e8dc4"
     :result-max-length="INPUT_LIMITS.resultContent"
     :result-warning-length="1800"
-    result-placeholder="請說明處理結果或無法處理的原因"
-    result-required-error="請填寫處理結果。"
+    result-placeholder="text.5576c3bfdec1"
+    result-required-error="text.be8cd119f44e"
     :result-statuses="['completed', 'unable-to-handle']"
     @close="emit('close')"
     @submit="submit"
@@ -43,9 +43,9 @@ const emit = defineEmits<{
 }>();
 
 const options = [
-  { value: 'processing', label: '處理中', description: '設備問題已開始處理，尚未有最終結果。' },
-  { value: 'completed', label: '已完成', description: '設備問題已處理完成，需填寫處理結果。' },
-  { value: 'unable-to-handle', label: '無法處理', description: '經評估後無法處理，需說明原因。' },
+  { value: 'processing', label: 'text.ae16f4a52d69', description: 'text.f199014cac6d' },
+  { value: 'completed', label: 'text.e99b48a29bdf', description: 'text.7c9a4aa731f5' },
+  { value: 'unable-to-handle', label: 'text.900950604945', description: 'text.c49fea15cfb7' },
 ] satisfies Array<{ value: FacilityStatus; label: string; description: string }>;
 
 const availableOptions = computed(() =>

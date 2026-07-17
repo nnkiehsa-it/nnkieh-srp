@@ -37,14 +37,14 @@ export function useIssueBoardData() {
 
   const filterOptions = computed(() => [
     ...ISSUE_FILTER_OPTIONS,
-    { value: 'my-proposals' as const, label: '我的提案' },
+    { value: 'my-proposals' as const, label: 'text.16441dd78ebf' },
   ]);
 
   const activeCategoryLabel = computed(() => {
     if (activeFilter.value === 'my-proposals') {
-      return '我的提案';
+      return 'text.16441dd78ebf';
     }
-    return filterOptions.value.find((option) => option.value === activeFilter.value)?.label ?? '提案';
+    return filterOptions.value.find((option) => option.value === activeFilter.value)?.label ?? 'text.b9a2f9c03506';
   });
 
   const { restoreDocumentTitle } = useDocumentTitle(activeCategoryLabel, defaultDocumentTitle);
@@ -205,7 +205,7 @@ export function useIssueBoardData() {
   }
 
   function handleIssueSubmitted(issue: IssueRecord) {
-    showComposerMessage('提案已送出。');
+    showComposerMessage('text.d279aa312544');
     addIssueToBucket(issue);
     addSearchIssue(issue);
     addUserIssue(issue);

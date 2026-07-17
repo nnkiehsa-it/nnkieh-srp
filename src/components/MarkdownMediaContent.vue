@@ -7,7 +7,7 @@
         type="button"
         class="content-trigger w-32 shrink-0 snap-start overflow-hidden rounded-lg border border-ink-200 bg-ink-50 dark:border-ink-800 dark:bg-ink-950 sm:w-40"
         :disabled="Boolean(image.uploadId && !image.isUploadResolved)"
-        :aria-label="`放大圖片：${image.alt || fallbackAlt}`"
+        :aria-label="t('media.zoom', { alt: image.alt || fallbackAlt })"
         @click="selectedImage = image"
       >
         <div
@@ -15,7 +15,7 @@
           class="flex aspect-[4/3] w-full flex-col items-center justify-center bg-error-container/40 p-2 text-center text-error"
         >
           <AppIcon name="warning" :size="5" />
-          <span class="mt-1 text-[10px] font-medium">載入失敗</span>
+          <span class="mt-1 text-[10px] font-medium">{{ t('media.loadFailed') }}</span>
         </div>
         <div
           v-else-if="image.uploadId && !image.isUploadResolved"
@@ -48,7 +48,7 @@
           <button
             type="button"
             class="button-icon-filled absolute right-4 top-[calc(1rem+env(safe-area-inset-top))] border-white/20 bg-white text-ink-950 hover:bg-white/90"
-            aria-label="關閉圖片"
+            :aria-label="t('text.12ba5816407c')"
             @click="selectedImage = null"
           >
             <AppIcon name="close" :size="5" />
@@ -72,12 +72,14 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 import { stripMarkdownImages } from '@/lib/markdown-images';
 import { useResolvedMarkdown } from '@/composables/useResolvedMarkdown';
 import type { MarkdownImageRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   content: string;
   fallbackAlt: string;
   plainText?: boolean;
 }>();
+const { t } = useI18n();
 
 const selectedImage = ref<MarkdownImageRecord | null>(null);
 const { images, resolvedContent } = useResolvedMarkdown(() => props.content);

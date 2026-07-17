@@ -1,4 +1,5 @@
 import { useActionFeedback } from '@/composables/useActionFeedback';
+import { useRouter, type RouteLocationRaw } from 'vue-router';
 
 function copyWithTextarea(text: string) {
   const textarea = document.createElement('textarea');
@@ -28,19 +29,26 @@ export async function copyText(text: string) {
 
 export function useShareUrl() {
   const { show } = useActionFeedback();
+  const router = useRouter();
 
   async function copyShareUrl(url: string) {
     try {
       await copyText(url);
-      show('分享連結已複製', 'success');
+      show('text.dbeb65765bf6', 'success');
       return true;
     } catch {
-      show('無法複製連結，請稍後再試', 'error');
+      show('text.9f8b0bfa2f62', 'error');
       return false;
     }
   }
 
+  function copyRouteUrl(location: RouteLocationRaw) {
+    const href = router.resolve(location).href;
+    return copyShareUrl(new URL(href, window.location.origin).toString());
+  }
+
   return {
+    copyRouteUrl,
     copyShareUrl,
   };
 }

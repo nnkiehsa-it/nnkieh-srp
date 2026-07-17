@@ -7,13 +7,16 @@
       <span class="busy-button-spinner grid place-items-center rounded-full" aria-hidden="true">
         <LoadingSpinner :size="spinnerSize" class="shrink-0" />
       </span>
-      {{ busyLabel || label || '處理中' }}
+      {{ t(busyLabel || label || 'text.ae16f4a52d69') }}
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   busy?: boolean;

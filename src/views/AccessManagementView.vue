@@ -1,7 +1,7 @@
 <template>
   <section class="route-page py-2 md:py-6">
     <form class="panel panel-pad" @submit.prevent="findUser">
-      <label for="access-user-lookup" class="field-label">新增管理員</label>
+      <label for="access-user-lookup" class="field-label">{{ t('text.e0c7ae4d3953') }}</label>
       <div class="mt-2 flex gap-2">
         <input
           id="access-user-lookup"
@@ -9,17 +9,17 @@
           class="field min-w-0 flex-1"
           autocomplete="off"
           inputmode="email"
-          placeholder="輸入校內 Email 或 UID"
+          :placeholder="t('text.2eec6e0cd83d')"
           :disabled="loading || Boolean(savingUid)"
         />
         <button type="submit" class="button-primary shrink-0" :disabled="loading || Boolean(savingUid) || !lookup.trim()">
-          <BusyButtonContent :busy="loading" label="查找" busy-label="查找中" />
+          <BusyButtonContent :busy="loading" :label="t('text.6cb005a629ef')" :busy-label="t('text.869da583f988')" />
         </button>
       </div>
-      <p class="mt-2 text-xs leading-5 text-ink-500">只會精確查找一位已登入過的使用者，不會載入使用者清單。</p>
+      <p class="mt-2 text-xs leading-5 text-ink-500">{{ t('text.b5c6f212affb') }}</p>
     </form>
 
-    <EmptyStatePanel v-if="error" class="mt-4" title="無法查找使用者" :description="error" icon="warning" />
+    <EmptyStatePanel v-if="error" class="mt-4" title="text.0131cbcc8142" :description="error" icon="warning" />
 
     <article v-if="user" class="panel panel-pad mt-4">
       <div class="flex items-center gap-3 border-b border-ink-100 pb-4 dark:border-ink-800">
@@ -33,10 +33,10 @@
 
       <div class="mt-5 space-y-5">
         <div>
-          <p class="field-label mb-2">平台權限</p>
+          <p class="field-label mb-2">{{ t('text.80689bdfa318') }}</p>
           <SelectionOptionButton
-            label="平台管理員"
-            description="擁有所有分類、設備、公告、角色與統計權限。"
+            label="text.4410f33bf262"
+            description="text.c29f1821320f"
             :selected="isPlatformAdmin"
             :disabled="Boolean(savingUid)"
             @select="togglePlatformAdmin"
@@ -44,13 +44,13 @@
         </div>
 
         <div>
-          <p class="field-label mb-2">提案分類</p>
+          <p class="field-label mb-2">{{ t('text.c83bfe63458d') }}</p>
           <div class="grid gap-2">
             <SelectionOptionButton
               v-for="category in ISSUE_CATEGORIES"
               :key="category.id"
-              :label="`${category.label}管理員`"
-              :description="`只管理「${category.label}」分類。`"
+              :label="t('text.497b9c20dad2', { category: t(category.label) })"
+              :description="t('text.1234b3e2cc90', { category: t(category.label) })"
               :selected="isPlatformAdmin || user.managedIssueCategoryIds.includes(category.id)"
               :disabled="Boolean(savingUid) || isPlatformAdmin"
               @select="toggleCategory(category.id)"
@@ -59,18 +59,18 @@
         </div>
 
         <div>
-          <p class="field-label mb-2">其他領域</p>
+          <p class="field-label mb-2">{{ t('text.93c1e7d7563c') }}</p>
           <div class="grid gap-2">
             <SelectionOptionButton
-              label="設備管理員"
-              description="只處理及管理設備案件。"
+              label="text.f2502113d1fe"
+              description="text.30ae21746b81"
               :selected="isPlatformAdmin || user.roles.includes('general-affairs')"
               :disabled="Boolean(savingUid) || isPlatformAdmin"
               @select="toggleScopedRole('general-affairs')"
             />
             <SelectionOptionButton
-              label="公告管理員"
-              description="只新增、刪除公告及管理公告留言。"
+              label="text.a08ec25036d1"
+              description="text.562312555aca"
               :selected="isPlatformAdmin || user.roles.includes('announcement-manager')"
               :disabled="Boolean(savingUid) || isPlatformAdmin"
               @select="toggleScopedRole('announcement-manager')"
@@ -91,8 +91,10 @@ import UserAvatar from '@/components/ui/UserAvatar.vue';
 import { ISSUE_CATEGORIES } from '@/generated/issue-categories';
 import { listRoleAssignments, setUserRoles, type AccessUser } from '@/services/access';
 import type { RoleCode } from '@/services/session-role';
+import { useI18n } from '@/i18n';
 
 const lookup = ref('');
+const { t } = useI18n();
 const user = ref<AccessUser | null>(null);
 const loading = ref(false);
 const error = ref('');
@@ -108,9 +110,9 @@ async function findUser() {
   try {
     const matches = await listRoleAssignments(query);
     user.value = matches[0] ?? null;
-    if (!user.value) error.value = '找不到使用者；對方需要先登入過一次，或請確認 Email／UID 是否正確。';
+    if (!user.value) error.value = t('text.d54871389f11');
   } catch (caught) {
-    error.value = caught instanceof Error ? caught.message : '查找失敗。';
+    error.value = caught instanceof Error ? t(caught.message) : t('text.6f3994a24eab');
   } finally {
     loading.value = false;
   }
@@ -125,7 +127,7 @@ async function saveAccess(roles: RoleCode[], categories: string[]) {
     user.value.roles = result.roles;
     user.value.managedIssueCategoryIds = result.managedIssueCategoryIds;
   } catch (caught) {
-    error.value = caught instanceof Error ? caught.message : '儲存失敗。';
+    error.value = caught instanceof Error ? t(caught.message) : t('text.a1e132f24139');
   } finally {
     savingUid.value = '';
   }

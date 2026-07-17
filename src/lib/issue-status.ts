@@ -1,5 +1,6 @@
 import type { IssueRecord, IssueStatus } from '@/types';
 import { getIssueSupportGoal, issueAutoRejectsUnmetSupport } from '@/constants/categories';
+import { t } from '@/i18n';
 
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -53,10 +54,10 @@ export function getSupportRemainingLabel(remainingDays: number | null): string {
     return '';
   }
   if (remainingDays < 0) {
-    return '附議已截止';
+    return 'text.411aa0778a48';
   }
   if (remainingDays === 0) {
-    return '今天截止';
+    return 'text.995326f534a7';
   }
-  return `剩 ${remainingDays} 天`;
+  return t('issue.support.daysRemaining', { count: remainingDays });
 }

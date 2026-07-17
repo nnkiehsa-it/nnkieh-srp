@@ -8,16 +8,20 @@
       compact ? '!h-8 !min-h-0 !gap-1 !px-2.5 text-xs' : '',
     ]"
     :disabled="disabled"
-    :title="title || label"
-    :aria-label="ariaLabel || label"
+    :title="t(title || label)"
+    :aria-label="t(ariaLabel || label)"
     @click="emit('click')"
   >
     <slot />
-    <span>{{ label }}</span>
+    <span>{{ t(label) }}</span>
   </button>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
+
 withDefaults(defineProps<{
   active?: boolean;
   ariaLabel?: string;

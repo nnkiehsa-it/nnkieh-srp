@@ -1,64 +1,47 @@
 <template>
-  <div
-    class="mt-4 shrink-0 border-t border-ink-100 pb-1 dark:border-ink-800"
-    :class="compact ? 'space-y-3 px-1 pt-3' : 'space-y-3 pt-3'"
+  <DetailActionGroup
+    :compact="compact"
+    delete-title="text.c9db0dfe86a8"
+    :operation-time-items="operationTimeItems"
+    :show-delete="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')"
+    @delete="emit('delete')"
+    @share="emit('share')"
   >
-    <div class="flex flex-wrap items-center gap-2">
+    <template #primary>
       <DetailActionButton
         :active="facility.currentUserAffected"
         :disabled="facility.isOwnFacility || closed || affecting"
-        :label="`${facility.affected_count} 人遇到`"
+        :label="t('facility.affectedCount', { count: facility.affected_count })"
         :compact="compact"
-        :title="facility.isOwnFacility ? '作者已自動計入' : '我也遇到'"
-        :aria-label="facility.isOwnFacility ? '作者已自動計入遇到人數' : '切換我也遇到'"
+        :title="facility.isOwnFacility ? 'text.39cf806cd487' : 'text.047423ca10a2'"
+        :aria-label="facility.isOwnFacility ? 'text.3b5b48e6fd84' : 'text.08aa635f855c'"
         @click="emit('toggleAffected')"
       >
         <AppIcon name="hand" />
       </DetailActionButton>
+    </template>
 
-      <DetailActionButton
-        label="分享"
-        :compact="compact"
-        title="複製分享連結"
-        aria-label="複製分享連結"
-        @click="emit('share')"
-      >
-        <AppIcon name="share" />
-      </DetailActionButton>
-
-      <DetailActionButton
-        v-if="facility.canManageFacility && !closed"
-        :label="nextStatusActionLabel"
-        :compact="compact"
-        :title="nextStatusActionLabel"
-        :aria-label="nextStatusActionLabel"
-        @click="emit('manageStatus')"
-      >
-        <AppIcon name="edit" />
-      </DetailActionButton>
-
-      <DetailActionButton
-        v-if="facility.canManageFacility || (facility.isOwnFacility && facility.status === 'pending')"
-        danger
-        label="刪除"
-        :compact="compact"
-        title="刪除設備案件"
-        aria-label="刪除設備案件"
-        @click="emit('delete')"
-      >
-        <AppIcon name="trash" />
-      </DetailActionButton>
-    </div>
-
-    <OperationTimeList :items="operationTimeItems" :compact="compact" />
-  </div>
+    <DetailActionButton
+      v-if="facility.canManageFacility && !closed"
+      :label="nextStatusActionLabel"
+      :compact="compact"
+      :title="nextStatusActionLabel"
+      :aria-label="nextStatusActionLabel"
+      @click="emit('manageStatus')"
+    >
+      <AppIcon name="edit" />
+    </DetailActionButton>
+  </DetailActionGroup>
 </template>
 
 <script setup lang="ts">
 import DetailActionButton from '@/components/ui/DetailActionButton.vue';
+import DetailActionGroup from '@/components/ui/DetailActionGroup.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import OperationTimeList from '@/components/ui/OperationTimeList.vue';
 import type { FacilityRecord, OperationTimeListItem } from '@/types';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 defineProps<{
   affecting: boolean;

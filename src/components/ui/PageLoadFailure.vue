@@ -3,16 +3,19 @@
     <span class="grid h-14 w-14 place-items-center rounded-2xl bg-warning-container text-warning shadow-note" aria-hidden="true">
       <AppIcon name="circle-alert" :size="7" :stroke-width="1.7" />
     </span>
-    <h2 class="mt-5 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ title }}</h2>
-    <p class="mt-2 text-sm text-ink-500 dark:text-ink-400">{{ description }}</p>
+    <h2 class="mt-5 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t(title) }}</h2>
+    <p class="mt-2 text-sm text-ink-500 dark:text-ink-400">{{ t(description) }}</p>
     <button type="button" class="button-secondary mt-5" :disabled="retryDisabled" @click="emit('retry')">
-      {{ actionLabel }}
+      {{ t(actionLabel) }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppIcon from '@/components/ui/AppIcon.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   actionLabel?: string;
@@ -20,10 +23,10 @@ withDefaults(defineProps<{
   retryDisabled?: boolean;
   title?: string;
 }>(), {
-  actionLabel: '重新整理',
-  description: '資料等待時間過長，請檢查網路後再試一次。',
+  actionLabel: 'text.5387b55bb903',
+  description: 'text.89e4b1d19f7e',
   retryDisabled: false,
-  title: '網路似乎有問題',
+  title: 'text.8554357b1379',
 });
 
 const emit = defineEmits<{

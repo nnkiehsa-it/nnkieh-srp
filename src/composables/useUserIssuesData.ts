@@ -155,7 +155,7 @@ export function useUserIssuesData(
     } catch (caught) {
       if (isAbortFailure(caught)) return;
       if (currentToken === requestToken && userIssuesState.allIssues.length === 0) {
-        userIssuesState.error = '提案載入失敗，請稍後再試。';
+        userIssuesState.error = 'text.d2420979db9a';
       }
     } finally {
       if (currentToken === requestToken) {
@@ -194,7 +194,7 @@ export function useUserIssuesData(
       saveSnapshot();
     } catch (caught) {
       if (isAbortFailure(caught)) return;
-      userIssuesState.error = '載入更多提案失敗，請稍後再試。';
+      userIssuesState.error = 'text.08d3b4ac7120';
     } finally {
       if (currentToken === requestToken) userIssuesState.loadingMore = false;
       if (requestController === controller) requestController = null;

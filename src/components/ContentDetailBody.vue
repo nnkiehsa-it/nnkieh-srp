@@ -18,7 +18,7 @@
           :photo-url="authorPhotoUrl"
           :name="authorName"
           :size="compact ? 'sm' : 'md'"
-          :alt-text="`${authorName} 的頭像`"
+          :alt-text="t('text.371af8106c02', { name: authorName })"
         />
         <div class="min-w-0">
           <p class="truncate text-sm font-semibold text-ink-900 dark:text-ink-100">{{ authorName }}</p>
@@ -37,12 +37,12 @@
           ? 'bg-error-container/80 text-on-error-container'
           : 'bg-success-container/80 text-on-success-container'"
       >
-        <p class="font-semibold">{{ noticeTitle }}</p>
+        <p class="font-semibold">{{ t(noticeTitle) }}</p>
         <div class="mt-1 leading-6">
           <MarkdownMediaContent
             v-if="noticeMarkdown"
             :content="noticeContent"
-            :fallback-alt="noticeFallbackAlt || `${title} 的結果圖片`"
+            :fallback-alt="noticeFallbackAlt || t('text.ed57f4931ea0', { title })"
           />
           <p v-else>{{ noticeContent }}</p>
         </div>
@@ -56,6 +56,9 @@
 <script setup lang="ts">
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   authorName: string;

@@ -1,47 +1,40 @@
 <template>
-  <div class="relative inline-block text-left">
-    <button
-      ref="triggerRef"
-      type="button"
-      class="button-toolbar h-8 w-8 rounded-full p-0"
-      :class="{ 'text-ink-800 dark:text-ink-100': isOpen }"
-      :title="title"
-      :aria-label="title"
-      @click="isOpen = !isOpen"
-    >
-      <AppIcon name="more-horizontal" :size="4.5" :stroke-width="1.8" />
-    </button>
+  <DropdownMenu :fallback-height="96">
+    <template #trigger="{ open, toggle }">
+      <AppButton
+        variant="toolbar"
+        size="sm"
+        class="w-8 rounded-full p-0"
+        :class="{ 'text-ink-800 dark:text-ink-100': open }"
+        :title="t(title)"
+        :aria-label="t(title)"
+        @click="toggle"
+      >
+        <AppIcon name="more-horizontal" :size="4.5" :stroke-width="1.8" />
+      </AppButton>
+    </template>
 
-    <Teleport to="body">
-      <transition name="popover">
-        <div
-          v-if="isOpen"
-          ref="dropdownRef"
-          class="popover-panel popover-panel--compact fixed z-[120] w-44 origin-top-right"
-          :style="dropdownStyle"
-        >
-          <div>
-            <button
-              type="button"
-              class="menu-item menu-item-danger"
-              :disabled="deleteDisabled"
-              @click.stop="select('delete')"
-            >
-              <AppIcon name="trash" :size="3" />
-              <span>{{ deleteLabel }}</span>
-            </button>
-          </div>
-        </div>
-      </transition>
-    </Teleport>
-  </div>
+    <template #default="{ close }">
+      <button
+        type="button"
+        class="dropdown-item dropdown-item--danger"
+        :disabled="deleteDisabled"
+        @click.stop="select(close)"
+      >
+        <AppIcon name="trash" :size="3" />
+        <span>{{ t(deleteLabel) }}</span>
+      </button>
+    </template>
+  </DropdownMenu>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import AppButton from '@/components/ui/AppButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
-import { useClickOutside } from '@/composables/useClickOutside';
-import { useDropdownPosition } from '@/composables/useDropdownPosition';
+import DropdownMenu from '@/components/ui/DropdownMenu.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   deleteDisabled?: boolean;
@@ -49,30 +42,16 @@ withDefaults(defineProps<{
   title?: string;
 }>(), {
   deleteDisabled: false,
-  deleteLabel: '刪除公告',
-  title: '管理',
+  deleteLabel: 'text.1316a91ba454',
+  title: 'text.4989b5cf9483',
 });
 
 const emit = defineEmits<{
   delete: [];
 }>();
 
-const isOpen = ref(false);
-const triggerRef = ref<HTMLButtonElement | null>(null);
-const dropdownRef = ref<HTMLDivElement | null>(null);
-const { dropdownStyle } = useDropdownPosition(
-  triggerRef,
-  isOpen,
-  { fallbackHeight: 96, width: 176 },
-  dropdownRef,
-);
-
-useClickOutside(isOpen, [triggerRef, dropdownRef], () => {
-  isOpen.value = false;
-});
-
-function select(action: 'delete') {
-  isOpen.value = false;
+function select(close: () => void) {
+  close();
   emit('delete');
 }
 

@@ -2,8 +2,8 @@
   <div class="min-h-0">
     <DetailRouteState
       :allowed="isAllowedUser"
-      :loading="sessionLoading || loadingAnnouncement"
-      loading-label="正在載入公告"
+      :loading="sessionLoading || loading"
+      loading-label="text.f7cc9db84484"
       :problem="sessionLoadingHasProblem"
       :problem-title="sessionProblemTitle"
       :problem-description="sessionProblemDescription"
@@ -17,20 +17,20 @@
         :initial-tab="initialTab"
         :focus-comment-id="focusCommentId"
         :liking="liking"
-        @back="goBackToAnnouncements"
-        @content-unavailable="handleAnnouncementUnavailable"
+        @back="goBack"
+        @content-unavailable="goBack"
         @delete="openDeleteDialog"
-        @share="copyAnnouncementUrl"
-        @toggle-like="handleToggleLike"
-        @comment-count-changed="handleCommentCountChanged"
+        @share="copyUrl"
+        @toggle-like="toggleLike"
+        @comment-count-changed="updateCommentCount"
       />
     </DetailRouteState>
 
     <ConfirmDialog
       :open="deleteDialogOpen"
-      title="確定要刪除這則公告嗎？"
-      message="刪除後這則公告將無法復原。"
-      confirm-label="確認刪除"
+      title="text.06c04e55b00b"
+      message="text.1beff74e806c"
+      confirm-label="text.1d63b95811eb"
       :busy="deleting"
       @cancel="closeDeleteDialog"
       @confirm="confirmDelete"
@@ -39,40 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onScopeDispose, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AnnouncementDetailPagePanel from '@/components/AnnouncementDetailPagePanel.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DetailRouteState from '@/components/ui/DetailRouteState.vue';
+import { useAnnouncementDetail } from '@/composables/useAnnouncementDetail';
 import { useAuthenticatedDetailState } from '@/composables/useAuthenticatedDetailState';
-import { registerAppResumeHandler } from '@/composables/useAppResume';
-import { useNetworkStatus } from '@/composables/useNetworkStatus';
-import { useSession } from '@/composables/useSession';
-import { useShareUrl } from '@/composables/useShareUrl';
-import { useActionFeedback } from '@/composables/useActionFeedback';
-import { normalizeRouteParam } from '@/lib/route';
 import { resetAppConnection } from '@/lib/reconnect';
-import {
-  deleteAnnouncement,
-  fetchAnnouncementRecordById,
-  setAnnouncementLike,
-} from '@/services/announcements';
-import { subscribeContentRealtimeEvents } from '@/services/realtime-events';
-import type { AnnouncementRecord } from '@/types';
-import {
-  createContentCacheKey,
-  getCachedContentEntry,
-  markContentRealtimeReliable,
-  markContentRealtimeUnreliable,
-  markContentWentOffline,
-  patchCachedContent,
-  shouldRefreshContentAfterResume,
-} from '@/services/content-read-cache';
-import { subscribeContentRevisionChanges } from '@/services/content-revisions';
-
-const route = useRoute();
-const router = useRouter();
-const { can, roleLoading, user } = useSession();
 const {
   canLoad: canLoadAnnouncement,
   isAllowedUser,
@@ -82,271 +54,26 @@ const {
   sessionProblemDescription,
   sessionProblemTitle,
 } = useAuthenticatedDetailState();
-const isAdmin = computed(() => can('announcement.manage'));
-const { copyShareUrl } = useShareUrl();
-const { show, start } = useActionFeedback();
-const { isOnline } = useNetworkStatus();
-
-const announcement = ref<AnnouncementRecord | null>(null);
-const loadingAnnouncement = ref(false);
-const liking = ref(false);
-const deleting = ref(false);
-const deleteDialogOpen = ref(false);
-let requestId = 0;
-let realtimeUnsubscribe: (() => void) | null = null;
-let realtimeRefreshTimer = 0;
-const detailCacheScope = computed(() => createContentCacheKey([
-  user.value?.uid ?? '',
-  isAdmin.value ? 'admin' : 'user',
-]));
-function detailCacheKey(announcementId: string) {
-  return createContentCacheKey(['announcement-detail', detailCacheScope.value, announcementId]);
-}
-const unregisterResumeHandler = registerAppResumeHandler(() => {
-  const announcementId = normalizeRouteParam(route.params.announcementId);
-  if (!canLoadAnnouncement.value || !announcementId) return;
-  const cached = getCachedContentEntry<AnnouncementRecord>(detailCacheKey(announcementId));
-  if (!shouldRefreshContentAfterResume(cached?.updatedAt ?? 0)) return;
-  void refreshAnnouncementSilently({ force: true });
-});
-const unsubscribeRevision = subscribeContentRevisionChanges('announcements', () => {
-  if (canLoadAnnouncement.value && announcement.value) return refreshAnnouncementSilently({ force: true });
-});
-
-const initialTab = computed(() => route.query.tab === 'comments' ? 'comments' : 'details');
-const focusCommentId = computed(() => {
-  const value = route.query.comment;
-  return typeof value === 'string' ? value : '';
-});
-function goBackToAnnouncements() {
-  requestId += 1;
-  router.replace({ name: 'announcements' });
-}
-
-function copyAnnouncementUrl() {
-  if (!announcement.value) return;
-  const href = router.resolve({
-    name: 'announcement-detail',
-    params: { announcementId: announcement.value.id },
-  }).href;
-  copyShareUrl(new URL(href, window.location.origin).toString());
-}
-
-function openDeleteDialog() {
-  deleteDialogOpen.value = true;
-}
-
-function closeDeleteDialog() {
-  if (deleting.value) return;
-  deleteDialogOpen.value = false;
-}
-
-async function confirmDelete() {
-  if (!announcement.value) return;
-
-  deleting.value = true;
-  const feedbackHandle = start('正在刪除公告');
-  try {
-    await deleteAnnouncement(announcement.value.id);
-    deleteDialogOpen.value = false;
-    feedbackHandle.succeed('公告已刪除');
-    goBackToAnnouncements();
-  } catch (caught) {
-    feedbackHandle.fail(caught instanceof Error ? caught.message : '公告刪除失敗');
-  } finally {
-    deleting.value = false;
-  }
-}
-
-async function handleToggleLike() {
-  if (!announcement.value) return;
-  if (!isAllowedUser.value) {
-    show('請先登入再按讚', 'error');
-    return;
-  }
-  if (liking.value) return;
-
-  const currentAnnouncement = announcement.value;
-  const previousLiked = currentAnnouncement.currentUserLiked;
-  const previousLikeCount = currentAnnouncement.like_count;
-  const nextLiked = !previousLiked;
-  const nextLikeCount = Math.max(0, previousLikeCount + (nextLiked ? 1 : -1));
-  liking.value = true;
-  announcement.value = {
-    ...currentAnnouncement,
-    currentUserLiked: nextLiked,
-    like_count: nextLikeCount,
-  };
-  try {
-    const result = await setAnnouncementLike(currentAnnouncement.id, nextLiked);
-    if (announcement.value?.id === currentAnnouncement.id) {
-      announcement.value = {
-        ...announcement.value,
-        currentUserLiked: result.liked,
-        like_count: result.like_count,
-      };
-      patchCachedContent<AnnouncementRecord>(
-        detailCacheKey(currentAnnouncement.id),
-        (cachedAnnouncement) => ({
-          ...cachedAnnouncement,
-          currentUserLiked: result.liked,
-          like_count: result.like_count,
-        }),
-      );
-    }
-  } catch (caught) {
-    if (announcement.value?.id === currentAnnouncement.id) {
-      announcement.value = {
-        ...announcement.value,
-        currentUserLiked: previousLiked,
-        like_count: previousLikeCount,
-      };
-    }
-    show(caught instanceof Error ? caught.message : '操作失敗，請稍後再試', 'error');
-  } finally {
-    liking.value = false;
-  }
-}
-
-async function refreshAnnouncementSilently(options: { force?: boolean } = {}) {
-  const currentAnnouncement = announcement.value;
-  if (!currentAnnouncement) return;
-
-  const currentRequestId = ++requestId;
-  try {
-    const fetchedAnnouncement = await fetchAnnouncementRecordById(currentAnnouncement.id, {
-      cacheScope: detailCacheScope.value,
-      forceRefresh: options.force === true,
-    });
-    if (currentRequestId !== requestId) return;
-    announcement.value = {
-      ...fetchedAnnouncement,
-      currentUserLiked: announcement.value?.currentUserLiked ?? fetchedAnnouncement.currentUserLiked,
-    };
-    markContentRealtimeReliable();
-  } catch (caught) {
-    if (currentRequestId !== requestId) return;
-    show(caught instanceof Error ? caught.message : '找不到這則公告', 'error');
-    goBackToAnnouncements();
-  }
-}
-
-function scheduleRealtimeRefresh() {
-  window.clearTimeout(realtimeRefreshTimer);
-  realtimeRefreshTimer = window.setTimeout(() => {
-    void refreshAnnouncementSilently({ force: true });
-  }, 300);
-}
-
-function handleCommentCountChanged(payload: { announcementId: string; commentCount: number }) {
-  if (announcement.value?.id !== payload.announcementId) return;
-    announcement.value = {
-      ...announcement.value,
-      comment_count: payload.commentCount,
-    };
-    patchCachedContent<AnnouncementRecord>(
-      detailCacheKey(payload.announcementId),
-      (cachedAnnouncement) => ({ ...cachedAnnouncement, comment_count: payload.commentCount }),
-    );
-  }
-
-function handleAnnouncementUnavailable() {
-  goBackToAnnouncements();
-}
+const {
+  announcement,
+  closeDeleteDialog,
+  confirmDelete,
+  copyUrl,
+  deleteDialogOpen,
+  deleting,
+  focusCommentId,
+  goBack,
+  initialTab,
+  isAdmin,
+  liking,
+  loading,
+  openDeleteDialog,
+  toggleLike,
+  updateCommentCount,
+} = useAnnouncementDetail(canLoadAnnouncement);
 
 async function reloadPage() {
   await resetAppConnection();
   window.location.reload();
 }
-
-watch(
-  [canLoadAnnouncement, () => route.params.announcementId],
-  async ([canLoad, rawAnnouncementId]) => {
-    if (!canLoad) return;
-    const announcementId = normalizeRouteParam(rawAnnouncementId);
-    if (!announcementId) {
-      goBackToAnnouncements();
-      return;
-    }
-
-    const currentRequestId = ++requestId;
-    loadingAnnouncement.value = true;
-    try {
-      const fetchedAnnouncement = await fetchAnnouncementRecordById(announcementId, {
-        cacheScope: detailCacheScope.value,
-      });
-      if (currentRequestId !== requestId) return;
-      announcement.value = fetchedAnnouncement;
-    } catch (caught) {
-      if (currentRequestId !== requestId) return;
-      show(caught instanceof Error ? caught.message : '找不到這則公告', 'error');
-      goBackToAnnouncements();
-    } finally {
-      if (currentRequestId === requestId) {
-        loadingAnnouncement.value = false;
-      }
-    }
-  },
-  { immediate: true },
-);
-
-watch(
-  () => [canLoadAnnouncement.value, route.params.announcementId, roleLoading.value] as const,
-  ([canLoad, rawAnnouncementId, waitingForRole]) => {
-    realtimeUnsubscribe?.();
-    realtimeUnsubscribe = null;
-    window.clearTimeout(realtimeRefreshTimer);
-    if (!canLoad || waitingForRole) return;
-
-    const announcementId = normalizeRouteParam(rawAnnouncementId);
-    if (!announcementId) return;
-
-    realtimeUnsubscribe = subscribeContentRealtimeEvents(`announcement-detail:${announcementId}`, (event) => {
-      if (event.eventType === 'announcement_metrics_changed' && event.targetId === announcementId) {
-        if (announcement.value) {
-          announcement.value = {
-            ...announcement.value,
-            comment_count: event.commentCount ?? announcement.value.comment_count,
-            like_count: event.likeCount ?? announcement.value.like_count,
-          };
-        }
-        patchCachedContent<AnnouncementRecord>(
-          detailCacheKey(announcementId),
-          (cachedAnnouncement) => ({
-            ...cachedAnnouncement,
-            comment_count: event.commentCount ?? cachedAnnouncement.comment_count,
-            like_count: event.likeCount ?? cachedAnnouncement.like_count,
-          }),
-        );
-        return;
-      }
-      if (event.eventType !== 'announcement_changed') return;
-      if (event.targetId !== announcementId) return;
-      scheduleRealtimeRefresh();
-    }, () => {
-      markContentRealtimeUnreliable();
-    });
-  },
-  { immediate: true },
-);
-
-onScopeDispose(() => {
-  realtimeUnsubscribe?.();
-  unregisterResumeHandler();
-  unsubscribeRevision();
-  window.clearTimeout(realtimeRefreshTimer);
-});
-
-watch(isOnline, (online) => {
-  if (!online) {
-    markContentWentOffline();
-    return;
-  }
-  const announcementId = normalizeRouteParam(route.params.announcementId);
-  if (!canLoadAnnouncement.value || !announcementId) return;
-  const cached = getCachedContentEntry<AnnouncementRecord>(detailCacheKey(announcementId));
-  if (shouldRefreshContentAfterResume(cached?.updatedAt ?? 0)) {
-    void refreshAnnouncementSilently({ force: true });
-  }
-});
 </script>

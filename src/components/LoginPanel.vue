@@ -8,11 +8,11 @@
       </span>
 
       <div class="space-y-3">
-        <h2 class="text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 sm:text-3xl">歡迎使用 Novae</h2>
+        <h2 class="text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 sm:text-3xl">{{ t('text.22ad94fff413') }}</h2>
         <p class="text-sm leading-relaxed text-ink-500 dark:text-ink-400">
-          請先使用您的
-          <span class="font-semibold text-ink-800 dark:text-ink-100">校內 Google 帳號 (@{{ allowedDomain || '未設定環境變數' }})</span>
-          進行登入以瀏覽並參與提案。
+          {{ t('text.490637afd3dc') }}
+          <span class="font-semibold text-ink-800 dark:text-ink-100">{{ t('text.8f1afd011072') }} (@{{ allowedDomain || t('text.9b84024108b0') }})</span>
+          {{ t('text.55a07ea518af') }}
         </p>
       </div>
 
@@ -20,7 +20,7 @@
         <GoogleLoginButton :loading="loading" @login="login" />
 
         <p v-if="error" class="mt-2 max-w-sm rounded-lg border border-error/20 bg-error-container px-3 py-1.5 text-xs font-medium text-on-error-container">
-          {{ error }}
+          {{ t(error) }}
         </p>
       </div>
     </div>
@@ -32,6 +32,8 @@ import DecorativeGlow from '@/components/ui/DecorativeGlow.vue';
 import GoogleLoginButton from '@/components/ui/GoogleLoginButton.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { useSession } from '@/composables/useSession';
+import { useI18n } from '@/i18n';
 
 const { allowedDomain, error, loading, login } = useSession();
+const { t } = useI18n();
 </script>

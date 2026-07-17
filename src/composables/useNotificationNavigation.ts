@@ -23,7 +23,7 @@ export function useNotificationNavigation() {
   async function openNotificationTarget(notification: NotificationRecord) {
     const currentVersion = ++navigationVersion;
     if (notification.type === 'issue_deleted') {
-      show('這筆提案已被刪除', 'info');
+      show('text.532e5021780a', 'info');
       if (route.name !== 'notifications') {
         await router.push({ name: 'notifications' });
       }
@@ -61,7 +61,7 @@ export function useNotificationNavigation() {
       return true;
     } catch {
       if (currentVersion === navigationVersion) {
-        show('此內容不存在或無法查看', 'error');
+        show('text.6b7b1d9fab28', 'error');
       }
       return false;
     }

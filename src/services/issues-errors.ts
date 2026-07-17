@@ -4,25 +4,25 @@ export function toReadableBackendError(error: unknown) {
   if (error instanceof RequestFailure) return error;
   const message = error instanceof Error ? error.message : '';
   if (message.includes('is not configured')) {
-    return new Error('服務設定尚未完成，請稍後再試。', { cause: error });
+    return new Error('text.2f74589a8ebd', { cause: error });
   }
-  if (message.includes('達到上限')) {
+  if (message.includes('text.bd337f7de26b')) {
     return new Error(message);
   }
   if (isContentUnavailableError(error)) {
-    return new Error(message || '內容已不存在。');
+    return new Error(message || 'text.26158fb8a421');
   }
   const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
   if (code === 'permission-denied' || code === '42501') {
-    return new Error('目前沒有權限進行此操作。');
+    return new Error('text.76c577b4c59c');
   }
   if (code === 'unauthenticated' || code === '401') {
-    return new Error('請先登入後再繼續。');
+    return new Error('text.42cdd29fe940');
   }
   if (/backend|provider|session/i.test(message)) {
-    return new Error('操作失敗，請稍後再試。');
+    return new Error('text.400748fa9644');
   }
-  return new Error(message || '操作失敗，請稍後再試。');
+  return new Error(message || 'text.400748fa9644');
 }
 
 export function isContentUnavailableError(error: unknown) {
@@ -37,5 +37,5 @@ export function isContentUnavailableError(error: unknown) {
     }
   }
   const message = error instanceof Error ? error.message : String(error ?? '');
-  return message.includes('已刪除') || message.includes('找不到');
+  return message.includes('text.c0170f6750e4') || message.includes('text.f7b3d91861b4');
 }

@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, ref, type Ref } from 'vue';
 import { useImageUpload, type PreparedImage, type UploadedImage } from '@/composables/useImageUpload';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { deleteUploadedImages as deleteUploadedImageBatch } from '@/services/uploads';
+import { useI18n } from '@/i18n';
 
 interface MarkdownImageUploadOptions {
   getRemainingSlots?: () => number;
@@ -14,6 +15,7 @@ export function useMarkdownImageUpload(content: Ref<string>, options: MarkdownIm
   const imageAttachments = ref<PreparedImage[]>([]);
   const { prepareImage, revokePreparedImage, uploading, uploadError, uploadPreparedImages } = useImageUpload();
   const { show } = useActionFeedback();
+  const { t } = useI18n();
   const imageUrls = computed(() => imageAttachments.value.map((image) => image.previewUrl));
 
   function buildContentWithImages(images: Array<Pick<UploadedImage, 'url' | 'width' | 'height'>>) {
@@ -46,7 +48,7 @@ export function useMarkdownImageUpload(content: Ref<string>, options: MarkdownIm
 
     const remainingSlots = options.getRemainingSlots?.() ?? options.maxImages - imageAttachments.value.length;
     if (remainingSlots <= 0) {
-      uploadError.value = `最多只能上傳 ${options.maxImages} 張圖片。`;
+      uploadError.value = t('upload.imageLimit', { count: options.maxImages });
       show(uploadError.value, 'error');
       target.value = '';
       return;
@@ -54,7 +56,7 @@ export function useMarkdownImageUpload(content: Ref<string>, options: MarkdownIm
 
     const pickedFiles = files.slice(0, remainingSlots);
     if (files.length > remainingSlots) {
-      uploadError.value = `最多只能上傳 ${options.maxImages} 張圖片。`;
+      uploadError.value = t('upload.imageLimit', { count: options.maxImages });
       show(uploadError.value, 'error');
     }
 
@@ -104,7 +106,7 @@ export function useMarkdownImageUpload(content: Ref<string>, options: MarkdownIm
 
     if (uploadedImages.length !== imageAttachments.value.length) {
       await deleteUploadedImages(uploadedImages);
-      throw new Error('圖片上傳失敗');
+      throw new Error('text.044569760912');
     }
 
     return {

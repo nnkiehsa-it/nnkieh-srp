@@ -7,15 +7,15 @@
     :options="availableStatusOptions"
     :initial-status="initialStatus"
     :initial-result="issue.result_content ?? ''"
-    select-title="更新提案狀態"
-    result-title="填寫提案結果"
-    result-description="結案時請填寫使用者看得到的處理結果。"
+    select-title="text.14fef4c9eed9"
+    result-title="text.ef52fa81d983"
+    result-description="text.e68b6d5dfc78"
     result-input-id="closed-result-content"
-    result-label="提案結果說明"
+    result-label="text.80e35eb7a87d"
     :result-max-length="INPUT_LIMITS.resultContent"
     :result-warning-length="1800"
-    result-placeholder="請輸入提案結果說明（例如實行方式、預計時程或無法辦理的原因）"
-    result-required-error="請輸入提案結果說明。"
+    result-placeholder="text.3e2f995b82d5"
+    result-required-error="text.96b4ec356613"
     :result-statuses="['completed', 'infeasible']"
     :status-warnings="statusWarnings"
     @close="emit('close')"
@@ -47,9 +47,9 @@ const emit = defineEmits<{
 }>();
 
 const statusOptions = [
-  { value: 'processing', label: '處理中', description: '提案已開始處理，尚未有最終結果。' },
-  { value: 'completed', label: '已完成', description: '提案已實行或已有明確完成結果。' },
-  { value: 'infeasible', label: '無法實行', description: '提案經評估後無法辦理，需說明原因。' },
+  { value: 'processing', label: 'text.ae16f4a52d69', description: 'text.a411327a1156' },
+  { value: 'completed', label: 'text.e99b48a29bdf', description: 'text.e7d2dc0fb5c6' },
+  { value: 'infeasible', label: 'text.1cd1905f072b', description: 'text.3e88ab95f91f' },
 ] satisfies Array<{ value: EditableStatus; label: string; description: string }>;
 
 const availableStatusOptions = computed(() =>
@@ -70,7 +70,7 @@ const initialStatus = computed<EditableStatus>(() => {
 const statusWarnings = computed<Record<string, string>>(() => {
   const warnings: Record<string, string> = {};
   if (props.issue.result_content) {
-    warnings.processing = '改為處理中會清除目前的提案結果說明。';
+    warnings.processing = 'text.5a56e4966f62';
   }
   return warnings;
 });
@@ -82,7 +82,7 @@ async function save(rawStatus: string, resultContent: string) {
   const nextStatus = rawStatus as EditableStatus;
   saving.value = true;
   errorMsg.value = '';
-  const feedback = start('正在更新提案狀態');
+  const feedback = start('text.555a7eb791d2');
   try {
     if (nextStatus === 'processing') {
       let finalIssue = await moderateIssueStatus(props.issue.id, nextStatus);
@@ -90,16 +90,16 @@ async function save(rawStatus: string, resultContent: string) {
         finalIssue = await updateIssueResult(props.issue.id, '');
       }
       emit('success', finalIssue);
-      feedback.succeed('提案狀態已更新');
+      feedback.succeed('text.d74a0cbcc531');
     } else {
       const updated = await moderateIssueStatus(props.issue.id, nextStatus);
       const finalIssue = await updateIssueResult(props.issue.id, resultContent);
       emit('success', finalIssue);
-      feedback.succeed('提案狀態與結果已更新');
+      feedback.succeed('text.f277935949a2');
     }
     emit('close');
   } catch (caught) {
-    errorMsg.value = caught instanceof Error ? caught.message : '更新失敗，請稍後再試。';
+    errorMsg.value = caught instanceof Error ? caught.message : 'text.e45a87db77dc';
     feedback.fail(errorMsg.value);
   } finally {
     saving.value = false;

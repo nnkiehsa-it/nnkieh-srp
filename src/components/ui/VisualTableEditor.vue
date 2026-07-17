@@ -6,21 +6,21 @@
         class="text-xs text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-ink-100"
         @click="emit('exit-selected-table')"
       >
-        返回文字編輯
+        {{ t('markdown.returnToText') }}
       </button>
     </div>
 
     <!-- Empty state -->
-    <div
+    <SurfacePanel
       v-if="visibleTables.length === 0"
-      class="flex flex-col items-center justify-center rounded-[var(--radius-outer)] bg-surface px-4 py-10 text-center shadow-elevated dark:bg-surface"
+      class="flex flex-col items-center justify-center px-4 py-10 text-center"
     >
       <span class="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-ink-100 text-ink-500 shadow-note dark:bg-ink-800 dark:text-ink-300">
         <AppIcon name="table" :size="6" :stroke-width="1.7" />
       </span>
-      <p class="text-sm text-ink-600 dark:text-ink-400 font-medium">尚未在內容中偵測到任何表格</p>
+      <p class="text-sm text-ink-600 dark:text-ink-400 font-medium">{{ t('markdown.tableNone') }}</p>
       <p class="text-xs text-ink-400 dark:text-ink-500 mt-1 max-w-xs">
-        您可以切換回「文字」編輯模式，點擊工具列上的表格按鈕插入表格，或點擊下方按鈕快速新增表格。
+        {{ t('markdown.tableNoneHelp') }}
       </p>
       <button
         type="button"
@@ -28,9 +28,9 @@
         @click="createDefaultTable"
       >
         <AppIcon name="plus" :size="4" :stroke-width="2.5" />
-        <span>建立預設表格 (3x3)</span>
+        <span>{{ t('markdown.tableQuickCreate') }}</span>
       </button>
-    </div>
+    </SurfacePanel>
 
     <!-- Table list -->
     <div v-else class="space-y-6">
@@ -42,7 +42,11 @@
         <!-- Table header bar -->
         <div class="flex justify-between items-center bg-ink-50/50 dark:bg-ink-950/20 px-3 py-2 border-b border-ink-150 dark:border-ink-850">
           <span class="text-xs font-bold text-ink-500 dark:text-ink-400">
-            表格 {{ tableIdx + 1 }} ({{ table.rows.length + 1 }}x{{ table.headers.length }})
+            {{ t('markdown.tableLabel', {
+              number: tableIdx + 1,
+              rows: table.rows.length + 1,
+              columns: table.headers.length,
+            }) }}
           </span>
         </div>
 
@@ -60,7 +64,7 @@
                   <input
                     v-model="table.headers[colIdx]"
                     class="w-full text-sm font-bold text-ink-900 dark:text-ink-100 bg-transparent border-0 focus:ring-0 outline-none p-1 text-center"
-                    placeholder="欄位標題"
+                    :placeholder="t('text.ae67daa8d016')"
                     @input="onCellInput"
                   />
                 </th>
@@ -77,7 +81,7 @@
                   <input
                     v-model="row[colIdx]"
                     class="w-full text-sm text-ink-850 dark:text-ink-200 bg-transparent border-0 focus:ring-0 outline-none p-1"
-                    placeholder="儲存格內容"
+                    :placeholder="t('text.589a62346eed')"
                     @input="onCellInput"
                   />
                 </td>
@@ -93,7 +97,9 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import SurfacePanel from '@/components/ui/SurfacePanel.vue';
 import { parseMarkdownTables } from '@/lib/markdown-tables';
+import { useI18n } from '@/i18n';
 
 interface ParsedTable {
   id: string;
@@ -107,6 +113,7 @@ const props = defineProps<{
   content: string;
   selectedTableId?: string | null;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'update:content': [content: string];
@@ -165,7 +172,9 @@ function onCellInput() {
 }
 
 function createDefaultTable() {
-  const defaultTableMarkdown = `| 標題 1 | 標題 2 | 標題 3 |\n| --- | --- | --- |\n| 內容 1 | 內容 2 | 內容 3 |\n| 內容 4 | 內容 5 | 內容 6 |\n`;
+  const headers = Array.from({ length: 3 }, (_, index) => t('markdown.defaultHeader', { number: index + 1 }));
+  const cells = Array.from({ length: 6 }, (_, index) => t('markdown.defaultCell', { number: index + 1 }));
+  const defaultTableMarkdown = `| ${headers.join(' | ')} |\n| --- | --- | --- |\n| ${cells.slice(0, 3).join(' | ')} |\n| ${cells.slice(3).join(' | ')} |\n`;
   const separator = props.content ? '\n\n' : '';
   const newContent = props.content + separator + defaultTableMarkdown;
   emit('update:content', newContent);

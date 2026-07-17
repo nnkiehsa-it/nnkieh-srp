@@ -74,12 +74,12 @@ export function sortMixedStatusIssuesByOption(
 
 export function getIssueOperationTimeItems(issue: IssueRecord): RawIssueTimeItem[] {
   const items: Array<{ label: string; shortLabel: string; value: Date | null | undefined }> = [
-    { label: '提案發出時間', shortLabel: '提案', value: issue.created_at },
-    { label: '審核通過時間', shortLabel: '審核通過', value: issue.review_approved_at },
-    { label: '附議截止時間', shortLabel: '附議截止', value: issue.support_deadline_at },
-    { label: '達標時間', shortLabel: '達標', value: issue.support_met_at },
-    { label: '回覆期限', shortLabel: '回覆期限', value: issue.response_deadline_at },
-    { label: '結案時間', shortLabel: '結案', value: issue.closed_at },
+    { label: 'text.39692140965c', shortLabel: 'text.b9a2f9c03506', value: issue.created_at },
+    { label: 'text.d4d2cf96d71b', shortLabel: 'text.2a7d3dc76d00', value: issue.review_approved_at },
+    { label: 'text.edc1e85307a5', shortLabel: 'text.0d5da2cd9330', value: issue.support_deadline_at },
+    { label: 'text.3298b0ffbcf9', shortLabel: 'text.a6bd6c0ed7b8', value: issue.support_met_at },
+    { label: 'text.d7efd6e096b5', shortLabel: 'text.d7efd6e096b5', value: issue.response_deadline_at },
+    { label: 'text.ac75f83f5caa', shortLabel: 'text.6ed85f581df1', value: issue.closed_at },
   ];
 
   return items.filter((item): item is RawIssueTimeItem => item.value instanceof Date);

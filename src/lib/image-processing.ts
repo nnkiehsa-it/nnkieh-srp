@@ -1,4 +1,5 @@
 import { RATE_LIMITS } from '../generated/rate-limits';
+import { t } from '@/i18n';
 
 const {
   maxUploadBytes: maxImageUploadBytes,
@@ -41,7 +42,7 @@ function loadImage(file: File) {
     };
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error(`[IMG-DECODE] 無法載入圖片；${fileDetails(file)}`));
+      reject(new Error(`[IMG-DECODE] ${t('image.decodeFailed', { details: fileDetails(file) })}`));
     };
     image.src = url;
   });
@@ -51,7 +52,7 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
-        reject(new Error('[IMG-CANVAS] 瀏覽器無法輸出圖片。'));
+        reject(new Error('text.f9419fb405ce'));
         return;
       }
       resolve(blob);
@@ -71,7 +72,7 @@ async function canvasToWebp(canvas: HTMLCanvasElement, context: CanvasRenderingC
   const encoded = await encode(imageData, { quality: webpQuality * 100 });
   const fallbackBlob = new Blob([encoded], { type: 'image/webp' });
   if (!await isWebpFile(fallbackBlob)) {
-    throw new Error(`[IMG-WEBP] WebP 編碼失敗；nativeType=${nativeBlob.type || 'unknown'}`);
+    throw new Error(`[IMG-WEBP] ${t('image.webpEncodeFailed', { type: nativeBlob.type || 'unknown' })}`);
   }
   return fallbackBlob;
 }
@@ -91,20 +92,23 @@ function webpFileName(fileName: string) {
 
 export async function processImageForUpload(file: File): Promise<ProcessedImage> {
   if (file.size <= 0) {
-    throw new Error(`[IMG-SOURCE-EMPTY] 圖片檔案是空的；${fileDetails(file)}`);
+    throw new Error(`[IMG-SOURCE-EMPTY] ${t('image.empty', { details: fileDetails(file) })}`);
   }
   if (file.size > maxImageSourceBytes) {
-    throw new Error(`[IMG-SOURCE-SIZE] 原始圖片不能超過 ${RATE_LIMITS.imageCompression.maxSourceMegabytes} MB；${fileDetails(file)}`);
+    throw new Error(`[IMG-SOURCE-SIZE] ${t('image.sourceTooLarge', {
+      megabytes: RATE_LIMITS.imageCompression.maxSourceMegabytes,
+      details: fileDetails(file),
+    })}`);
   }
   if (!file.type.startsWith('image/')) {
-    throw new Error(`[IMG-SOURCE-TYPE] 請選擇有效的圖片檔案；${fileDetails(file)}`);
+    throw new Error(`[IMG-SOURCE-TYPE] ${t('image.invalidType', { details: fileDetails(file) })}`);
   }
 
   const image = await loadImage(file);
   const sourceWidth = image.naturalWidth;
   const sourceHeight = image.naturalHeight;
   if (!sourceWidth || !sourceHeight) {
-    throw new Error('無法讀取圖片尺寸。');
+    throw new Error('text.348acc628b4d');
   }
   if (
     file.size <= maxImageUploadBytes
@@ -117,7 +121,7 @@ export async function processImageForUpload(file: File): Promise<ProcessedImage>
 
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  if (!context) throw new Error('此瀏覽器無法處理圖片。');
+  if (!context) throw new Error('text.7a14e5b3a1e7');
 
   try {
     for (const scale of outputScales) {
@@ -129,7 +133,7 @@ export async function processImageForUpload(file: File): Promise<ProcessedImage>
 
       const blob = await canvasToWebp(canvas, context);
       if (!await isWebpFile(blob)) {
-        throw new Error(`[IMG-WEBP] 瀏覽器未產生有效的 WebP；type=${blob.type}, size=${blob.size}`);
+        throw new Error(`[IMG-WEBP] ${t('image.webpInvalid', { type: blob.type, size: blob.size })}`);
       }
       if (blob.size <= maxImageUploadBytes) {
         return {
@@ -146,5 +150,7 @@ export async function processImageForUpload(file: File): Promise<ProcessedImage>
     throw new Error(`[IMG-ENCODE] ${errorMessage(error)}；source=${sourceWidth}x${sourceHeight}`, { cause: error });
   }
 
-  throw new Error(`圖片壓縮後仍超過 ${RATE_LIMITS.imageCompression.maxUploadKilobytes} KB，請改用較小的圖片。`);
+  throw new Error(t('image.outputTooLarge', {
+    kilobytes: RATE_LIMITS.imageCompression.maxUploadKilobytes,
+  }));
 }

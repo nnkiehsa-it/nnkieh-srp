@@ -17,7 +17,7 @@
             <AppIcon v-else :name="toneIcon" :size="4" :stroke-width="2" />
           </span>
           <p class="min-w-0 flex-1 text-sm font-semibold leading-5 tracking-[0.01em]">
-            {{ feedback.message }}
+            {{ t(feedback.message) }}
           </p>
           <button
             v-if="feedback.action"
@@ -25,7 +25,7 @@
             class="button-toolbar shrink-0 px-3 text-current"
             @click="handleAction"
           >
-            {{ feedback.action.label }}
+            {{ t(feedback.action.label) }}
           </button>
         </div>
       </div>
@@ -38,8 +38,10 @@ import { computed } from 'vue';
 import AppIcon, { type AppIconName } from '@/components/ui/AppIcon.vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { useActionFeedback } from '@/composables/useActionFeedback';
+import { useI18n } from '@/i18n';
 
 const { dismiss, feedback } = useActionFeedback();
+const { t } = useI18n();
 
 const toneClass = computed(() => {
   if (!feedback.value) return '';

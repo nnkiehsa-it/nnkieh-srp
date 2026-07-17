@@ -3,6 +3,7 @@ import { allowedDomain } from '@/lib/firebase';
 import type { ValidationResult } from '@/composables/sessionTypes';
 import { debugLog } from '@/composables/sessionDebug';
 import { withRequestTimeout } from '@/lib/request';
+import { t } from '@/i18n';
 
 function getDomain(email: string | null | undefined) {
   const emailParts = String(email ?? '').trim().toLowerCase().split('@');
@@ -19,26 +20,26 @@ function getGoogleIdentityCount(token: IdTokenResult) {
 }
 
 export function validateBasicUser(user: User | null): ValidationResult {
-  const expectedDomain = allowedDomain || '指定校內網域';
+  const expectedDomain = allowedDomain || 'text.96e1f44afd7c';
 
   if (!user?.email) {
     return {
       ok: false,
-      reason: '目前登入帳號無法通過校內身分驗證。',
+      reason: 'text.fbc0a00d4342',
     };
   }
 
   if (!user.emailVerified) {
     return {
       ok: false,
-      reason: '請先完成校內帳號驗證後再登入。',
+      reason: 'text.dadbc80ca7ef',
     };
   }
 
   if (getDomain(user.email) !== allowedDomain) {
     return {
       ok: false,
-      reason: `請使用 ${expectedDomain} 的校內帳號登入。`,
+      reason: t('auth.schoolDomain', { domain: t(expectedDomain) }),
     };
   }
 
@@ -46,11 +47,11 @@ export function validateBasicUser(user: User | null): ValidationResult {
 }
 
 export async function validateUserAgainstToken(user: User) {
-  const token = await withRequestTimeout(() => user.getIdTokenResult(), { label: '登入驗證' });
+  const token = await withRequestTimeout(() => user.getIdTokenResult(), { label: 'text.01298e2370eb' });
   const email = String(token.claims.email ?? user.email ?? '').trim().toLowerCase();
   const signInProvider = String(token.claims.firebase?.sign_in_provider ?? '');
   const emailVerified = Boolean(token.claims.email_verified ?? user.emailVerified);
-  const expectedDomain = allowedDomain || '指定校內網域';
+  const expectedDomain = allowedDomain || 'text.96e1f44afd7c';
 
   debugLog('token snapshot', {
     uid: user.uid,
@@ -67,28 +68,28 @@ export async function validateUserAgainstToken(user: User) {
   if (!email) {
     return {
       ok: false,
-      reason: '目前登入帳號無法通過校內身分驗證。',
+      reason: 'text.fbc0a00d4342',
     };
   }
 
   if (getDomain(email) !== allowedDomain) {
     return {
       ok: false,
-      reason: `請使用 ${expectedDomain} 的校內帳號登入。`,
+      reason: t('auth.schoolDomain', { domain: t(expectedDomain) }),
     };
   }
 
   if (!emailVerified) {
     return {
       ok: false,
-      reason: '請先完成校內帳號驗證後再登入。',
+      reason: 'text.dadbc80ca7ef',
     };
   }
 
   if (signInProvider !== 'google.com' && getGoogleIdentityCount(token) === 0) {
     return {
       ok: false,
-      reason: '請使用指定的校內帳號登入方式。',
+      reason: 'text.8497ae443998',
     };
   }
 

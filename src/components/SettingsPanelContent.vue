@@ -8,14 +8,14 @@
       class="flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 dark:border-ink-700"
     >
       <div>
-        <p class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">我的</p>
-        <p class="mt-0.5 text-xs text-ink-500 dark:text-ink-400">帳號、通知與應用設定</p>
+        <p class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t('text.a82c993d7388') }}</p>
+        <p class="mt-0.5 text-xs text-ink-500 dark:text-ink-400">{{ t('text.bdd02b1c50df') }}</p>
       </div>
       <button
         v-if="showClose"
         type="button"
         class="button-toolbar -mr-1 h-9 w-9 shrink-0 rounded-full p-0"
-        aria-label="關閉設定"
+        :aria-label="t('text.f417b1bfe18a')"
         data-autofocus
         @click="emit('close')"
       >
@@ -29,26 +29,26 @@
         ? 'settings-scroll--flat overflow-visible'
         : 'overflow-x-hidden overflow-y-auto'"
     >
-      <section aria-label="目前帳號" class="settings-group py-4">
+      <section :aria-label="t('text.8d8fba03a568')" class="settings-group list-surface py-4">
         <p v-if="SCHOOL_NAME" class="mb-3 text-xs font-semibold text-ink-500 dark:text-ink-400">
           {{ SCHOOL_NAME }}
         </p>
         <div class="flex min-w-0 max-w-full items-center gap-3">
-          <UserAvatar :photo-url="displayPhotoUrl" :name="displayName || 'U'" size="md" alt-text="使用者頭像" class="h-10 w-10 shrink-0" />
+          <UserAvatar :photo-url="displayPhotoUrl" :name="displayName || 'U'" size="md" :alt-text="t('text.59dd30bfe0e0')" class="h-10 w-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-semibold text-ink-950 dark:text-ink-50">
-              {{ displayName || '校內使用者' }}
+              {{ displayName || t('text.958465555d00') }}
             </p>
             <p class="truncate text-xs leading-5 text-ink-500 dark:text-ink-400">
               {{ email }}
             </p>
             <div class="settings-account__uid-row flex min-w-0 items-center gap-1">
-              <p class="truncate text-[11px] leading-5 text-ink-400 dark:text-ink-500">UID：{{ uid }}</p>
+              <p class="truncate text-[11px] leading-5 text-ink-400 dark:text-ink-500">{{ t('account.uidLabel') }}{{ uid }}</p>
               <button
                 type="button"
                 class="settings-account__uid-copy button-toolbar shrink-0 rounded-full p-0"
-                title="複製 UID"
-                aria-label="複製 UID"
+                :title="t('text.8b6e07ad9635')"
+                :aria-label="t('text.8b6e07ad9635')"
                 @click="copyUid"
               >
                 <AppIcon name="copy" :size="3" :stroke-width="2" />
@@ -61,12 +61,12 @@
             @click="emit('switchAccount')"
           >
             <AppIcon name="switch-horizontal" :size="3" :stroke-width="2" />
-            切換帳號
+            {{ t('text.ab82b458482f') }}
           </button>
         </div>
       </section>
 
-      <section class="settings-group" aria-label="推播通知">
+      <section class="settings-group list-surface" :aria-label="t('text.c54d15f53940')">
         <button
           type="button"
           class="settings-row"
@@ -75,7 +75,7 @@
           @click="emit('togglePush')"
         >
           <span class="min-w-0 flex-1">
-            <p class="text-sm font-semibold text-ink-950 dark:text-ink-50">推播通知</p>
+            <p class="text-sm font-semibold text-ink-950 dark:text-ink-50">{{ t('text.c54d15f53940') }}</p>
             <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ pushStatusDescription }}</p>
             <p v-if="pushError" class="mt-1 text-xs leading-5 text-error">{{ pushError }}</p>
           </span>
@@ -85,16 +85,16 @@
             :class="{ 'setting-switch--on': pushEnabled }"
             role="switch"
             :aria-checked="pushEnabled"
-            aria-label="推播通知"
+            :aria-label="t('text.c54d15f53940')"
           >
             <span class="setting-switch__thumb"></span>
           </span>
         </button>
       </section>
 
-      <section aria-label="通知類型">
-        <p class="settings-group-title">通知類型</p>
-        <div class="settings-group">
+      <section :aria-label="t('text.357e7a325e3e')">
+        <p class="settings-group-title">{{ t('text.357e7a325e3e') }}</p>
+        <div class="settings-group list-surface">
           <button
             v-for="option in personalNotificationOptions"
             :key="option.key"
@@ -120,9 +120,9 @@
         </div>
       </section>
 
-      <section aria-label="常用功能">
-        <p class="settings-group-title">功能</p>
-        <div class="settings-group">
+      <section :aria-label="t('text.4e1ff3eb7759')">
+        <p class="settings-group-title">{{ t('text.4e1ff3eb7759') }}</p>
+        <div class="settings-group list-surface">
           <RouterLink
             to="/issues/my-proposals"
             class="settings-row gap-3"
@@ -133,8 +133,8 @@
                 <AppIcon name="user" :size="4" :stroke-width="2" />
               </span>
               <span>
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">我的提案</span>
-                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">你提出的提案與最新進度</span>
+                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.16441dd78ebf') }}</span>
+                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.ea0f89e23e22') }}</span>
               </span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
@@ -150,14 +150,14 @@
                 <AppIcon name="chart" :size="4" :stroke-width="2" />
               </span>
               <span>
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">統計</span>
-                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">平台使用與維運概況</span>
+                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.baa4b36d8a77') }}</span>
+                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.0b2707698075') }}</span>
               </span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
           </RouterLink>
           <RouterLink v-if="canManageRoles" to="/admin/access" class="settings-row gap-3" @click="emit('close')">
-            <span class="flex min-w-0 items-center gap-3"><span class="flex h-9 w-9 items-center justify-center text-ink-500"><AppIcon name="shield-check" :size="4" /></span><span><span class="block text-sm font-semibold">角色管理</span><span class="mt-0.5 block text-xs text-ink-500">成員角色與權限</span></span></span><AppIcon name="chevron-right" :size="4" class="text-ink-400" />
+            <span class="flex min-w-0 items-center gap-3"><span class="flex h-9 w-9 items-center justify-center text-ink-500"><AppIcon name="shield-check" :size="4" /></span><span><span class="block text-sm font-semibold">{{ t('text.3d0d88d5d438') }}</span><span class="mt-0.5 block text-xs text-ink-500">{{ t('text.dc6180d9f5f8') }}</span></span></span><AppIcon name="chevron-right" :size="4" class="text-ink-400" />
           </RouterLink>
           <button
             type="button"
@@ -169,8 +169,8 @@
                 <AppIcon name="restart" :size="4" :stroke-width="2" />
               </span>
               <span>
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">重啟 App</span>
-                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">重新載入並取得最新版本</span>
+                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.da21060e1ebb') }}</span>
+                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.dacb9b544820') }}</span>
               </span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
@@ -178,9 +178,28 @@
         </div>
       </section>
 
-      <section aria-label="更多資源">
-        <p class="settings-group-title">更多</p>
-        <div class="settings-group">
+      <section :aria-label="t('text.78be3cfc3237')">
+        <p class="settings-group-title">{{ t('text.78be3cfc3237') }}</p>
+        <div class="settings-group list-surface">
+          <button
+            v-for="option in languageOptions"
+            :key="option.value"
+            type="button"
+            class="settings-row"
+            @click="setLocale(option.value)"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t(option.label) }}</span>
+              <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.17cb2a008df8') }}</span>
+            </span>
+            <SelectionMark :selected="locale === option.value" />
+          </button>
+        </div>
+      </section>
+
+      <section :aria-label="t('text.2161467064e8')">
+        <p class="settings-group-title">{{ t('text.9b0c6c7858bf') }}</p>
+        <div class="settings-group list-surface">
           <a
             :href="PROJECT_CHANGELOG_URL"
             target="_blank"
@@ -193,8 +212,8 @@
                 <AppIcon name="changelog" :size="4" :stroke-width="2" />
               </span>
               <span>
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">更新紀錄</span>
-                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">產品更新與改善紀錄</span>
+                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.3b274e866859') }}</span>
+                <span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.c6ddd47ee69f') }}</span>
               </span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
@@ -202,21 +221,21 @@
           <a :href="PROJECT_WEBSITE_URL" target="_blank" rel="noreferrer" class="settings-row gap-3" @click="emit('close')">
             <span class="flex min-w-0 items-center gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center text-ink-500 dark:text-ink-300"><AppIcon name="link" :size="4" :stroke-width="2" /></span>
-              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">Novae 官網</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">產品特色與導入資訊</span></span>
+              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.106095c05df7') }}</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.c088d5633a58') }}</span></span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
           </a>
           <a :href="PROJECT_DOCS_URL" target="_blank" rel="noreferrer" class="settings-row gap-3" @click="emit('close')">
             <span class="flex min-w-0 items-center gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center text-ink-500 dark:text-ink-300"><AppIcon name="changelog" :size="4" :stroke-width="2" /></span>
-              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">使用文件</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">功能設定與操作指南</span></span>
+              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.ad2bae4f6c31') }}</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.d667993fc6b0') }}</span></span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
           </a>
           <a :href="PROJECT_GITHUB_URL" target="_blank" rel="noreferrer" class="settings-row gap-3" @click="emit('close')">
             <span class="flex min-w-0 items-center gap-3">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center text-ink-500 dark:text-ink-300"><AppIcon name="code" :size="4" :stroke-width="2" /></span>
-              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">GitHub 專案</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">原始碼與開發進度</span></span>
+              <span><span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('text.fbe3cd5e1eac') }}</span><span class="mt-0.5 block text-xs text-ink-500 dark:text-ink-400">{{ t('text.9b0b60a48d30') }}</span></span>
             </span>
             <AppIcon name="chevron-right" :size="4" class="shrink-0 text-ink-400" :stroke-width="2.2" />
           </a>
@@ -228,16 +247,16 @@
         class="button-danger w-full"
         @click="logoutDialogOpen = true"
       >
-        登出目前帳號
+        {{ t('text.cb65f9e1dc41') }}
       </button>
     </div>
   </div>
 
   <ConfirmDialog
     :open="logoutDialogOpen"
-    title="確定要登出嗎？"
-    message="登出後，需重新驗證身分才能使用平台。"
-    confirm-label="確認登出"
+    :title="t('text.3178b9e80456')"
+    :message="t('text.ecd9b1d07adb')"
+    :confirm-label="t('text.e8d619bb56c6')"
     @cancel="logoutDialogOpen = false"
     @confirm="confirmLogout"
   />
@@ -249,6 +268,7 @@ import { RouterLink } from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import UserAvatar from '@/components/ui/UserAvatar.vue';
+import SelectionMark from '@/components/ui/SelectionMark.vue';
 import {
   PROJECT_CHANGELOG_URL,
   PROJECT_DOCS_URL,
@@ -259,6 +279,7 @@ import {
 import type { PersonalPushPreferenceKey, PersonalPushPreferences } from '@/services/notifications';
 import { copyText } from '@/composables/useShareUrl';
 import { useActionFeedback } from '@/composables/useActionFeedback';
+import { useI18n, type AppLocale } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   contentClass?: string;
@@ -298,13 +319,18 @@ const emit = defineEmits<{
 
 const logoutDialogOpen = ref(false);
 const { show } = useActionFeedback();
+const { locale, setLocale, t } = useI18n();
+const languageOptions: Array<{ label: string; value: AppLocale }> = [
+  { label: 'text.1f7e4a4c370c', value: 'zh-TW' },
+  { label: 'text.5d758b31a918', value: 'en' },
+];
 
 async function copyUid() {
   try {
     await copyText(props.uid);
-    show('UID 已複製', 'success');
+    show(t('text.2306a9c387bc'), 'success');
   } catch {
-    show('無法複製 UID，請稍後再試', 'error');
+    show(t('text.f61fe4ba7407'), 'error');
   }
 }
 

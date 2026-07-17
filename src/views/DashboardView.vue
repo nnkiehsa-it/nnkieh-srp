@@ -12,53 +12,54 @@
 
     <EmptyStatePanel
       v-else-if="!isAdmin"
-      title="無法查看儀表板"
-      description="此頁面僅限管理員使用。"
+      title="text.07b36dbdf72a"
+      description="text.25cdf3c3cfd8"
       icon="lock"
     />
 
     <EmptyStatePanel
       v-else-if="error"
-      title="統計讀取失敗"
+      title="text.6a918b2d8e1e"
       :description="error"
       icon="warning"
       tone="danger"
-      action-label="重新整理"
+      action-label="text.5387b55bb903"
       @action="retryDashboard"
     />
 
     <div v-else-if="stats && operations" class="space-y-5">
       <header class="pb-2">
         <div class="min-w-0">
-          <h2 class="hidden text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block sm:text-3xl">統計</h2>
+          <h2 class="hidden text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block sm:text-3xl">{{ t('text.baa4b36d8a77') }}</h2>
           <p class="max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-400 md:mt-2">
-            快速掃描同步、排程與清理狀態，成果數字保留為維護時的背景脈絡。
+            {{ t('text.bd15b0cbfe9d') }}
           </p>
         </div>
       </header>
 
       <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article
+        <SurfacePanel
           v-for="item in operationSummaryCards"
           :key="item.label"
-          class="rounded-[var(--radius-outer)] border-0 p-5 shadow-elevated"
+          as="article"
+          padding="lg"
           :class="item.toneClass"
         >
-          <p class="text-xs font-semibold text-current/65">{{ item.label }}</p>
+          <p class="text-xs font-semibold text-current/65">{{ t(item.label) }}</p>
           <p class="mt-3 text-2xl font-semibold tabular-nums tracking-[0.01em] text-current">{{ item.value }}</p>
-          <p class="mt-2 text-xs font-medium leading-5 text-current/70">{{ item.caption }}</p>
-        </article>
+          <p class="mt-2 text-xs font-medium leading-5 text-current/70">{{ t(item.caption) }}</p>
+        </SurfacePanel>
       </section>
 
       <section class="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)]">
         <div class="grid gap-5">
-          <section class="dashboard-surface">
+          <SurfacePanel as="section" padding="lg">
             <div class="dashboard-section-head">
               <div>
-                <h3 class="dashboard-section-title">維運狀態</h3>
-                <p class="dashboard-section-subtitle">快速掌握同步、清理與排程是否需要處理。</p>
+                <h3 class="dashboard-section-title">{{ t('text.b532f9845fed') }}</h3>
+                <p class="dashboard-section-subtitle">{{ t('text.21e071f73fca') }}</p>
               </div>
-              <span class="dashboard-total">{{ operationsStatus.label }}</span>
+              <span class="dashboard-total">{{ t(operationsStatus.label) }}</span>
             </div>
             <div class="mt-4 divide-y divide-ink-200/35 overflow-hidden rounded-[var(--radius-inner)] bg-ink-50/60 shadow-inner dark:divide-ink-700/30 dark:bg-ink-800/35">
               <div
@@ -67,29 +68,29 @@
                 class="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(9rem,0.9fr)_minmax(0,1.2fr)_auto]"
               >
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-ink-900 dark:text-ink-100">{{ row.label }}</p>
-                  <p class="mt-1 text-xs font-medium text-ink-400 dark:text-ink-500">{{ row.detail }}</p>
+                  <p class="truncate text-sm font-bold text-ink-900 dark:text-ink-100">{{ t(row.label) }}</p>
+                  <p class="mt-1 text-xs font-medium text-ink-400 dark:text-ink-500">{{ t(row.detail) }}</p>
                 </div>
                 <p class="text-sm font-semibold tabular-nums text-ink-700 dark:text-ink-200">{{ row.value }}</p>
-                <p class="text-left text-xs font-bold sm:text-right" :class="row.toneClass">{{ row.statusLabel }}</p>
+                <p class="text-left text-xs font-bold sm:text-right" :class="row.toneClass">{{ t(row.statusLabel) }}</p>
               </div>
             </div>
-          </section>
+          </SurfacePanel>
 
-          <section class="dashboard-surface">
+          <SurfacePanel as="section" padding="lg">
             <div class="dashboard-section-head">
               <div>
-                <h3 class="dashboard-section-title">分類使用概況</h3>
-                <p class="dashboard-section-subtitle">查看各分類的提案與討論分布。</p>
+                <h3 class="dashboard-section-title">{{ t('text.7e9e770b740f') }}</h3>
+                <p class="dashboard-section-subtitle">{{ t('text.fa2f726e3913') }}</p>
               </div>
-              <span class="dashboard-total">{{ stats.total_issues_created + stats.total_comments_created }} 筆內容</span>
+              <span class="dashboard-total">{{ t('text.ac96863cf5d7', { count: stats.total_issues_created + stats.total_comments_created }) }}</span>
             </div>
             <div class="mt-4 overflow-hidden rounded-[var(--radius-inner)] bg-ink-50/60 shadow-inner dark:bg-ink-800/35">
               <div class="grid grid-cols-[1fr_5rem_5rem_4rem] gap-3 border-b border-ink-200/35 px-4 py-2.5 text-xs font-semibold tracking-[0.02em] text-ink-500 dark:border-ink-700/30 dark:text-ink-400">
-                <span>分類</span>
-                <span class="text-right">提案</span>
-                <span class="text-right">留言</span>
-                <span class="text-right">占比</span>
+                <span>{{ t('text.7c6fd760fe28') }}</span>
+                <span class="text-right">{{ t('text.b9a2f9c03506') }}</span>
+                <span class="text-right">{{ t('text.f6f477a9c9f4') }}</span>
+                <span class="text-right">{{ t('text.380a2fed3ffe') }}</span>
               </div>
               <div
                 v-for="row in categoryComparisonRows"
@@ -97,7 +98,7 @@
                 class="grid grid-cols-[1fr_5rem_5rem_4rem] items-center gap-3 border-b border-ink-200/30 px-4 py-3.5 last:border-b-0 dark:border-ink-700/25"
               >
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-ink-900 dark:text-ink-100">{{ row.label }}</p>
+                  <p class="truncate text-sm font-bold text-ink-900 dark:text-ink-100">{{ t(row.label) }}</p>
                   <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
                     <div class="h-full rounded-full" :class="row.barClass" :style="{ width: `${row.percent}%` }"></div>
                   </div>
@@ -107,15 +108,15 @@
                 <p class="text-right text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">{{ row.percentLabel }}</p>
               </div>
             </div>
-          </section>
+          </SurfacePanel>
         </div>
 
         <aside class="grid gap-5">
-          <section class="dashboard-surface">
+          <SurfacePanel as="section" padding="lg">
             <div class="dashboard-section-head">
               <div>
-                <h3 class="dashboard-section-title">平台成果</h3>
-                <p class="dashboard-section-subtitle">平台使用狀況的整體摘要。</p>
+                <h3 class="dashboard-section-title">{{ t('text.c2f14f41286d') }}</h3>
+                <p class="dashboard-section-subtitle">{{ t('text.5a98ea713729') }}</p>
               </div>
             </div>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -125,19 +126,19 @@
                 class="rounded-[var(--radius-inner)] bg-ink-50/70 px-4 py-3 shadow-note dark:bg-ink-800/40"
               >
                 <div class="flex items-center justify-between gap-3">
-                  <p class="text-sm font-semibold text-ink-600 dark:text-ink-300">{{ item.label }}</p>
-                  <span class="text-xs font-bold text-ink-400 dark:text-ink-500">{{ item.caption }}</span>
+                  <p class="text-sm font-semibold text-ink-600 dark:text-ink-300">{{ t(item.label) }}</p>
+                  <span class="text-xs font-bold text-ink-400 dark:text-ink-500">{{ t(item.caption) }}</span>
                 </div>
                 <p class="mt-2 text-2xl font-bold tabular-nums text-ink-950 dark:text-ink-50">{{ item.value }}</p>
               </div>
             </div>
-          </section>
+          </SurfacePanel>
 
-          <section class="dashboard-surface">
+          <SurfacePanel as="section" padding="lg">
             <div class="dashboard-section-head">
               <div>
-                <h3 class="dashboard-section-title">最近異常</h3>
-                <p class="dashboard-section-subtitle">使用追蹤碼到 Edge Function log 查詢完整錯誤。</p>
+                <h3 class="dashboard-section-title">{{ t('text.d81edb4504da') }}</h3>
+                <p class="dashboard-section-subtitle">{{ t('text.063a2b695bda') }}</p>
               </div>
             </div>
             <div v-if="recentFailureRows.length > 0" class="mt-4 space-y-3">
@@ -151,22 +152,22 @@
                   <p class="text-xs font-semibold text-ink-400 dark:text-ink-500">{{ failure.updatedLabel }}</p>
                 </div>
                 <p class="mt-2 break-all text-xs font-semibold text-error">
-                  追蹤碼：{{ failure.trackingCode }}
+                  {{ t('text.4e50fb39c767', { code: failure.trackingCode }) }}
                 </p>
               </div>
             </div>
             <p v-else class="mt-4 rounded-xl bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-500 dark:bg-ink-950/50 dark:text-ink-400">
-              目前沒有快速掃描到失敗事件。
+              {{ t('text.7cbe8c85328e') }}
             </p>
-          </section>
+          </SurfacePanel>
         </aside>
       </section>
     </div>
 
     <EmptyStatePanel
       v-else
-      title="尚無統計資料"
-      description="目前沒有可顯示的平台成果。"
+      title="text.2c10e9c1a283"
+      description="text.9f0f8457202a"
       icon="chart"
     />
   </section>
@@ -177,11 +178,15 @@ import { computed, watch } from 'vue';
 import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
 import SkeletonDashboard from '@/components/ui/SkeletonDashboard.vue';
 import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
+import SurfacePanel from '@/components/ui/SurfacePanel.vue';
 import { useDashboardMetrics } from '@/composables/useDashboardMetrics';
 import { usePlatformDashboard } from '@/composables/usePlatformDashboard';
 import { useSession } from '@/composables/useSession';
 import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
 import { resetAppConnection } from '@/lib/reconnect';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const { initialized, isAdmin, loading: authLoading } = useSession();
 const { stats, operations, loading, error, loadDashboard } = usePlatformDashboard();

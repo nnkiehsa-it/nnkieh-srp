@@ -1,7 +1,9 @@
 <template>
-  <div class="absolute top-1.5 left-1/2 -translate-x-1/2 md:left-[180px] md:translate-x-0 z-[120] rounded-xl border border-ink-200 bg-white p-3 shadow-floating dark:border-ink-800 dark:bg-ink-900 w-44 shrink-0 select-none">
+  <DropdownPanel class="absolute top-1.5 left-1/2 z-[120] w-44 shrink-0 -translate-x-1/2 select-none md:left-[180px] md:translate-x-0" size="default">
     <p class="text-[10px] font-bold text-ink-400 dark:text-ink-500 mb-2 text-center whitespace-nowrap">
-      {{ hoveredRow >= 0 ? `建立 ${hoveredRow + 1} x ${hoveredCol + 1} 表格` : '選取表格大小' }}
+      {{ hoveredRow >= 0
+        ? t('markdown.createTable', { rows: hoveredRow + 1, columns: hoveredCol + 1 })
+        : t('text.027a654f7fc9') }}
     </p>
     <div class="grid grid-cols-5 gap-1.5" @mouseleave="resetTableHover">
       <div
@@ -19,15 +21,18 @@
         ></div>
       </div>
     </div>
-  </div>
+  </DropdownPanel>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import DropdownPanel from '@/components/ui/DropdownPanel.vue';
+import { useI18n } from '@/i18n';
 
 const emit = defineEmits<{
   'select': [rows: number, cols: number];
 }>();
+const { t } = useI18n();
 
 const hoveredRow = ref(-1);
 const hoveredCol = ref(-1);

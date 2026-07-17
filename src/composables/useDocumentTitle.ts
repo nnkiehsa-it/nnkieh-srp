@@ -1,11 +1,14 @@
 import { watch, type ComputedRef } from 'vue';
+import { useI18n } from '@/i18n';
 
 export function useDocumentTitle(title: ComputedRef<string>, defaultTitle: string) {
+  const { locale, t } = useI18n();
+
   function updateDocumentTitle() {
-    document.title = `${title.value} | ${defaultTitle}`;
+    document.title = `${t(title.value)} | ${defaultTitle}`;
   }
 
-  watch(title, updateDocumentTitle, { immediate: true });
+  watch([title, locale], updateDocumentTitle, { immediate: true });
 
   function restoreDocumentTitle() {
     document.title = defaultTitle;

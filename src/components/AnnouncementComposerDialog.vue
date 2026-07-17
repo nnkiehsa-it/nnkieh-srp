@@ -4,22 +4,22 @@
     v-model:content="content"
     v-model:show-preview="showPreview"
     :open="open"
-    eyebrow="發布新的校內公告"
-    title="公告內容"
+    eyebrow="text.fc9381d7a5eb"
+    title="text.1bb7c8022090"
     title-input-id="announcement-title"
-    title-label="公告標題"
+    title-label="text.8c8b7e8131af"
     :title-max-length="INPUT_LIMITS.title"
     :title-warning-length="27"
-    title-placeholder="請輸入公告標題..."
+    title-placeholder="text.0a0191b9e94a"
     title-required
     editor-textarea-id="announcement-content"
-    editor-label="內容說明"
-    editor-placeholder="在此輸入公告詳細內容..."
+    editor-label="text.cbe9c747c7b2"
+    editor-placeholder="text.26d02da90c40"
     :images="editorImages"
     :max-images="maxImages"
-    max-images-label="公告"
-    hint="公告將即時發布予所有使用者。"
-    submit-label="發布公告"
+    max-images-label="text.3f9569532847"
+    hint="text.f45f61d9b008"
+    submit-label="text.927ad1afca75"
     :busy="submitting"
     :uploading="uploading"
     :error="error || uploadError"
@@ -38,6 +38,7 @@ import { INPUT_LIMITS } from '@/constants/input-limits';
 import { RATE_LIMITS } from '@/generated/rate-limits';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import type { UploadedImage } from '@/composables/useImageUpload';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   error: string;
@@ -49,6 +50,7 @@ const emit = defineEmits<{
   close: [];
   save: [payload: { title: string; content: string; uploadedImages: UploadedImage[] }];
 }>();
+const { t } = useI18n();
 
 const title = ref('');
 const content = ref('');
@@ -69,7 +71,7 @@ const {
 
 const editorImages = computed(() =>
   imageUrls.value.map((src, index) => ({
-    alt: '公告附加圖片預覽',
+    alt: t('text.b3bf14c68491'),
     index,
     key: `new:${src}:${index}`,
     src,
@@ -117,7 +119,7 @@ function handleClose() {
 function handleEditorImagePicked(event: Event) {
   const target = event.target as HTMLInputElement;
   if (editorImages.value.length >= maxImages) {
-    uploadError.value = `最多只能上傳 ${maxImages} 張圖片。`;
+    uploadError.value = t('upload.imageLimit', { count: maxImages });
     target.value = '';
     return;
   }

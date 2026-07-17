@@ -6,8 +6,8 @@
       v-model:sort-option="sort"
       mode="facility"
       active-filter=""
-      active-category-label="設備"
-      create-label="新增設備"
+      :active-category-label="t('text.a6a61230ffa1')"
+      :create-label="t('text.f6af17a5f622')"
       :search-hint="searchHint"
       @create="composerOpen = true"
       @submit-search="submitSearch"
@@ -15,56 +15,42 @@
     />
 
     <div class="scroll-shadow-bleed scrollbar-none min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-contain pb-4">
-      <Transition name="panel-switch" mode="out-in">
-        <div :key="facilityPanelKey" class="space-y-4">
-          <PageLoadFailure
-            v-if="facilityLoadingHasProblem"
-            :title="facilityProblemTitle"
-            :description="facilityProblemDescription"
-            :retry-disabled="!facilityOnline"
-            @retry="retryFacilities"
-          />
+      <ContentListState
+        :empty="facilities.length === 0"
+        :empty-description="emptyDescription"
+        empty-title="text.048a5b862623"
+        :error="error"
+        error-title="text.a4a8f255b50c"
+        :has-more="hasMore"
+        :loading="visibleFacilityLoading"
+        :loading-has-problem="facilityLoadingHasProblem"
+        :loading-more="loadingMore"
+        :panel-key="facilityPanelKey"
+        :problem-description="facilityProblemDescription"
+        :problem-title="facilityProblemTitle"
+        :retry-disabled="!facilityOnline"
+        @load-more="load(true)"
+        @retry="retryFacilities"
+      >
+        <template #loading>
+          <FacilityTable :facilities="[]" :loading="true" />
+        </template>
 
-          <FacilityTable
-            v-else-if="visibleFacilityLoading"
-            :facilities="[]"
-            :loading="true"
-          />
+        <FacilityTable
+          :affecting-facility-id="affectingFacilityId"
+          :facilities="facilities"
+          :loading="false"
+          :highlight-query="committedQuery"
+          @open-details="openDetails"
+          @toggle-affected="handleToggleAffected"
+          @manage-status="openStatusDialog"
+          @delete="openDeleteDialog"
+        />
 
-          <EmptyStatePanel
-            v-else-if="error && facilities.length === 0"
-            title="設備讀取失敗"
-            :description="error"
-            icon="warning"
-            tone="danger"
-            action-label="重新整理"
-            @action="retryFacilities"
-          />
-
-          <EmptyStatePanel
-            v-else-if="facilities.length === 0"
-            title="沒有符合條件的設備"
-            :description="emptyDescription"
-            icon="inbox"
-          />
-
-          <template v-else>
-            <FacilityTable
-              :affecting-facility-id="affectingFacilityId"
-              :facilities="facilities"
-              :loading="false"
-              :highlight-query="committedQuery"
-              @open-details="openDetails"
-              @toggle-affected="handleToggleAffected"
-              @manage-status="openStatusDialog"
-              @delete="openDeleteDialog"
-            />
-            <div v-if="error" class="rounded-xl border border-error/20 bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container">{{ error }}</div>
-            <FeedLoadMoreControl :has-more="hasMore" :loading="loadingMore" :error="Boolean(error)" @load-more="load(true)" />
-            <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
-          </template>
-        </div>
-      </Transition>
+        <template #sentinel>
+          <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
+        </template>
+      </ContentListState>
     </div>
 
     <FacilityComposer :open="composerOpen" @close="composerOpen = false" @submitted="handleSubmitted" />
@@ -79,9 +65,9 @@
     />
     <ConfirmDialog
       :open="deleteDialogOpen"
-      title="確定要刪除這筆設備嗎？"
-      message="刪除後這筆設備案件將無法復原。"
-      confirm-label="確認刪除"
+      title="text.6a09e03ffa6a"
+      message="text.97ac026665a6"
+      confirm-label="text.1d63b95811eb"
       :busy="deleting"
       @cancel="closeDeleteDialog"
       @confirm="confirmDelete"
@@ -97,19 +83,16 @@ import FacilityComposer from '@/components/FacilityComposer.vue';
 import FacilityStatusDialog from '@/components/FacilityStatusDialog.vue';
 import FacilityTable from '@/components/FacilityTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import FeedLoadMoreControl from '@/components/ui/FeedLoadMoreControl.vue';
-import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
+import ContentListState from '@/components/ui/ContentListState.vue';
 import { useFacilities } from '@/composables/useFacilities';
 import { useActionFeedback } from '@/composables/useActionFeedback';
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
-import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
-import { useMinimumLoading } from '@/composables/useMinimumLoading';
-import { resetAppConnection } from '@/lib/reconnect';
+import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { normalizeSearchText } from '@/lib/search';
 import type { FacilityRecord, FacilityStatus, FacilitySummary } from '@/types';
+import { useI18n } from '@/i18n';
 
 const router = useRouter();
+const { t } = useI18n();
 const composerOpen = ref(false);
 const {
   affectingFacilityId,
@@ -141,31 +124,33 @@ const facilityPanelKey = computed(() => [
   sort.value,
   committedQuery.value.trim(),
 ].join(':'));
-const { visibleLoading: visibleFacilityLoading } = useMinimumLoading(loading);
 const {
-  hasProblem: facilityLoadingHasProblem,
   isOnline: facilityOnline,
+  loadMoreSentinel,
+  loadingHasProblem: facilityLoadingHasProblem,
   problemDescription: facilityProblemDescription,
   problemTitle: facilityProblemTitle,
-} = useLoadingTimeout(loading, 5_000);
-const infiniteScrollDisabled = computed(() =>
-  !hasMore.value || loading.value || loadingMore.value || Boolean(error.value),
-);
-const { sentinel: loadMoreSentinel } = useInfiniteScroll({
-  disabled: infiniteScrollDisabled,
-  onLoadMore: () => load(true),
+  retry: retryFacilities,
+  visibleLoading: visibleFacilityLoading,
+} = useContentListRuntime({
+  error,
+  hasMore,
+  loadMore: () => load(true),
+  loading,
+  loadingMore,
+  refresh: () => load(),
 });
 const searchHint = computed(() => {
   const draft = normalizeSearchText(query.value);
   const committed = normalizeSearchText(committedQuery.value);
-  if (draft !== committed) return '按 Enter 搜尋。';
-  if (!committed) return '輸入關鍵字後按 Enter 搜尋。';
-  if (committed.length < 3) return '目前只搜尋已載入的設備；輸入至少 3 個字可搜尋更多。';
-  return `正在搜尋「${committedQuery.value}」`;
+  if (draft !== committed) return t('text.fef60be5996c');
+  if (!committed) return t('text.df27f3893c8e');
+  if (committed.length < 3) return t('text.09b0d5af8e6f');
+  return t('text.7b34130ee24e', { query: committedQuery.value });
 });
 const emptyDescription = computed(() => committedQuery.value.trim()
-  ? `沒有找到與「${committedQuery.value.trim()}」相關的設備。`
-  : `目前沒有${bucket.value === 'closed' ? '已結案' : '處理中'}設備。`);
+  ? t('text.d7bff626d69d', { query: committedQuery.value.trim() })
+  : t('text.498dd3a41086', { status: t(bucket.value === 'closed' ? 'text.b496f1ac5289' : 'text.ae16f4a52d69') }));
 
 function openDetails(facility: FacilitySummary) {
   void router.push({ name: 'facility-detail', params: { facilityId: facility.id } });
@@ -175,16 +160,11 @@ function handleSubmitted(facility: FacilityRecord) {
   facilities.value.unshift(facility);
 }
 
-async function retryFacilities() {
-  await resetAppConnection();
-  await load();
-}
-
 async function handleToggleAffected(facility: FacilitySummary) {
   try {
     await toggleAffected(facility);
   } catch (caught) {
-    show(caught instanceof Error ? caught.message : '操作失敗，請稍後再試。', 'error');
+    show(caught instanceof Error ? t(caught.message) : t('text.400748fa9644'), 'error');
   }
 }
 
@@ -204,7 +184,7 @@ async function submitStatus(status: FacilityStatus, result: string) {
     await changeStatus(selectedFacility.value, status, result);
     statusDialogOpen.value = false;
   } catch (caught) {
-    statusError.value = caught instanceof Error ? caught.message : '更新失敗，請稍後再試。';
+    statusError.value = caught instanceof Error ? t(caught.message) : t('text.e45a87db77dc');
   } finally {
     statusSaving.value = false;
   }
@@ -223,7 +203,7 @@ async function confirmDelete() {
     await remove(selectedFacility.value);
     deleteDialogOpen.value = false;
   } catch (caught) {
-    show(caught instanceof Error ? caught.message : '刪除失敗，請稍後再試。', 'error');
+    show(caught instanceof Error ? t(caught.message) : t('text.c51f84ab04cf'), 'error');
   } finally {
     deleting.value = false;
   }

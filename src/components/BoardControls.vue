@@ -10,7 +10,7 @@
           @select="handleCategoryChange"
         />
         <h2 v-else class="shrink-0 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-2xl">
-          {{ activeFilter === 'my-proposals' ? '我的提案' : boardTitle }}
+          {{ activeFilter === 'my-proposals' ? t('text.16441dd78ebf') : boardTitle }}
         </h2>
       </div>
 
@@ -27,8 +27,8 @@
             type="button"
             class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
             :class="{ 'button-toolbar--active': isSortOpen || sortOption !== 'latest' }"
-            :title="`排序${boardTitle}`"
-            :aria-label="`排序${boardTitle}`"
+            :title="t('text.4f50d0573a80', { board: boardTitle })"
+            :aria-label="t('text.4f50d0573a80', { board: boardTitle })"
             :aria-expanded="isSortOpen"
             @click="toggleSort"
           >
@@ -36,25 +36,26 @@
           </button>
 
           <transition name="popover">
-            <div
+            <DropdownPanel
               v-if="isSortOpen"
-              class="popover-panel popover-panel--section absolute z-[100] mt-2 max-md:left-4 max-md:right-4 max-md:w-auto md:right-0 md:left-auto md:w-max md:min-w-[10rem]"
+              class="absolute z-[100] mt-2 max-md:left-[var(--app-viewport-gutter)] max-md:right-[var(--app-viewport-gutter)] max-md:w-auto md:right-0 md:left-auto md:w-max md:min-w-[10rem]"
+              size="default"
             >
-              <div class="popover-section-label mb-1.5 whitespace-nowrap">排序方式</div>
+              <div class="dropdown-label mb-1.5 whitespace-nowrap">{{ t('text.3bf3689a6916') }}</div>
               <div class="space-y-0.5">
                 <button
                   v-for="option in visibleSortOptions"
                   :key="option.value"
                   type="button"
-                  class="menu-item justify-between gap-4 whitespace-nowrap"
+                  class="dropdown-item justify-between gap-4 whitespace-nowrap"
                   :class="{ 'button-toolbar--active': option.value === sortOption }"
                   @click="selectSort(option.value)"
                 >
-                  <span>{{ option.label }}</span>
+                  <span>{{ t(option.label) }}</span>
                   <SelectionMark :selected="option.value === sortOption" />
                 </button>
               </div>
-            </div>
+            </DropdownPanel>
           </transition>
         </div>
 
@@ -63,8 +64,8 @@
             type="button"
             class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
             :class="{ 'button-toolbar--active': isSearchOpen || searchQuery }"
-            :title="`搜尋${boardTitle}`"
-            :aria-label="`搜尋${boardTitle}`"
+            :title="t('text.99324ddac86c', { board: boardTitle })"
+            :aria-label="t('text.99324ddac86c', { board: boardTitle })"
             :aria-expanded="isSearchOpen"
             @click="toggleSearch"
           >
@@ -72,9 +73,10 @@
           </button>
 
           <transition name="popover">
-            <div
+            <DropdownPanel
               v-if="isSearchOpen"
-              class="popover-panel popover-panel--search absolute z-[100] mt-2 max-md:left-4 max-md:right-4 max-md:w-auto md:right-0 md:left-auto md:w-80"
+              class="absolute z-[100] mt-2 max-md:left-[var(--app-viewport-gutter)] max-md:right-[var(--app-viewport-gutter)] max-md:w-auto md:right-0 md:left-auto md:w-80"
+              size="search"
             >
               <form class="relative" role="search" @submit.prevent="emit('submitSearch')">
                 <AppIcon name="search" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 dark:text-ink-500" />
@@ -83,7 +85,7 @@
                   :value="searchQuery"
                   type="search"
                   autocomplete="off"
-                  :aria-label="`搜尋${boardTitle}標題`"
+                  :aria-label="t('text.2d5dc9ec6262', { board: boardTitle })"
                   class="field appearance-none !h-8 !py-1 !pl-8 !pr-8 text-xs placeholder:text-ink-400 dark:placeholder:text-ink-500"
                   :placeholder="searchPlaceholder"
                   @input="(e) => emit('update:searchQuery', (e.target as HTMLInputElement).value)"
@@ -92,7 +94,7 @@
                   v-if="searchQuery"
                   type="button"
                   class="button-toolbar absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full p-0"
-                  aria-label="清除搜尋"
+                  :aria-label="t('text.59b34bfa1182')"
                   @click="emit('clearSearch')"
                 >
                   <AppIcon name="close" :size="3" />
@@ -105,7 +107,7 @@
               >
                 {{ searchHint }}
               </p>
-            </div>
+            </DropdownPanel>
           </transition>
         </div>
 
@@ -129,10 +131,12 @@ import { computed, nextTick, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import IssueCategorySelector from '@/components/IssueCategorySelector.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
+import DropdownPanel from '@/components/ui/DropdownPanel.vue';
 import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
 import { DEFAULT_ISSUE_CATEGORY, isIssueCategory } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
 import type { FacilitySortOption, IssueFilter, IssueSortOption } from '@/types';
+import { useI18n } from '@/i18n';
 
 type BoardSortOption = IssueSortOption | FacilitySortOption;
 
@@ -155,18 +159,19 @@ const emit = defineEmits<{
   'clearSearch': [];
   create: [];
 }>();
+const { t } = useI18n();
 
 const issueSortOptions = [
-  { value: 'latest', label: '最新' },
-  { value: 'most-supported', label: '最多附議' },
-  { value: 'ending-soon', label: '即將截止' },
+  { value: 'latest', label: 'text.7e805a1230c0' },
+  { value: 'most-supported', label: 'text.1f3967d3e048' },
+  { value: 'ending-soon', label: 'text.9ede398940fd' },
 ] as const;
 
 const route = useRoute();
 const router = useRouter();
 const facilitySortOptions = [
-  { value: 'latest', label: '最新' },
-  { value: 'most-affected', label: '最多人遇到' },
+  { value: 'latest', label: 'text.7e805a1230c0' },
+  { value: 'most-affected', label: 'text.d2b6269ac378' },
 ] as const;
 const visibleSortOptions = computed(() => props.mode === 'facility'
   ? facilitySortOptions
@@ -174,14 +179,14 @@ const visibleSortOptions = computed(() => props.mode === 'facility'
     ? issueSortOptions.filter((option) => option.value === 'latest')
     : issueSortOptions);
 
-const boardTitle = computed(() => props.mode === 'facility' ? '設備' : '提案');
-const searchPlaceholder = computed(() => props.mode === 'facility' ? '搜尋標題或地點...' : '搜尋全站標題...');
+const boardTitle = computed(() => t(props.mode === 'facility' ? 'text.a6a61230ffa1' : 'text.b9a2f9c03506'));
+const searchPlaceholder = computed(() => t(props.mode === 'facility' ? 'text.240c0ba2be8d' : 'text.4c054c877b2d'));
 const issueCategoryFilter = computed<IssueFilter>(() =>
   isIssueCategory(props.activeFilter) ? props.activeFilter : DEFAULT_ISSUE_CATEGORY
 );
 const statusOptions = computed(() => [
-  { value: 'active' as const, label: props.mode === 'facility' ? '處理中' : '進行中', icon: 'list' as const, title: `查看${props.mode === 'facility' ? '處理中設備' : '進行中提案'}` },
-  { value: 'closed' as const, label: '已結案', icon: 'inbox' as const, title: `查看已結案${boardTitle.value}` },
+  { value: 'active' as const, label: t(props.mode === 'facility' ? 'text.ae16f4a52d69' : 'text.c573867b5fca'), icon: 'list' as const, title: t('text.644d1a924aa1', { status: t(props.mode === 'facility' ? 'text.ae16f4a52d69' : 'text.c573867b5fca'), board: boardTitle.value }) },
+  { value: 'closed' as const, label: t('text.b496f1ac5289'), icon: 'inbox' as const, title: t('text.644d1a924aa1', { status: t('text.b496f1ac5289'), board: boardTitle.value }) },
 ]);
 const isSearchOpen = ref(false);
 const isSortOpen = ref(false);

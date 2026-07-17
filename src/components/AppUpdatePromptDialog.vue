@@ -14,14 +14,14 @@
           <AppIcon name="refresh" :size="6" :stroke-width="1.8" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="dialog-eyebrow">應用程式更新</p>
-          <h2 id="app-update-title" class="dialog-title">有新版本可用</h2>
-          <p class="dialog-description">目前版本已停止使用，請更新以取得最新內容並繼續操作。</p>
+          <p class="dialog-eyebrow">{{ t('app.update.eyebrow') }}</p>
+          <h2 id="app-update-title" class="dialog-title">{{ t('app.update.title') }}</h2>
+          <p class="dialog-description">{{ t('app.update.description') }}</p>
         </div>
       </div>
       <div class="dialog-actions">
         <button type="button" class="button-primary" :disabled="busy" data-autofocus @click="emit('reload')">
-          <BusyButtonContent :busy="Boolean(busy)" label="更新" busy-label="更新中" />
+          <BusyButtonContent :busy="Boolean(busy)" label="text.d9db02d07adb" busy-label="text.111227ad9eb7" />
         </button>
       </div>
     </section>
@@ -35,11 +35,13 @@ import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   busy?: boolean;
   open: boolean;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   reload: [];

@@ -3,6 +3,7 @@
     {
       "id": "public-issues",
       "label": "公共議題",
+      "labelKey": "category.publicIssues",
       "readAccess": "reviewed-school",
       "authorVisible": false,
       "support": {
@@ -15,6 +16,7 @@
     {
       "id": "rights-maintenance",
       "label": "學生權益",
+      "labelKey": "category.studentRights",
       "readAccess": "owner-admin",
       "authorVisible": true,
       "support": {

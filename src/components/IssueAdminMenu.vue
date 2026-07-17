@@ -3,7 +3,7 @@
     v-if="isAdmin"
     :class="compact ? 'relative inline-block text-left' : 'space-y-3 relative'"
   >
-    <p v-if="!compact" class="field-label">管理員狀態調整</p>
+    <p v-if="!compact" class="field-label">{{ t('issue.admin.title') }}</p>
     <div :class="compact ? '' : 'relative inline-block w-full sm:w-60 text-left'">
       <!-- Toggle Button (Normal) -->
       <button
@@ -38,8 +38,8 @@
         type="button"
         class="button-toolbar h-8 w-8 rounded-full p-0"
         :class="{ 'text-ink-800 dark:text-ink-100': isDropdownOpen }"
-        title="管理提案"
-        aria-label="管理提案"
+        :title="t('text.9dc81a5d9869')"
+        :aria-label="t('text.9dc81a5d9869')"
         @click="isDropdownOpen = !isDropdownOpen"
       >
         <AppIcon name="more-horizontal" :size="4.5" :stroke-width="1.8" />
@@ -51,21 +51,21 @@
           <div
             v-if="isDropdownOpen"
             ref="dropdownRef"
-            class="popover-panel popover-panel--compact fixed z-[120] origin-top-right"
+            class="dropdown-panel fixed z-[120] origin-top-right"
             :class="compact ? 'w-44' : 'w-60'"
             :style="dropdownStyle"
             @click.stop
             @pointerdown.stop
           >
-            <!-- Under-review state: Show "審核提案" -->
+            <!-- Under-review state: Show "text.332bad1cbb2b" -->
             <button
               v-if="isUnderReview"
               type="button"
-              class="menu-item justify-between"
+              class="dropdown-item justify-between"
               @click.stop="openReviewDialog"
             >
               <span class="font-semibold text-ink-900 dark:text-ink-100">
-                審核提案
+                {{ t('issue.admin.review') }}
               </span>
             </button>
 
@@ -73,11 +73,11 @@
             <template v-if="isProcessingOrPending">
               <button
                 type="button"
-                class="menu-item justify-between"
+                class="dropdown-item justify-between"
                 @click.stop="openStatusDialog"
               >
                 <span class="font-semibold text-ink-900 dark:text-ink-100">
-                  變更提案狀態/結果
+                  {{ t('issue.admin.changeStatus') }}
                 </span>
               </button>
             </template>
@@ -86,11 +86,11 @@
             <div v-if="compact" class="mt-1 border-t border-error/20 pt-1">
               <button
                 type="button"
-                class="menu-item menu-item-danger"
+                class="dropdown-item dropdown-item--danger"
                 @click.stop="onDeleteClick"
               >
                 <AppIcon name="trash" :size="3" />
-                <span>刪除提案</span>
+                <span>{{ t('issue.admin.delete') }}</span>
               </button>
             </div>
           </div>
@@ -127,6 +127,7 @@ import { useClickOutside } from '@/composables/useClickOutside';
 import { useDropdownPosition } from '@/composables/useDropdownPosition';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import type { IssueRecord, IssueStatus } from '@/types';
+import { useI18n } from '@/i18n';
 
 // Shared Dialog Components
 import IssueReviewDialog from '@/components/IssueReviewDialog.vue';
@@ -136,6 +137,7 @@ const props = defineProps<{
   issue: IssueRecord;
   compact?: boolean;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'status-changed': [issue: IssueRecord];
@@ -212,6 +214,6 @@ function getStatusDotClass(status: IssueStatus) {
 }
 
 function getStatusLabel(status: IssueStatus) {
-  return ISSUE_STATUS_LABELS[status] || status;
+  return t(ISSUE_STATUS_LABELS[status] || status);
 }
 </script>

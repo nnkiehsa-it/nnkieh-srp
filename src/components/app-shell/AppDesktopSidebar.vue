@@ -1,14 +1,14 @@
 <template>
   <aside
     class="app-sidebar fixed inset-y-0 left-0 z-40 hidden flex-col border-0 bg-surface/94 py-4 shadow-elevated backdrop-blur-xl dark:bg-surface/94 md:flex"
-    aria-label="桌面主要導覽"
+    :aria-label="t('text.eed21e7de0c3')"
     @click="handleSidebarClick"
   >
     <div class="app-sidebar__header">
       <RouterLink
         :to="homeRoute"
         class="app-sidebar__brand"
-        aria-label="Novae 提案首頁"
+        :aria-label="t('text.463017e2fe2f')"
       >
         <BrandMark />
         <span class="app-sidebar__brand-label">Novae</span>
@@ -16,8 +16,8 @@
       <button
         type="button"
         class="app-sidebar__toggle"
-        :aria-label="expanded ? '收合側邊導覽' : '展開側邊導覽'"
-        :title="expanded ? '收合側邊導覽' : '展開側邊導覽'"
+        :aria-label="t(expanded ? 'text.a3c852c726e3' : 'text.8d22552aadd1')"
+        :title="t(expanded ? 'text.a3c852c726e3' : 'text.8d22552aadd1')"
         :aria-expanded="expanded"
         @click.stop="$emit('toggle')"
       >
@@ -25,7 +25,7 @@
       </button>
     </div>
 
-    <nav class="mt-7 flex w-full flex-1 flex-col gap-2 px-3" aria-label="主要功能">
+    <nav class="mt-7 flex w-full flex-1 flex-col gap-2 px-3" :aria-label="t('text.d1e57f345277')">
       <RouterLink
         v-for="item in items"
         :key="item.key"
@@ -44,14 +44,14 @@
         to="/notifications"
         class="app-sidebar__item"
         :class="{ 'app-sidebar__item--active': notificationsActive }"
-        :aria-label="hasUnread ? '通知，有新通知' : '通知'"
-        data-label="通知"
+        :aria-label="t(hasUnread ? 'text.036eb476b7ab' : 'text.7a66c0d03631')"
+        :data-label="t('text.7a66c0d03631')"
       >
         <span class="relative inline-flex" aria-hidden="true">
           <AppIcon name="bell" :size="5" :stroke-width="1.9" />
           <span v-if="hasUnread" class="app-sidebar__badge"></span>
         </span>
-        <span class="app-sidebar__label">通知</span>
+        <span class="app-sidebar__label">{{ t('text.7a66c0d03631') }}</span>
       </RouterLink>
     </nav>
 
@@ -59,10 +59,10 @@
       to="/settings"
       class="app-sidebar__profile"
       :class="{ 'app-sidebar__item--active': profileActive }"
-      aria-label="我的"
-      data-label="我的"
+      :aria-label="t('text.a82c993d7388')"
+      :data-label="t('text.a82c993d7388')"
     >
-      <UserAvatar :photo-url="photoUrl" :name="userName" size="sm" alt-text="使用者頭像" class="!h-8 !w-8 rounded-full" />
+      <UserAvatar :photo-url="photoUrl" :name="userName" size="sm" :alt-text="t('text.59dd30bfe0e0')" class="!h-8 !w-8 rounded-full" />
       <span class="app-sidebar__profile-copy">
         <strong>{{ userName }}</strong>
         <span>{{ schoolLabel }}</span>
@@ -77,6 +77,9 @@ import AppIcon from '@/components/ui/AppIcon.vue';
 import BrandMark from '@/components/ui/BrandMark.vue';
 import UserAvatar from '@/components/ui/UserAvatar.vue';
 import type { AppNavigationItem } from './types';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 defineProps<{
   expanded: boolean;

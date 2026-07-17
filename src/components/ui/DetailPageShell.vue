@@ -3,14 +3,14 @@
     <article
       v-if="isDesktopViewport"
       class="panel hidden min-h-[calc(100dvh-2.5rem)] flex-col overflow-visible md:flex"
-      :aria-label="detailsLabel"
+      :aria-label="t(detailsLabel)"
     >
       <header class="flex items-start gap-3 px-5 py-4">
         <button
           type="button"
           class="button-icon shrink-0"
-          :aria-label="backLabel"
-          :title="backLabel"
+          :aria-label="t(backLabel)"
+          :title="t(backLabel)"
           @click="emit('back')"
         >
           <AppIcon name="chevron-left" :size="5" />
@@ -36,7 +36,7 @@
         <aside
           v-if="showComments"
           class="flex min-h-0 min-w-0 flex-col border-l border-ink-100/70 px-5 py-5 dark:border-ink-800/70"
-          :aria-label="commentsLabel"
+          :aria-label="t(commentsLabel)"
         >
           <slot name="comments" :compact-header="false" />
         </aside>
@@ -46,15 +46,15 @@
     <article
       v-else
       class="panel flex h-[calc(100dvh-var(--app-header-height)-var(--app-bottom-nav-height)-env(safe-area-inset-top)-1rem)] min-h-0 flex-col overflow-hidden md:hidden"
-      :aria-label="detailsLabel"
+      :aria-label="t(detailsLabel)"
     >
       <header class="flex shrink-0 items-start gap-3 px-4 py-3.5">
         <button
           v-if="showMobileBackButton"
           type="button"
           class="button-icon shrink-0"
-          :aria-label="backLabel"
-          :title="backLabel"
+          :aria-label="t(backLabel)"
+          :title="t(backLabel)"
           @click="emit('back')"
         >
           <AppIcon name="chevron-left" :size="5" />
@@ -88,7 +88,7 @@
           v-else
           key="comments"
           class="min-h-0 flex-1 border-t border-ink-100/70 px-4 py-4 dark:border-ink-800/70"
-          :aria-label="commentsLabel"
+          :aria-label="t(commentsLabel)"
         >
           <slot name="comments" :compact-header="true" />
         </div>
@@ -101,6 +101,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
+import { useI18n } from '@/i18n';
 
 type DetailPageTab = 'details' | 'comments';
 
@@ -113,8 +114,8 @@ const props = withDefaults(defineProps<{
   showMobileBackButton?: boolean;
   showComments?: boolean;
 }>(), {
-  backLabel: '返回',
-  commentsLabel: '討論留言',
+  backLabel: 'text.11d024154013',
+  commentsLabel: 'text.2d4dc6e81d39',
   commentCount: 0,
   initialTab: 'details',
   showMobileBackButton: true,
@@ -124,6 +125,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   back: [];
 }>();
+const { t } = useI18n();
 
 defineSlots<{
   actions(props: { compact: boolean }): unknown;
@@ -139,12 +141,12 @@ const isDesktopViewport = ref(
 let desktopMediaQuery: MediaQueryList | null = null;
 
 const tabOptions = computed(() => [
-  { value: 'details' as const, label: props.detailsLabel, icon: 'list' as const, title: `查看${props.detailsLabel}` },
+  { value: 'details' as const, label: t(props.detailsLabel), icon: 'list' as const, title: t('text.55f86a1a1fe8', { label: t(props.detailsLabel) }) },
   {
     value: 'comments' as const,
-    label: `${props.commentCount} 則留言`,
+    label: t('text.548d04eaecd6', { count: props.commentCount }),
     icon: 'comment' as const,
-    title: `查看${props.commentsLabel}，共 ${props.commentCount} 則`,
+    title: t('text.bb7c7224ee21', { label: t(props.commentsLabel), count: props.commentCount }),
   },
 ]);
 

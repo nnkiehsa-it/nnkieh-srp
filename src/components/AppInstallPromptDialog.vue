@@ -41,8 +41,8 @@
 
         <div class="mt-6">
           <div class="flex items-center justify-between gap-3">
-            <h3 class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">安裝步驟</h3>
-            <span class="tag">{{ content.steps.length }} 個步驟</span>
+            <h3 class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t('app.install.steps') }}</h3>
+            <span class="tag">{{ t('app.install.stepCount', { count: content.steps.length }) }}</span>
           </div>
 
           <ol v-if="content.steps.length" class="mt-4 space-y-3">
@@ -63,7 +63,7 @@
 
           <div v-if="content.notes.length || content.actionTitle" class="mt-6 space-y-4">
             <div v-if="content.notes.length">
-              <h4 class="text-sm font-semibold text-ink-900 dark:text-ink-100">操作提醒</h4>
+              <h4 class="text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('app.install.notes') }}</h4>
               <ul class="mt-3 space-y-2">
                 <li
                   v-for="note in content.notes"
@@ -113,10 +113,10 @@
     <ConfirmDialog
       :danger="false"
       :open="isSkipConfirmOpen"
-      title="確定要先跳過嗎？"
-      message="你確定要跳過這個步驟嗎？之後仍然可以再開啟安裝提示。"
-      cancel-label="繼續查看"
-      confirm-label="確認跳過"
+      title="text.61b315a25ec4"
+      message="text.297ed5c9ccb7"
+      cancel-label="text.00554cd5f39f"
+      confirm-label="text.7954e3c3e2bf"
       @cancel="isSkipConfirmOpen = false"
       @confirm="confirmSkip"
     />
@@ -133,6 +133,7 @@ import { useDialogFocus } from '@/composables/useDialogFocus';
 import type { AppInstallPromptMode } from '@/composables/useAppInstallPrompt';
 import type { InAppBrowserName } from '@/lib/in-app-browser';
 import type { AppInstallPromptReason, IosBrowserGuide } from '@/lib/pwa-install';
+import { useI18n } from '@/i18n';
 
 type InstallStep = {
   description?: string;
@@ -169,106 +170,131 @@ const emit = defineEmits<{
   copyUrl: [];
   install: [];
 }>();
+const { t } = useI18n();
 
-const content = computed<InstallContent>(() => {
+const contentKeys = computed<InstallContent>(() => {
   const isNotificationInstall = props.reason === 'notifications';
   const installDescription = isNotificationInstall
-    ? '先加入主畫面，再從主畫面開啟平台，通知功能才會穩定運作。'
-    : '加入主畫面後，可以像一般 App 一樣開啟，也能減少瀏覽器工具列干擾。';
+    ? 'text.20d9d35cb7ac'
+    : 'text.d77c1cedb965';
 
   if (props.mode === 'in-app-browser') {
     return {
-      actionDescription: '先切到系統瀏覽器，再依該瀏覽器的安裝流程加入主畫面。',
-      actionTitle: '先切換開啟方式',
-      badge: isNotificationInstall ? '通知需要主畫面模式' : '建議切換瀏覽器',
-      description: isNotificationInstall
-        ? `目前正在 ${props.browserName ?? 'App'} 的內建瀏覽器中開啟。請先用系統瀏覽器開啟並加入主畫面，再從主畫面開啟通知功能。`
-        : `目前正在 ${props.browserName ?? 'App'} 的內建瀏覽器中開啟。部分功能可能無法正常運作，建議在選單內選擇「以瀏覽器開啟」。`,
+      actionDescription: 'text.b834b0e59a04',
+      actionTitle: 'text.354bb637b5c9',
+      badge: isNotificationInstall ? 'text.79d47bb75ab4' : 'text.1c3288f51d68',
+      description: t(
+        isNotificationInstall
+          ? 'app.install.inAppBrowser.notifications'
+          : 'app.install.inAppBrowser.description',
+        { browser: props.browserName ?? 'App' },
+      ),
       icon: 'warning',
       iconToneClass: 'text-warning',
-      notes: ['若要開啟通知，需先完成安裝並從主畫面重新開啟平台。'],
+      notes: ['text.07b6916da009'],
       primaryLabel: null,
-      secondaryBadge: props.browserName ? `${props.browserName} 內建瀏覽器` : '',
-      secondaryLabel: '稍後再說',
+      secondaryBadge: props.browserName
+        ? t('app.install.inAppBrowser.badge', { browser: props.browserName })
+        : '',
+      secondaryLabel: 'text.57c83de9548c',
       steps: [
-        { title: '點擊選單按鈕', description: '點選右上角或右下角的選單圖示（通常是三個點「•••」、分享或羅盤圖示）。' },
-        { title: '選擇「以瀏覽器開啟」', description: '在選單中點選「在 Safari 中開啟」、「在預設瀏覽器中開啟」或「以其他應用程式開啟」。' },
-        { title: '依步驟加入主畫面', description: '切換到系統瀏覽器後，即可依引導步驟將此平台加入主畫面。' },
+        { title: 'text.ba60b70d8051', description: 'text.84f2cae93218' },
+        { title: 'text.16404569d75c', description: 'text.b39005ebdaf8' },
+        { title: 'text.e458ba87b679', description: 'text.de1df3d416de' },
       ],
-      title: isNotificationInstall ? '改用系統瀏覽器安裝 App' : '建議改用系統瀏覽器',
+      title: isNotificationInstall ? 'text.eb8a295f579b' : 'text.b501d337f4e6',
     };
   }
 
   if (props.mode === 'ios-open-safari') {
     const browserName = props.iosBrowserGuide === 'Google' ? 'Google App' : 'Chrome';
     return {
-      actionDescription: '先把目前網址帶到 Safari，之後就能依安裝流程完成設定。',
-      actionTitle: '先把網址移到 Safari',
-      badge: '需改用 Safari',
-      description: isNotificationInstall
-        ? `${browserName} 無法直接完成安裝。請先用 Safari 開啟並安裝為 App，才能使用通知功能。`
-        : `${browserName} 無法直接完成安裝。請先改用 Safari 開啟。`,
+      actionDescription: 'text.de6eee25f7e2',
+      actionTitle: 'text.7b7b0cb15287',
+      badge: 'text.b38601ee551f',
+      description: t(
+        isNotificationInstall
+          ? 'app.install.safari.notifications'
+          : 'app.install.safari.description',
+        { browser: browserName },
+      ),
       icon: 'share',
       iconToneClass: 'text-secondary',
-      notes: ['Safari 開啟後，若要使用通知，請記得從主畫面再次開啟平台。'],
-      primaryLabel: props.installing ? '複製中...' : '複製網址',
+      notes: ['text.d6a0d263c77e'],
+      primaryLabel: props.installing ? 'text.cd854030ad1b' : 'text.d7a8821e0c8f',
       secondaryBadge: browserName,
-      secondaryLabel: '先略過',
+      secondaryLabel: 'text.64674bd6a67e',
       steps: [
-        { title: '按下「複製網址」', description: '先把目前這個頁面的網址存到剪貼簿。' },
-        { title: '改到 Safari 開啟', description: '貼上網址並進入同一個頁面。' },
-        { title: '長按網址列', description: '在 Safari 內長按上方網址列，叫出相關操作。' },
-        { title: '選擇分享按鈕', description: '從跳出的操作中選擇分享。' },
-        { title: '安裝為 App', description: '往下滑並選擇「加入主畫面」，再依畫面完成新增。' },
+        { title: 'text.b2b37ed7ecdf', description: 'text.8cc2d46782e5' },
+        { title: 'text.6b5473be7d4d', description: 'text.2ac6c4b9cc77' },
+        { title: 'text.57a47ce871d4', description: 'text.ae0247dc6bff' },
+        { title: 'text.707799e43b73', description: 'text.6df11c376765' },
+        { title: 'text.c4cf82296d21', description: 'text.255763edbfe4' },
       ],
-      title: '請改用 Safari 開啟',
+      title: 'text.4b555dc3c04c',
     };
   }
 
   if (props.mode === 'ios-install') {
     return {
       actionDescription: '',
-      actionTitle: '照著步驟操作',
-      badge: isNotificationInstall ? '先安裝才能開通知' : 'Safari 安裝流程',
+      actionTitle: 'text.d84bc2920ece',
+      badge: isNotificationInstall ? 'text.3b238ddf17b4' : 'text.3d3759936956',
       description: '',
       icon: 'share',
       iconToneClass: 'text-primary',
-      notes: [installDescription, '如果看不到「加入主畫面」，可先到分享選單底部編輯動作後再加入。', '安裝完成後請從桌面圖示重新進入平台。'],
+      notes: [installDescription, 'text.379319979a6e', 'text.1539dee4c25b'],
       primaryLabel: null,
       secondaryBadge: 'Safari',
-      secondaryLabel: '稍後再說',
+      secondaryLabel: 'text.57c83de9548c',
       steps: [
-        { title: '長按網址列', description: '先在 Safari 上方長按目前頁面的網址列。' },
-        { title: '選擇分享按鈕', description: '從出現的操作中選擇分享。' },
-        { title: '安裝為 App', description: '往下滑動分享選單，找到並點選「加入主畫面」。' },
-        { title: '確認 App 開啟方式', description: '若有看到「作為 Web App 打開」，請保持開啟。' },
-        { title: '按下「新增」完成安裝', description: '回到主畫面後，請從新的平台圖示重新開啟。' },
+        { title: 'text.57a47ce871d4', description: 'text.e84b8ce39b40' },
+        { title: 'text.707799e43b73', description: 'text.ef19fca190ce' },
+        { title: 'text.c4cf82296d21', description: 'text.410fe0aa977c' },
+        { title: 'text.a9d6c6f07937', description: 'text.c5c199738e29' },
+        { title: 'text.56c83be3b07a', description: 'text.6c0f864746e8' },
       ],
-      title: isNotificationInstall ? '安裝為 App 以使用通知' : '安裝為 App',
+      title: isNotificationInstall ? 'text.326ed05c2fc2' : 'text.c4cf82296d21',
     };
   }
 
   return {
     actionDescription: '',
-    actionTitle: props.canInstallNatively ? '系統會接手安裝' : '',
-    badge: isNotificationInstall ? '安裝後再開通知' : 'Android 主畫面安裝',
+    actionTitle: props.canInstallNatively ? 'text.6593450d3877' : '',
+    badge: isNotificationInstall ? 'text.81787184f4ac' : 'text.725b6a130e3a',
     description: installDescription,
     icon: 'download',
     iconToneClass: 'text-primary',
     notes: props.canInstallNatively
-      ? ['如果這次先略過，之後仍可再從通知或其他入口重新叫出安裝提示。']
-      : ['如果沒有跳出系統安裝視窗，也可以從瀏覽器選單尋找「安裝 App」或「加入主畫面」。'],
-    primaryLabel: props.canInstallNatively ? (props.installing ? '開啟中' : '安裝 App') : null,
-    secondaryBadge: props.canInstallNatively ? '系統安裝視窗' : '瀏覽器選單',
-    secondaryLabel: '先略過',
+      ? ['text.93414f31e7c1']
+      : ['text.65bc3f7d476d'],
+    primaryLabel: props.canInstallNatively ? (props.installing ? 'text.b05e9209ee8a' : 'text.ff3642105d92') : null,
+    secondaryBadge: props.canInstallNatively ? 'text.f0822c8d61e1' : 'text.35819075a002',
+    secondaryLabel: 'text.64674bd6a67e',
     steps: [
-      { title: props.canInstallNatively ? '按下「安裝 App」' : '開啟瀏覽器選單', description: props.canInstallNatively ? '系統會開啟 Android 原生安裝提示。' : '從目前瀏覽器的選單中尋找安裝選項。' },
-      { title: '安裝為 App', description: props.canInstallNatively ? '依系統對話框完成安裝或新增捷徑。' : '選擇「安裝 App」或「加入主畫面」完成新增。' },
-      { title: '從主畫面開啟平台', description: isNotificationInstall ? '重新開啟後再回到通知設定。' : '之後可像一般 App 一樣直接進入。' },
+      { title: props.canInstallNatively ? 'text.10284a5d2048' : 'text.3220cfd40b06', description: props.canInstallNatively ? 'text.ac576dcb8fc7' : 'text.76c6f3461a22' },
+      { title: 'text.c4cf82296d21', description: props.canInstallNatively ? 'text.e9fbec8fabde' : 'text.6a1167250b01' },
+      { title: 'text.1491307043e4', description: isNotificationInstall ? 'text.4615d1a39bfb' : 'text.b743ffecf337' },
     ],
-    title: isNotificationInstall ? '安裝為 App 以使用通知' : '安裝 App',
+    title: isNotificationInstall ? 'text.326ed05c2fc2' : 'text.ff3642105d92',
   };
 });
+
+const content = computed<InstallContent>(() => ({
+  ...contentKeys.value,
+  actionDescription: t(contentKeys.value.actionDescription),
+  actionTitle: t(contentKeys.value.actionTitle),
+  badge: t(contentKeys.value.badge),
+  description: t(contentKeys.value.description),
+  notes: contentKeys.value.notes.map((note) => t(note)),
+  primaryLabel: contentKeys.value.primaryLabel ? t(contentKeys.value.primaryLabel) : null,
+  secondaryLabel: t(contentKeys.value.secondaryLabel),
+  steps: contentKeys.value.steps.map((step) => ({
+    description: step.description ? t(step.description) : undefined,
+    title: t(step.title),
+  })),
+  title: t(contentKeys.value.title),
+}));
 
 const primaryIconProps = computed(() => {
   if (props.mode === 'ios-open-safari' || props.mode === 'ios-install') return { name: 'share' as const, size: 4 };

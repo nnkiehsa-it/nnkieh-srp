@@ -104,17 +104,6 @@
     @apply border-ink-900 bg-ink-900 text-white hover:bg-ink-800 hover:text-white dark:border-ink-100 dark:bg-ink-100 dark:text-ink-900 dark:hover:bg-ink-200 dark:hover:text-ink-900;
   }
 
-  .menu-item {
-    @apply flex w-full items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-ink-600 hover:bg-ink-100/80 dark:text-ink-300 dark:hover:bg-ink-800/80;
-    min-height: 2.5rem;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .popover-panel {
-      box-shadow: var(--shadow-floating);
-    }
-  }
-
   .setting-switch:active:not([aria-disabled='true']) {
     filter: brightness(0.97) saturate(0.98);
     transform: scale(0.985);
@@ -146,11 +135,6 @@
     .issue-card:active:not(:has(button:active)) {
       background-color: rgb(var(--color-secondary-container) / 0.9);
     }
-  }
-
-  .menu-item-danger {
-    @apply hover:bg-error-container/40;
-    color: rgb(var(--color-danger));
   }
 
   .field {
@@ -225,7 +209,6 @@
     .button-icon:hover:not(:disabled),
     .button-icon-pill:hover:not(:disabled),
     .button-toolbar:hover:not(:disabled),
-    .menu-item:hover:not(:disabled),
     .content-trigger:hover:not(:disabled),
     .interactive-surface:hover:not(:disabled) {
       box-shadow: var(--shadow-card);

@@ -48,7 +48,7 @@ function assertBoolean(value, message) {
   return value;
 }
 
-function validateCategoryConfig(id, label, rawCategory) {
+function validateCategoryConfig(id, label, labelKey, rawCategory) {
   if (!ID_PATTERN.test(id)) {
     throw new Error(`分類 id "${id}" 只能使用小寫英數與連字號。`);
   }
@@ -100,6 +100,7 @@ function validateCategoryConfig(id, label, rawCategory) {
   return {
     id,
     label,
+    labelKey,
     readAccess,
     authorStorage,
     support: {
@@ -136,13 +137,14 @@ export async function readIssueCategoryConfig(projectRoot) {
     const category = assertRecord(entry, `第 ${index + 1} 個分類必須是物件。`);
     const id = assertString(category.id, `第 ${index + 1} 個分類缺少 id。`);
     const label = assertString(category.label, `第 ${index + 1} 個分類缺少 label。`);
+    const labelKey = assertString(category.labelKey, `第 ${index + 1} 個分類缺少 labelKey。`);
 
     if (seenIds.has(id)) {
       throw new Error(`分類 id "${id}" 重複。`);
     }
     seenIds.add(id);
 
-    return validateCategoryConfig(id, label, category);
+    return validateCategoryConfig(id, label, labelKey, category);
   });
 
   return { categories };
@@ -164,6 +166,7 @@ function toTsLiteral(value) {
   return JSON.stringify(value, null, 2)
     .replace(/"id":/gu, 'id:')
     .replace(/"label":/gu, 'label:')
+    .replace(/"labelKey":/gu, 'labelKey:')
     .replace(/"readAccess":/gu, 'readAccess:')
     .replace(/"authorStorage":/gu, 'authorStorage:')
     .replace(/"support":/gu, 'support:')
@@ -195,6 +198,7 @@ export type IssueCommentsEnabledWhen = 'readable' | 'public';
 export interface IssueCategoryConfig {
   id: string;
   label: string;
+  labelKey: string;
   readAccess: IssueReadAccess;
   authorStorage: IssueAuthorStorage;
   support: {
@@ -224,6 +228,9 @@ export const DEFAULT_ISSUE_CATEGORY: IssueCategory = ISSUE_CATEGORIES[0].id;
 export const ISSUE_CATEGORY_IDS = ISSUE_CATEGORIES.map((category) => category.id) as IssueCategory[];
 export const ISSUE_CATEGORY_LABELS = Object.fromEntries(
   ISSUE_CATEGORIES.map((category) => [category.id, category.label]),
+) as Record<IssueCategory, string>;
+export const ISSUE_CATEGORY_LABEL_KEYS = Object.fromEntries(
+  ISSUE_CATEGORIES.map((category) => [category.id, category.labelKey]),
 ) as Record<IssueCategory, string>;
 
 const ISSUE_CATEGORY_BY_ID = ISSUE_CATEGORIES.reduce((lookup, category) => {

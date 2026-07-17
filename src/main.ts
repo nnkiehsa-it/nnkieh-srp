@@ -7,6 +7,7 @@ import { initializeAppUpdate } from './composables/useAppUpdate';
 import { initializeSession } from './composables/useSession';
 import { initializeAppResume } from './composables/useAppResume';
 import { tryRedirectToExternalBrowser } from './lib/in-app-browser';
+import { initializeI18n } from './i18n';
 
 async function bootstrap() {
   if (typeof window !== 'undefined') {
@@ -16,6 +17,7 @@ async function bootstrap() {
   }
 
   initializeAppResume();
+  initializeI18n();
   void initializeAppUpdate();
   initializeSession();
 

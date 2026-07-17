@@ -11,8 +11,8 @@
     @click="$emit('select')"
   >
     <span class="min-w-0">
-      <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ label }}</span>
-      <span v-if="description" class="mt-0.5 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ description }}</span>
+      <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t(label) }}</span>
+      <span v-if="description" class="mt-0.5 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ t(description) }}</span>
     </span>
     <SelectionMark :selected="selected" />
   </button>
@@ -20,6 +20,9 @@
 
 <script setup lang="ts">
 import SelectionMark from '@/components/ui/SelectionMark.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
   description?: string;

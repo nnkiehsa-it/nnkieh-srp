@@ -4,8 +4,8 @@
       type="button"
       :class="[supportClass, compact ? '!h-8 !px-2.5 !gap-1 text-xs' : '']"
       :disabled="busy || supportClosed || authorFixed"
-      :title="authorFixed ? '作者已自動附議' : supportClosed ? (statusLabel ? `此提案目前為「${statusLabel}」狀態，不開放附議` : '附議已截止') : optimisticSupported ? '取消附議' : '進行附議'"
-      :aria-label="authorFixed ? '作者已自動附議' : optimisticSupported ? '取消附議' : '進行附議'"
+      :title="supportTitle"
+      :aria-label="t(authorFixed ? 'text.7d3df9c62d93' : optimisticSupported ? 'text.b84607828623' : 'text.cae6b4c3adbf')"
       @click="toggle"
     >
       <AppIcon name="thumbs-up" :size="compact ? 4 : 5" />
@@ -22,6 +22,7 @@
 import { computed, toRef } from 'vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { useVoteSupport } from '@/composables/useVoteSupport';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   issueId: string;
@@ -37,6 +38,14 @@ const emit = defineEmits<{
   contentUnavailable: [issueId: string];
   supported: [payload: { supported: boolean; supportCount: number }];
 }>();
+const { t } = useI18n();
+const supportTitle = computed(() => {
+  if (props.authorFixed) return t('text.7d3df9c62d93');
+  if (!props.supportClosed) return t(props.currentUserSupported ? 'text.b84607828623' : 'text.cae6b4c3adbf');
+  return props.statusLabel
+    ? t('issue.support.closedStatus', { status: props.statusLabel })
+    : t('text.411aa0778a48');
+});
 
 const supportClosed = computed(() => props.supportClosed);
 const {

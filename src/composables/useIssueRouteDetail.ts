@@ -141,7 +141,7 @@ export function useIssueRouteDetail(
     if (currentRequestId !== requestId) return;
     routeIssue.value = null;
     routeIssueLoading.value = false;
-    show('此頁面不存在或無法查看', 'error');
+    show('text.4df61e2e64ef', 'error');
     await router.replace(issueListRoute());
   }
 

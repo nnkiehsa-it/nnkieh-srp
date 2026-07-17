@@ -33,7 +33,7 @@ async function checkAppVersion() {
 
   try {
     const response = await safeFetch('/version.json', { cache: 'no-store' }, {
-      label: '版本檢查',
+      label: 'text.4fb1eb42d186',
       timeoutMs: APP_RELOAD_TIMEOUT_MS,
     });
 
@@ -67,14 +67,14 @@ async function updateServiceWorker(): Promise<ServiceWorkerRegistration | null> 
         type: 'module',
         updateViaCache: 'none',
       }),
-      { label: 'Service Worker 註冊', timeoutMs: APP_RELOAD_TIMEOUT_MS },
+      { label: 'text.9b768899f2e9', timeoutMs: APP_RELOAD_TIMEOUT_MS },
     );
     await withRequestTimeout(() => navigator.serviceWorker.ready, {
-      label: 'Service Worker 啟動',
+      label: 'text.cc26ded5c414',
       timeoutMs: APP_RELOAD_TIMEOUT_MS,
     });
     await withRequestTimeout(() => registration.update(), {
-      label: 'Service Worker 更新',
+      label: 'text.f94e0fb2f5c5',
       timeoutMs: APP_RELOAD_TIMEOUT_MS,
     });
     return registration;
@@ -116,7 +116,7 @@ async function prepareServiceWorkerForReload() {
       if (!registration || signal.aborted) return;
       await waitForServiceWorkerTakeover(registration, signal);
     }, {
-      label: '新版 App 準備',
+      label: 'text.22ab1223ce9f',
       timeoutMs: SERVICE_WORKER_PREPARE_TIMEOUT_MS,
     });
   } catch {

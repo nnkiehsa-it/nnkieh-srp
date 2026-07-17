@@ -2,6 +2,7 @@ import { invokeBackendAction } from '@/services/backend-action';
 import { createRequestId } from '@/lib/request-id';
 import { LONG_REQUEST_TIMEOUT_MS, READ_REQUEST_TIMEOUT_MS, withRequestTimeout } from '@/lib/request';
 import { toReadableBackendError } from './issues-core';
+import { t } from '@/i18n';
 
 interface ResolvedUploadCacheEntry {
   expiresAtMs: number;
@@ -59,7 +60,7 @@ function toReadableUploadError(error: unknown) {
   const message = error instanceof Error ? error.message : '';
   const uploadMessage = message.replace(/^FirebaseError:\s*/u, '').trim();
 
-  if (uploadMessage && /圖片|WebP|JPEG|UPLOAD-/u.test(uploadMessage)) {
+  if (uploadMessage && /\u5716\u7247|WebP|JPEG|UPLOAD-/u.test(uploadMessage)) {
     return new Error(uploadMessage);
   }
 
@@ -77,17 +78,17 @@ async function createCloudinaryUploadError(response: Response) {
 
   if (response.status === 401) {
     if (/stale|expired|timestamp.{0,40}(?:too old|out of range)|(?:too old|out of range).{0,40}timestamp/i.test(providerMessage)) {
-      return new Error('圖片上傳驗證已逾時，請重新選擇圖片後再試。');
+      return new Error('text.7b6e43892c97');
     }
-    return new Error('圖片服務驗證失敗，請聯絡管理員檢查 Cloudinary 金鑰設定。');
+    return new Error('text.c27ce4f743dc');
   }
   if (response.status === 413 || /file size|too large/i.test(providerMessage)) {
-    return new Error('圖片大小超過上傳限制。');
+    return new Error('text.bf54849c23e3');
   }
   if (response.status === 400 && /format|allowed_formats/i.test(providerMessage)) {
-    return new Error('圖片格式不受支援，請重新選擇圖片。');
+    return new Error('text.a084c43171f6');
   }
-  return new Error(`圖片上傳失敗（${response.status}），請稍後再試。`);
+  return new Error(t('upload.httpFailed', { status: response.status }));
 }
 
 async function uploadToCloudinary(file: File, session: ImageUploadSession) {
@@ -111,13 +112,13 @@ async function uploadToCloudinary(file: File, session: ImageUploadSession) {
     );
     if (!response.ok) throw await createCloudinaryUploadError(response);
     return await response.json() as CloudinaryUploadResponse;
-  }, { label: '圖片上傳', timeoutMs: LONG_REQUEST_TIMEOUT_MS });
+  }, { label: 'text.d90d2f7e9ed8', timeoutMs: LONG_REQUEST_TIMEOUT_MS });
 }
 
 export async function createImageUploadPolicies(inputs: ImageUploadInput[]): Promise<ImageUploadPolicy[]> {
   if (inputs.length === 0) return [];
   if (inputs.some(({ file }) => file.type !== 'image/webp')) {
-    throw new Error('圖片必須轉換為 WebP 後才能上傳。');
+    throw new Error('text.62c6e4c3e41a');
   }
 
   try {
@@ -134,7 +135,7 @@ export async function createImageUploadPolicies(inputs: ImageUploadInput[]): Pro
       })),
       requestId: createRequestId(),
     });
-    if (sessions.length !== inputs.length) throw new Error('圖片上傳工作建立不完整。');
+    if (sessions.length !== inputs.length) throw new Error('text.a1c1f4fa28fe');
     const uploadResponses = await Promise.all(
       inputs.map(({ file }, index) => uploadToCloudinary(file, sessions[index]!)),
     );

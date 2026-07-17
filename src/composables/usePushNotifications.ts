@@ -57,7 +57,7 @@ function browserPermission(): PushNotificationPermission {
 }
 
 function readableError(value: unknown) {
-  return value instanceof Error ? value.message : '推播通知暫時無法設定，請稍後再試。';
+  return value instanceof Error ? value.message : 'text.c6cbaf12a4b2';
 }
 
 async function resolveMessaging() {
@@ -80,12 +80,12 @@ async function resolveMessaging() {
 
 async function waitForPushServiceWorker() {
   if (!('serviceWorker' in navigator)) {
-    throw new Error('此瀏覽器或裝置無法接收推播通知。');
+    throw new Error('text.b5a8ac597903');
   }
 
   return withRequestTimeout(
     () => navigator.serviceWorker.ready,
-    { label: '推播服務啟動', timeoutMs: PUSH_SERVICE_TIMEOUT_MS },
+    { label: 'text.f5778658da2a', timeoutMs: PUSH_SERVICE_TIMEOUT_MS },
   );
 }
 
@@ -96,14 +96,14 @@ async function getPushToken(bundle: NonNullable<Awaited<ReturnType<typeof loadFi
       vapidKey: firebaseVapidKey,
       serviceWorkerRegistration: registration,
     }),
-    { label: '推播通知設定', timeoutMs: PUSH_TOKEN_TIMEOUT_MS },
+    { label: 'text.a703bb26a0be', timeoutMs: PUSH_TOKEN_TIMEOUT_MS },
   );
 }
 
 async function deletePushToken(bundle: NonNullable<Awaited<ReturnType<typeof loadFirebaseMessaging>>>) {
   return withRequestTimeout(
     () => bundle.sdk.deleteToken(bundle.messaging),
-    { label: '關閉推播通知', timeoutMs: PUSH_TOKEN_TIMEOUT_MS },
+    { label: 'text.f64df8471d40', timeoutMs: PUSH_TOKEN_TIMEOUT_MS },
   );
 }
 
@@ -207,7 +207,7 @@ export function usePushNotifications() {
       ) {
         const messaging = await resolveMessaging();
         currentToken = messaging ? await getPushToken(messaging) : '';
-        if (!currentToken) throw new Error('無法取得此裝置的推播識別，請稍後再試。');
+        if (!currentToken) throw new Error('text.72be855806e9');
         const registrationKey = `${user.value.uid}:${currentToken}`;
         if (synchronizedRegistrationKey !== registrationKey) {
           const synchronizedPreference = await registerCurrentPushToken(currentToken);
@@ -237,12 +237,12 @@ export function usePushNotifications() {
 
   async function enablePushNotifications() {
     if (!user.value) {
-      error.value = '請先登入後再開啟推播通知。';
+      error.value = 'text.b514a4510637';
       return false;
     }
 
     if (requiresPwaInstall.value) {
-      error.value = '請先將平台加入主畫面，再從主畫面開啟通知功能。';
+      error.value = 'text.04d3deec7d5f';
       requestAppInstallPrompt('notifications');
       return false;
     }
@@ -269,7 +269,7 @@ export function usePushNotifications() {
       currentToken = await getPushToken(messaging);
 
       if (!currentToken) {
-        throw new Error('無法取得此裝置的推播識別，請稍後再試。');
+        throw new Error('text.72be855806e9');
       }
 
       const preference = await registerCurrentPushToken(currentToken);
@@ -280,7 +280,7 @@ export function usePushNotifications() {
 
       if (!foregroundUnsubscribe) {
         foregroundUnsubscribe = messaging.sdk.onMessage(messaging.messaging, (payload) => {
-          const title = payload.data?.title ?? '收到新通知';
+          const title = payload.data?.title ?? 'text.9be3d7800193';
           const body = payload.data?.body ?? '';
           show(body ? `${title}：${body}` : title, 'info');
         });
@@ -383,11 +383,11 @@ export function usePushNotifications() {
     requiresPwaInstall: readonly(requiresPwaInstall),
     supported: readonly(supported),
     statusLabel: computed(() => {
-      if (requiresPwaInstall.value) return '需先加入主畫面';
-      if (!supported.value) return '此裝置暫不支援推播通知';
-      if (permission.value === 'denied') return '瀏覽器已封鎖推播通知';
-      if (deviceEnabled.value) return '此裝置推播已開啟';
-      return '可開啟推播通知';
+      if (requiresPwaInstall.value) return 'text.cc4de3ad4f2e';
+      if (!supported.value) return 'text.fe95c81b47e7';
+      if (permission.value === 'denied') return 'text.d551a25323ba';
+      if (deviceEnabled.value) return 'text.2c48f8165d3f';
+      return 'text.9af9cfcce4dd';
     }),
     disablePushNotifications,
     enablePushNotifications,

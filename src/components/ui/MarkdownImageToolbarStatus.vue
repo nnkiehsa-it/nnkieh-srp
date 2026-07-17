@@ -5,7 +5,7 @@
     class="button-toolbar shrink-0"
     :disabled="disabled"
     :title="buttonTitle"
-    aria-label="插入圖片"
+    :aria-label="t('text.83bb99b177f7')"
     @click="emit('pick-image')"
   >
     <AppIcon name="image" />
@@ -17,6 +17,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import AppIcon from './AppIcon.vue';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   busyLabel: string;
@@ -30,10 +31,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   'pick-image': [];
 }>();
+const { t } = useI18n();
 
 const buttonTitle = computed(() => {
-  if (props.uploading) return '圖片處理中...';
-  if (props.imageCount >= props.maxImages) return `${props.maxImagesLabel}最多 ${props.maxImages} 張圖片`;
-  return '加入圖片';
+  if (props.uploading) return t('text.ca1d70f0ffd1');
+  if (props.imageCount >= props.maxImages) {
+    return `${t(props.maxImagesLabel)}${t('upload.imageLimit', { count: props.maxImages })}`;
+  }
+  return t('text.0e33b8155b65');
 });
 </script>

@@ -61,39 +61,39 @@ export function useIssueComposerForm(open: Ref<boolean>, options: IssueComposerF
       await discardImages();
       options.onClose();
     } catch {
-      uploadError.value = '圖片刪除失敗，請稍後再試。';
+      uploadError.value = 'text.195dfc8d76ad';
       show(uploadError.value, 'error');
     }
   }
 
   async function submit() {
     if (!user.value?.email || !user.value.displayName) {
-      error.value = '請先使用完整的校內 Google 帳號登入。';
+      error.value = 'text.14b38ee89ffc';
       show(error.value, 'error');
       return;
     }
 
     if (form.title.trim().length === 0) {
-      error.value = '請輸入提案標題。';
+      error.value = 'text.d50a13a21100';
       show(error.value, 'error');
       return;
     }
 
     if (!contentWithImages.value.trim()) {
-      error.value = '請輸入提案內容或加入圖片。';
+      error.value = 'text.cbfd309fc22a';
       show(error.value, 'error');
       return;
     }
 
     submitting.value = true;
-    const feedbackHandle = start('正在送出提案');
+    const feedbackHandle = start('text.e41fe2167793');
     let uploadedImages: Awaited<ReturnType<typeof uploadImagesAndBuildContent>>['uploadedImages'] = [];
 
     try {
-      if (imageUrls.value.length > 0) feedbackHandle.update('正在上傳圖片');
+      if (imageUrls.value.length > 0) feedbackHandle.update('text.b7cbf062d7cc');
       const uploadResult = await uploadImagesAndBuildContent();
       uploadedImages = uploadResult.uploadedImages;
-      feedbackHandle.update('正在建立提案');
+      feedbackHandle.update('text.bbd6fe26137f');
 
       const issue = await createIssue({
         title: form.title,
@@ -104,12 +104,12 @@ export function useIssueComposerForm(open: Ref<boolean>, options: IssueComposerF
       resetForm();
       options.onSubmitted(issue);
       options.onClose();
-      feedbackHandle.succeed('提案已送出');
+      feedbackHandle.succeed('text.393716462fa8');
     } catch (caught) {
       if (uploadedImages.length) {
         await deleteUploadedImages(uploadedImages);
       }
-      error.value = caught instanceof Error ? caught.message : '送出失敗，請稍後再試。';
+      error.value = caught instanceof Error ? caught.message : 'text.3ba6ae927336';
       feedbackHandle.fail(error.value);
     } finally {
       submitting.value = false;

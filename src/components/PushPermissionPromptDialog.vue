@@ -19,12 +19,12 @@
         </div>
         <div class="min-w-0 flex-1">
           <h2 id="push-permission-title" class="dialog-title !mt-0">
-            {{ mode === 'repair' ? '重新啟用推播通知' : '開啟推播通知' }}
+            {{ t(mode === 'repair' ? 'text.e97f7d648ee4' : 'text.0cf38dc7c7ff') }}
           </h2>
           <p id="push-permission-description" class="dialog-description">
-            {{ mode === 'repair'
-              ? '這台裝置的通知連結需要更新，重新啟用後才能繼續收到推播通知。'
-              : '可以在提案有留言或狀態更新時提醒你。你也可以之後在「設定」中調整通知類型。' }}
+            {{ t(mode === 'repair'
+              ? 'text.22a9593ee148'
+              : 'text.a0d6c51c7e0b') }}
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@
           :disabled="busy"
           @click="emit('dismiss')"
         >
-          稍後
+          {{ t('common.later') }}
         </button>
         <button
           type="button"
@@ -47,8 +47,8 @@
         >
           <BusyButtonContent
             :busy="busy"
-            :label="mode === 'repair' ? '重新啟用' : '開啟通知'"
-            busy-label="處理中..."
+            :label="mode === 'repair' ? 'text.689d7b18ef51' : 'text.2bb8793f7a92'"
+            busy-label="text.77009c7a9c68"
           />
         </button>
       </div>
@@ -63,12 +63,14 @@ import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
 import AppIcon from '@/components/ui/AppIcon.vue';
 import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
 import { useDialogFocus } from '@/composables/useDialogFocus';
+import { useI18n } from '@/i18n';
 
 const props = defineProps<{
   busy: boolean;
   mode?: 'permission' | 'repair';
   open: boolean;
 }>();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   dismiss: [];

@@ -40,7 +40,7 @@
     </div>
     <SettingsPanelContent
       v-else-if="user"
-      :display-name="user.displayName || '校內使用者'"
+      :display-name="user.displayName || t('text.958465555d00')"
       :display-photo-url="displayPhotoUrl"
       :email="user.email || ''"
       :uid="user.uid"
@@ -62,7 +62,7 @@
       @toggle-push="handlePushAction"
     />
     <div v-else class="flex flex-col items-center justify-center p-12 text-center">
-      <p class="text-sm text-ink-500 dark:text-ink-400 mb-4">請先登入後再進行設定</p>
+      <p class="text-sm text-ink-500 dark:text-ink-400 mb-4">{{ t('text.344bea305193') }}</p>
       <GoogleLoginButton :loading="loading" @login="login" />
     </div>
   </section>
@@ -77,6 +77,7 @@ import { usePushNotifications } from '@/composables/usePushNotifications';
 import { useAppUpdate } from '@/composables/useAppUpdate';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
+import { useI18n } from '@/i18n';
 import type { PersonalPushPreferenceKey } from '@/services/notifications';
 
 const router = useRouter();
@@ -98,44 +99,45 @@ const {
   setPersonalPushPreference,
 } = usePushNotifications();
 const { start } = useActionFeedback();
+const { t } = useI18n();
 
 const displayPhotoUrl = computed(() => customPhotoUrl.value || user.value?.photoURL || null);
 
-const personalNotificationOptions: Array<{
+const personalNotificationOptions = computed<Array<{
   description: string;
   key: PersonalPushPreferenceKey;
   label: string;
-}> = [
+}>>(() => [
   {
     key: 'comments',
-    label: '留言通知',
-    description: '提案或公告收到新留言時接收通知。',
+    label: t('text.0d9fb2056353'),
+    description: t('text.b5e810141cba'),
   },
   {
     key: 'issueUpdates',
-    label: '提案更新',
-    description: '你提出或附議的提案有重要進度時接收通知。',
+    label: t('text.36010d7aec28'),
+    description: t('text.5cacedb67db7'),
   },
   {
     key: 'facilityUpdates',
-    label: '設備更新',
-    description: '你建立或標記「我也遇到」的設備有進度時接收通知。',
+    label: t('text.56a38f584eb6'),
+    description: t('text.3f877e7570bf'),
   },
-];
+]);
 
 const pushStatusDescription = computed(() => {
-  if (!pushInitialized.value && pushLoading.value) return '正在確認這台裝置的通知狀態。';
-  if (pushRequiresPwaInstall.value) return '加入主畫面後，即可開啟推播通知。';
-  if (!pushSupported.value) return '目前的瀏覽器或裝置不支援推播通知。';
-  if (pushPermission.value === 'denied') return '通知權限已關閉，請前往系統設定重新允許。';
-  if (pushEnabled.value) return '重要動態會依照下方偏好送達這台裝置。';
-  return '開啟後，重要動態會即時送達這台裝置。';
+  if (!pushInitialized.value && pushLoading.value) return t('text.91f9a1b83c5d');
+  if (pushRequiresPwaInstall.value) return t('text.50877fdf94ee');
+  if (!pushSupported.value) return t('text.47a0cc307d22');
+  if (pushPermission.value === 'denied') return t('text.4015cf13848f');
+  if (pushEnabled.value) return t('text.a210dde44bfd');
+  return t('text.25f897cd58df');
 });
 
 const pushActionLabel = computed(() => {
-  if (pushRequiresPwaInstall.value) return '安裝到主畫面';
+  if (pushRequiresPwaInstall.value) return t('text.11cd98fc0ade');
   if (!pushSupported.value || pushPermission.value === 'denied') return '';
-  return pushEnabled.value ? '關閉推播通知' : '開啟推播通知';
+  return pushEnabled.value ? t('text.f64df8471d40') : t('text.0cf38dc7c7ff');
 });
 
 onMounted(() => {
@@ -167,24 +169,24 @@ async function switchAccount() {
 
 async function handlePushAction() {
   if (!pushActionLabel.value) return;
-  const feedbackHandle = start('正在更新推播設定');
+  const feedbackHandle = start(t('text.3d45fd9a2cc0'));
   const succeeded = pushEnabled.value
     ? await disablePushNotifications()
     : await enablePushNotifications();
   if (succeeded) {
-    feedbackHandle.succeed('推播設定已更新');
+    feedbackHandle.succeed(t('text.40cfbc9acf60'));
   } else {
-    feedbackHandle.fail(pushError.value || '推播設定更新失敗，請稍後再試');
+    feedbackHandle.fail(pushError.value || t('text.1073b7bdd0ea'));
   }
 }
 
 async function handleSetPersonalPushPreference(key: PersonalPushPreferenceKey, value: boolean) {
-  const feedbackHandle = start('正在儲存通知設定');
+  const feedbackHandle = start(t('text.7e8af57c3502'));
   const succeeded = await setPersonalPushPreference(key, value);
   if (succeeded) {
-    feedbackHandle.succeed('通知設定已儲存');
+    feedbackHandle.succeed(t('text.eb44d2e4abab'));
   } else {
-    feedbackHandle.fail(pushError.value || '通知設定儲存失敗，請稍後再試');
+    feedbackHandle.fail(pushError.value || t('text.acdf2f6d26e7'));
   }
 }
 

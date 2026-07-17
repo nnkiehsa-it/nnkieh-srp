@@ -1,7 +1,7 @@
 import {
   DEFAULT_ISSUE_CATEGORY,
   ISSUE_CATEGORIES,
-  ISSUE_CATEGORY_LABELS,
+  ISSUE_CATEGORY_LABEL_KEYS,
   getIssueResponseDeadlineDays,
   getIssueResponseDeadlineStart,
   getIssueSupportGoal,
@@ -23,14 +23,14 @@ interface CategoryOption<TValue extends string> {
 
 const ISSUE_CATEGORY_OPTIONS: CategoryOption<WritableIssueCategory>[] = ISSUE_CATEGORIES.map((category) => ({
   value: category.id,
-  label: category.label,
+  label: category.labelKey,
 }));
 
 export const ISSUE_FILTER_OPTIONS: CategoryOption<IssueFilter>[] = [...ISSUE_CATEGORY_OPTIONS];
 
 const ISSUE_ROUTE_FILTER_OPTIONS: CategoryOption<IssueRouteFilter>[] = [
   ...ISSUE_FILTER_OPTIONS,
-  { value: 'my-proposals', label: '我的提案' },
+  { value: 'my-proposals', label: 'text.16441dd78ebf' },
 ];
 
 const ISSUE_ROUTE_FILTER_VALUES = ISSUE_ROUTE_FILTER_OPTIONS.map((option) => option.value);
@@ -48,7 +48,7 @@ export function normalizeIssueRouteFilterParam(param: unknown): IssueRouteFilter
 
 export {
   DEFAULT_ISSUE_CATEGORY,
-  ISSUE_CATEGORY_LABELS,
+  ISSUE_CATEGORY_LABEL_KEYS as ISSUE_CATEGORY_LABELS,
   getIssueResponseDeadlineDays,
   getIssueResponseDeadlineStart,
   getIssueSupportGoal,

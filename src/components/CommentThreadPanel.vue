@@ -7,12 +7,12 @@
       <div class="flex min-w-0 items-center gap-2">
         <AppIcon name="comment" class="shrink-0 text-ink-500" />
         <h4 class="truncate whitespace-nowrap text-base font-semibold text-ink-900 dark:text-ink-100">
-          討論留言
+          {{ t('comments.title') }}
         </h4>
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <span class="tag rounded-full border-none bg-ink-100 px-2.5 py-0.5 text-xs font-semibold dark:bg-ink-800/80">
-          {{ comments.length }} 則
+          {{ t('comments.count', { count: comments.length }) }}
         </span>
       </div>
     </div>
@@ -26,18 +26,18 @@
       <EmptyStatePanel
         v-else-if="error"
         class="!px-3 !py-7"
-        title="留言載入失敗"
+        title="text.0f756ed2bcdc"
         :description="error"
         icon="warning"
         tone="danger"
-        action-label="重新整理"
+        action-label="text.5387b55bb903"
         @action="onRetry"
       />
 
       <EmptyStatePanel
         v-else-if="loaded && comments.length === 0"
         class="!px-3 !py-7"
-        title="目前尚無留言"
+        title="text.16d63bb860b6"
         icon="comment"
       />
 
@@ -88,9 +88,9 @@
 
     <ConfirmDialog
       :open="Boolean(commentPendingDelete)"
-      title="確定要刪除這則留言嗎？"
-      message="刪除後這則留言將無法復原。"
-      confirm-label="確認刪除"
+      title="text.5d74c06324e9"
+      message="text.a37bdf3c45ec"
+      confirm-label="text.1d63b95811eb"
       :busy="Boolean(commentPendingDelete) && deletingId === commentPendingDelete"
       @cancel="closeDeleteDialog"
       @confirm="confirmDeleteComment"
@@ -110,6 +110,7 @@ import SkeletonCommentList from '@/components/ui/SkeletonCommentList.vue';
 import { useMinimumLoading } from '@/composables/useMinimumLoading';
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 import type { DiscussionCommentRecord } from '@/types';
+import { useI18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   canDeleteComment: (comment: DiscussionCommentRecord) => boolean;
@@ -135,7 +136,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   canCompose: true,
   compactHeader: false,
-  disabledComposerLabel: '目前不開放留言',
+  disabledComposerLabel: 'text.7edc07b76e30',
   focusCommentId: '',
   hasMore: false,
   loadingMore: false,
@@ -144,6 +145,7 @@ const props = withDefaults(defineProps<{
 });
 
 const replyingToCommentId = ref('');
+const { t } = useI18n();
 const commentPendingDelete = ref('');
 const expandedReplyCommentIds = ref<Set<string>>(new Set());
 const scrollContainerRef = ref<HTMLElement | null>(null);
