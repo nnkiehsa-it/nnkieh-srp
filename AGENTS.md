@@ -3,13 +3,12 @@
 ## 工作前提
 
 0. Node.js 統一使用 24 LTS；不得為繞過依賴警告降到 Node 20 或降級主要 runtime 套件。
-1. 修改前先讀 `structure.md`，依既有模組擴充，不另起平行實作。
+1. 修改依既有模組擴充，不另起平行實作。
 2. 搜尋避開 `node_modules`、`dist`、`.vercel`、`.supabase` 等產物。
 3. 不做 in-app browser preview；以 typecheck / lint / build 驗證。
 4. 不覆蓋、不回復無關的工作樹變更。
 5. Staging 用 `git add .`，不要逐檔 add。
 6. 官方網站、完整文件與更新紀錄位於 `tavricccc/novae-website`，此 repo 只保留主程式必要入口。
-7. 資料流細節見[官方架構文件](https://tavricccc.github.io/novae-website/docs/architecture.html)。
 
 ## 架構邊界
 
@@ -67,5 +66,43 @@
 後端 action、權限、RPC、RLS、migration、worker：加跑 `npm run verify:integration`；Windows 入口會自動轉入 WSL，不手動維護第二套 Windows 流程。
 大型變更／交付前：`npm run verify:all`。
 新增 backend action 必須在 `tests/integration/` 加入有 assertion 的成功與拒絕案例；角色／scope 變更至少驗證 allowed、denied、跨 scope。`action-coverage.test.ts` 只作漏測防線，不得用無 assertion 呼叫敷衍。
-完整增補規則見[官方貢獻指南](https://tavricccc.github.io/novae-website/docs/contributing.html)。
 失敗與 warning 能修就修，否則在報告說明。
+
+<!-- code-review-graph MCP tools -->
+## MCP Tools: code-review-graph
+
+**IMPORTANT: This project has a knowledge graph. ALWAYS use the
+code-review-graph MCP tools BEFORE using Grep/Glob/Read to explore
+the codebase.** The graph is faster, cheaper (fewer tokens), and gives
+you structural context (callers, dependents, test coverage) that file
+scanning cannot.
+
+### When to use graph tools FIRST
+
+- **Exploring code**: `semantic_search_nodes` or `query_graph` instead of Grep
+- **Understanding impact**: `get_impact_radius` instead of manually tracing imports
+- **Code review**: `detect_changes` + `get_review_context` instead of reading entire files
+- **Finding relationships**: `query_graph` with callers_of/callees_of/imports_of/tests_for
+- **Architecture questions**: `get_architecture_overview` + `list_communities`
+
+Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
+
+### Key Tools
+
+| Tool | Use when |
+| ------ | ---------- |
+| `detect_changes` | Reviewing code changes — gives risk-scored analysis |
+| `get_review_context` | Need source snippets for review — token-efficient |
+| `get_impact_radius` | Understanding blast radius of a change |
+| `get_affected_flows` | Finding which execution paths are impacted |
+| `query_graph` | Tracing callers, callees, imports, tests, dependencies |
+| `semantic_search_nodes` | Finding functions/classes by name or keyword |
+| `get_architecture_overview` | Understanding high-level codebase structure |
+| `refactor_tool` | Planning renames, finding dead code |
+
+### Workflow
+
+1. The graph auto-updates on file changes (via hooks).
+2. Use `detect_changes` for code review.
+3. Use `get_affected_flows` to understand impact.
+4. Use `query_graph` pattern="tests_for" to check coverage.
