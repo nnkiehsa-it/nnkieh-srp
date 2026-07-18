@@ -313,7 +313,6 @@ export function useIssueBoardData() {
   );
 
   async function refreshCurrentData() {
-    document.documentElement.classList.add('no-transitions');
     stopUserIssuesRequest();
 
     if (activeFilter.value === 'my-proposals') {
@@ -326,10 +325,6 @@ export function useIssueBoardData() {
       await refreshBucket(statusTab.value);
     }
     markContentRealtimeReliable();
-
-    setTimeout(() => {
-      document.documentElement.classList.remove('no-transitions');
-    }, 500);
   }
 
   async function loadMoreCurrentData() {
