@@ -13,7 +13,7 @@
     @back="emit('back')"
   >
     <template #header>
-      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('announcement.announcement') }}</span>
+      <TagBadge class="border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('announcement.announcement') }}</TagBadge>
     </template>
 
     <template #actions="{ compact }">
@@ -46,6 +46,7 @@ import type { AnnouncementRecord } from '@/types';
 import AnnouncementComments from '@/components/AnnouncementComments.vue';
 import AnnouncementDetailActions from '@/components/AnnouncementDetailActions.vue';
 import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
+import TagBadge from '@/components/ui/atoms/TagBadge.vue';
 import { useI18n } from '@/i18n';
 
 const { t } = useI18n();

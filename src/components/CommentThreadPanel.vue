@@ -11,9 +11,9 @@
         </h4>
       </div>
       <div class="flex shrink-0 items-center gap-2">
-        <span class="tag rounded-full border-none bg-ink-100 px-2.5 py-0.5 text-xs font-semibold dark:bg-ink-800/80">
+        <TagBadge class="rounded-full border-none bg-ink-100 px-2.5 py-0.5 text-xs font-semibold dark:bg-ink-800/80">
           {{ t('comments.count', { count: comments.length }) }}
-        </span>
+        </TagBadge>
       </div>
     </div>
 
@@ -86,7 +86,7 @@
       />
       <div
         v-else
-        class="rounded-[var(--radius-inner)] bg-ink-50 px-4 py-3 text-center text-sm font-semibold text-ink-400 shadow-note dark:bg-ink-900/60 dark:text-ink-500"
+        class="rounded-[var(--radius-inner)] bg-ink-50 px-4 py-3 text-center text-sm font-semibold text-ink-400 shadow-control dark:bg-ink-900/60 dark:text-ink-500"
       >
         {{ disabledComposerLabel }}
       </div>
@@ -109,10 +109,11 @@ import { computed, nextTick, ref, toRef, watch } from 'vue';
 import CommentComposer from '@/components/CommentComposer.vue';
 import CommentItem from '@/components/CommentItem.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import FeedLoadMoreControl from '@/components/ui/FeedLoadMoreControl.vue';
-import SkeletonCommentList from '@/components/ui/SkeletonCommentList.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import TagBadge from '@/components/ui/atoms/TagBadge.vue';
+import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
+import FeedLoadMoreControl from '@/components/ui/molecules/FeedLoadMoreControl.vue';
+import SkeletonCommentList from '@/components/ui/organisms/SkeletonCommentList.vue';
 import { useMinimumLoading } from '@/composables/useMinimumLoading';
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 import type { DiscussionCommentRecord } from '@/types';

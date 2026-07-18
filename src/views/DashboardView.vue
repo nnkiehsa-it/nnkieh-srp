@@ -54,14 +54,16 @@
       <section class="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)]">
         <div class="grid gap-5">
           <SurfacePanel as="section" padding="lg">
-            <div class="dashboard-section-head">
-              <div>
-                <h3 class="dashboard-section-title">{{ t('dashboard.maintenanceStatus') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.operationsOverviewHelp') }}</p>
-              </div>
-              <span class="dashboard-total">{{ t(operationsStatus.label) }}</span>
-            </div>
-            <div class="mt-4 divide-y divide-ink-200/35 overflow-hidden rounded-[var(--radius-inner)] bg-ink-50/60 shadow-inner dark:divide-ink-700/30 dark:bg-ink-800/35">
+            <SectionHeader
+              heading-as="h3"
+              :title="t('dashboard.maintenanceStatus')"
+              :description="t('dashboard.operationsOverviewHelp')"
+            >
+              <template #trailing>
+                <span class="dashboard-total">{{ t(operationsStatus.label) }}</span>
+              </template>
+            </SectionHeader>
+            <SurfacePanel variant="inset" class="mt-4 divide-y divide-ink-200/35 overflow-hidden dark:divide-ink-700/30">
               <div
                 v-for="row in operationRows"
                 :key="row.label"
@@ -74,18 +76,20 @@
                 <p class="text-sm font-semibold tabular-nums text-ink-700 dark:text-ink-200">{{ row.value }}</p>
                 <p class="text-left text-xs font-bold sm:text-right" :class="row.toneClass">{{ t(row.statusLabel) }}</p>
               </div>
-            </div>
+            </SurfacePanel>
           </SurfacePanel>
 
           <SurfacePanel as="section" padding="lg">
-            <div class="dashboard-section-head">
-              <div>
-                <h3 class="dashboard-section-title">{{ t('dashboard.categoryUsageOverview') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.categoryDistributionHelp') }}</p>
-              </div>
-              <span class="dashboard-total">{{ t('dashboard.countItems', { count: stats.total_issues_created + stats.total_comments_created }) }}</span>
-            </div>
-            <div class="mt-4 overflow-hidden rounded-[var(--radius-inner)] bg-ink-50/60 shadow-inner dark:bg-ink-800/35">
+            <SectionHeader
+              heading-as="h3"
+              :title="t('dashboard.categoryUsageOverview')"
+              :description="t('dashboard.categoryDistributionHelp')"
+            >
+              <template #trailing>
+                <span class="dashboard-total">{{ t('dashboard.countItems', { count: stats.total_issues_created + stats.total_comments_created }) }}</span>
+              </template>
+            </SectionHeader>
+            <SurfacePanel variant="inset" class="mt-4 overflow-hidden">
               <div class="grid grid-cols-[1fr_5rem_5rem_4rem] gap-3 border-b border-ink-200/35 px-4 py-2.5 text-xs font-semibold tracking-[0.02em] text-ink-500 dark:border-ink-700/30 dark:text-ink-400">
                 <span>{{ t('dashboard.category') }}</span>
                 <span class="text-right">{{ t('issue.proposal') }}</span>
@@ -107,58 +111,58 @@
                 <p class="text-right text-sm font-bold tabular-nums text-ink-950 dark:text-ink-50">{{ row.comments }}</p>
                 <p class="text-right text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">{{ row.percentLabel }}</p>
               </div>
-            </div>
+            </SurfacePanel>
           </SurfacePanel>
         </div>
 
         <aside class="grid gap-5">
           <SurfacePanel as="section" padding="lg">
-            <div class="dashboard-section-head">
-              <div>
-                <h3 class="dashboard-section-title">{{ t('dashboard.platformAchievements') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.anOverallSummaryOfPlatformUsage') }}</p>
-              </div>
-            </div>
+            <SectionHeader
+              heading-as="h3"
+              :title="t('dashboard.platformAchievements')"
+              :description="t('dashboard.anOverallSummaryOfPlatformUsage')"
+            />
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div
+              <SurfacePanel
                 v-for="item in heroStats"
                 :key="item.label"
-                class="rounded-[var(--radius-inner)] bg-ink-50/70 px-4 py-3 shadow-note dark:bg-ink-800/40"
+                variant="inset"
+                padding="md"
               >
                 <div class="flex items-center justify-between gap-3">
                   <p class="text-sm font-semibold text-ink-600 dark:text-ink-300">{{ t(item.label) }}</p>
                   <span class="text-xs font-bold text-ink-400 dark:text-ink-500">{{ t(item.caption) }}</span>
                 </div>
                 <p class="mt-2 text-2xl font-bold tabular-nums text-ink-950 dark:text-ink-50">{{ item.value }}</p>
-              </div>
+              </SurfacePanel>
             </div>
           </SurfacePanel>
 
           <SurfacePanel as="section" padding="lg">
-            <div class="dashboard-section-head">
-              <div>
-                <h3 class="dashboard-section-title">{{ t('dashboard.recentIssues') }}</h3>
-                <p class="dashboard-section-subtitle">{{ t('dashboard.failureTrackingCodeHelp') }}</p>
-              </div>
-            </div>
+            <SectionHeader
+              heading-as="h3"
+              :title="t('dashboard.recentIssues')"
+              :description="t('dashboard.failureTrackingCodeHelp')"
+            />
             <div v-if="recentFailureRows.length > 0" class="mt-4 space-y-3">
-              <div
+              <SurfacePanel
                 v-for="failure in recentFailureRows"
                 :key="`${failure.source}-${failure.id}`"
-                class="rounded-xl bg-ink-50 px-4 py-3 dark:bg-ink-950/50"
+                variant="inset"
+                padding="md"
               >
                 <div class="flex items-start justify-between gap-3">
                   <p class="text-sm font-bold text-ink-900 dark:text-ink-100">{{ failure.sourceLabel }}</p>
                   <p class="text-xs font-semibold text-ink-400 dark:text-ink-500">{{ failure.updatedLabel }}</p>
                 </div>
-                <p class="mt-2 break-all text-xs font-semibold text-error">
+                <InlineMessage class="mt-2 break-all">
                   {{ t('dashboard.trackingCodeCode', { code: failure.trackingCode }) }}
-                </p>
-              </div>
+                </InlineMessage>
+              </SurfacePanel>
             </div>
-            <p v-else class="mt-4 rounded-xl bg-ink-50 px-4 py-3 text-sm font-semibold text-ink-500 dark:bg-ink-950/50 dark:text-ink-400">
+            <SurfacePanel v-else as="p" variant="inset" padding="md" class="mt-4 text-sm font-semibold text-ink-500 dark:text-ink-400">
               {{ t('dashboard.noRecentFailures') }}
-            </p>
+            </SurfacePanel>
           </SurfacePanel>
         </aside>
       </section>
@@ -174,12 +178,14 @@
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
+import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed, watch } from 'vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import SkeletonDashboard from '@/components/ui/SkeletonDashboard.vue';
-import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
-import SurfacePanel from '@/components/ui/SurfacePanel.vue';
+import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
+import SkeletonDashboard from '@/components/ui/organisms/SkeletonDashboard.vue';
+import PageLoadFailure from '@/components/ui/molecules/PageLoadFailure.vue';
+import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
+import SectionHeader from '@/components/ui/molecules/SectionHeader.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useDashboardMetrics } from '@/composables/useDashboardMetrics';
 import { usePlatformDashboard } from '@/composables/usePlatformDashboard';
 import { useSession } from '@/composables/useSession';

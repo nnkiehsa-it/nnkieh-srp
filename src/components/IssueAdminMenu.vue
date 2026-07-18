@@ -32,18 +32,18 @@
       </button>
 
       <!-- Toggle Button (Compact three dots) -->
-      <button
+      <AppButton
         v-else
         ref="triggerRef"
-        type="button"
-        class="button-toolbar h-8 w-8 rounded-full p-0"
+        variant="toolbar"
+        class="h-8 w-8 rounded-full p-0"
         :class="{ 'text-ink-800 dark:text-ink-100': isDropdownOpen }"
         :title="t('issue.manageProposals')"
         :aria-label="t('issue.manageProposals')"
         @click="isDropdownOpen = !isDropdownOpen"
       >
         <AppIcon name="more-horizontal" :size="4.5" :stroke-width="1.8" />
-      </button>
+      </AppButton>
 
       <!-- Dropdown Menu -->
       <Teleport to="body">
@@ -125,7 +125,8 @@ import { ISSUE_STATUS_LABELS } from '@/constants/statuses';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { useClickOutside } from '@/composables/useClickOutside';
 import { useDropdownPosition } from '@/composables/useDropdownPosition';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
 import type { IssueRecord, IssueStatus } from '@/types';
 import { useI18n } from '@/i18n';
 

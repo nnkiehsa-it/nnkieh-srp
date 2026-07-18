@@ -1,80 +1,75 @@
 <template>
-  <DialogOverlay :open="open" padded z-index-class="z-[100]" @close="handleCancel">
-    <section
-      ref="dialogRef"
-      class="panel panel-pad w-full max-w-lg"
-      data-dialog-root
-      role="dialog"
-      aria-modal="true"
-      :aria-busy="busy ? 'true' : undefined"
-      :aria-labelledby="title || eyebrow ? 'confirm-dialog-title' : undefined"
-      aria-describedby="confirm-dialog-message"
-      tabindex="-1"
-    >
-      <div v-if="title || eyebrow" class="min-w-0">
-        <p v-if="eyebrow && !title" id="confirm-dialog-title" class="dialog-title !mt-0">{{ t(eyebrow) }}</p>
-        <p v-else-if="eyebrow" class="dialog-eyebrow">{{ t(eyebrow) }}</p>
-        <h3 v-if="title" id="confirm-dialog-title" class="dialog-title">{{ t(title) }}</h3>
-      </div>
+  <DialogShell
+    :open="open"
+    :busy="busy"
+    :labelled-by="title || eyebrow ? 'confirm-dialog-title' : ''"
+    described-by="confirm-dialog-message"
+    z-index-class="z-[100]"
+    @close="handleCancel"
+  >
+    <DialogHeading
+      heading-as="h3"
+      :eyebrow="title && eyebrow ? t(eyebrow) : ''"
+      :title="t(title || eyebrow)"
+      :flush-title="Boolean(eyebrow && !title)"
+      title-id="confirm-dialog-title"
+      :description="t(message)"
+      description-id="confirm-dialog-message"
+      :flush-description="!title && !eyebrow"
+    />
 
-      <p
-        id="confirm-dialog-message"
-        class="dialog-description"
-        :class="title || eyebrow ? '' : '!mt-0'"
+    <DialogActionRow>
+      <AppButton
+        variant="secondary"
+        :disabled="busy"
+        data-autofocus
+        @click="handleCancel"
       >
-        {{ t(message) }}
-      </p>
-
-      <div class="dialog-actions">
-        <button
-          type="button"
-          class="button-secondary"
-          :disabled="busy"
-          data-autofocus
-          @click="handleCancel"
-        >
-          {{ t(cancelLabel) }}
-        </button>
-        <button
-          type="button"
-          :class="danger ? 'button-danger' : 'button-primary'"
-          :disabled="busy"
-          @click="emit('confirm')"
-        >
-          <BusyButtonContent :busy="busy" :label="t(confirmLabel)" :busy-label="t('facility.processing')" />
-        </button>
-      </div>
-    </section>
-  </DialogOverlay>
+        {{ t(cancelLabel) }}
+      </AppButton>
+      <AppButton
+        :variant="danger ? 'danger' : 'primary'"
+        :disabled="busy"
+        @click="emit('confirm')"
+      >
+        <BusyButtonContent
+          :busy="busy"
+          :label="t(confirmLabel)"
+          :busy-label="t('facility.processing')"
+        />
+      </AppButton>
+    </DialogActionRow>
+  </DialogShell>
 </template>
 
 <script setup lang="ts">
-import { toRef } from 'vue';
-import DialogOverlay from '@/components/ui/DialogOverlay.vue';
-import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
-import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
-import { useDialogFocus } from '@/composables/useDialogFocus';
-import { useI18n } from '@/i18n';
+import DialogShell from "@/components/ui/organisms/DialogShell.vue";
+import DialogActionRow from "@/components/ui/molecules/DialogActionRow.vue";
+import DialogHeading from "@/components/ui/molecules/DialogHeading.vue";
+import BusyButtonContent from "@/components/ui/atoms/BusyButtonContent.vue";
+import AppButton from "@/components/ui/atoms/AppButton.vue";
+import { useI18n } from "@/i18n";
 
-const props = withDefaults(defineProps<{
-  open: boolean;
-  title?: string;
-  message: string;
-  eyebrow?: string;
-  cancelLabel?: string;
-  confirmLabel?: string;
-  busy?: boolean;
-  danger?: boolean;
-}>(), {
-  title: '',
-  eyebrow: '',
-  cancelLabel: 'issue.cancel',
-  confirmLabel: 'issue.confirm',
-  busy: false,
-  danger: true,
-});
-
-useBodyScrollLock(toRef(props, 'open'));
+const props = withDefaults(
+  defineProps<{
+    open: boolean;
+    title?: string;
+    message: string;
+    eyebrow?: string;
+    cancelLabel?: string;
+    confirmLabel?: string;
+    busy?: boolean;
+    danger?: boolean;
+  }>(),
+  {
+    title: "",
+    eyebrow: "",
+    cancelLabel: "issue.cancel",
+    confirmLabel: "issue.confirm",
+    busy: false,
+    danger: true,
+  },
+);
 
 const emit = defineEmits<{
   cancel: [];
@@ -82,13 +77,9 @@ const emit = defineEmits<{
 }>();
 const { t } = useI18n();
 
-const { dialogRef } = useDialogFocus(toRef(props, 'open'), {
-  onClose: handleCancel,
-});
-
 function handleCancel() {
   if (!props.busy) {
-    emit('cancel');
+    emit("cancel");
   }
 }
 </script>

@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { toRef } from 'vue';
-import EntryComposerShell from '@/components/ui/EntryComposerShell.vue';
+import EntryComposerShell from '@/components/ui/organisms/EntryComposerShell.vue';
 import { INPUT_LIMITS } from '@/constants/input-limits';
 import { RATE_LIMITS } from '@/generated/rate-limits';
 import { useFacilityComposerForm } from '@/composables/useFacilityComposerForm';

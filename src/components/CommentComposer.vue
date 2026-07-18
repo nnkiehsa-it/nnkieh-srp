@@ -5,30 +5,30 @@
       class="flex items-center justify-between gap-3 px-1 text-xs font-semibold text-ink-500 dark:text-ink-400"
     >
       <span>{{ t('comments.replying') }}</span>
-      <button
-        type="button"
-        class="button-toolbar h-8 min-h-8 w-8 rounded-full p-0"
+      <AppButton
+        variant="toolbar"
+        class="h-8 min-h-8 w-8 rounded-full p-0"
         :disabled="submitting || uploading"
         :title="t('comments.cancelReply')"
         :aria-label="t('comments.cancelReply')"
         @click="handleClose"
       >
         <AppIcon name="close" :stroke-width="2.5" />
-      </button>
+      </AppButton>
     </div>
 
     <div class="control-frame">
       <div v-if="imageUrls.length" class="flex gap-2 px-3 pt-3">
-        <div
+        <EditorSurface
           v-for="(url, index) in imageUrls"
           :key="url"
-          class="relative h-20 w-20 overflow-hidden rounded-xl bg-ink-50 shadow-note dark:bg-ink-900"
+          elevated
+          tone="muted"
+          class="relative h-20 w-20 overflow-hidden"
         >
           <img :src="url" :alt="t('comments.commentAttachmentPreview')" class="h-full w-full object-cover" />
-          <button type="button" class="button-remove-image" :aria-label="t('comments.removeImage')" @click="removeImage(index)">
-            <AppIcon name="close" :size="3" :stroke-width="2.5" />
-          </button>
-        </div>
+          <ImageRemoveButton :aria-label="t('comments.removeImage')" @click="removeImage(index)" />
+        </EditorSurface>
       </div>
 
       <div class="flex items-end gap-1.5 p-2 pl-3">
@@ -36,7 +36,7 @@
           v-if="myPhotoUrl"
           :src="myPhotoUrl"
           :alt="t('comments.currentAvatar')"
-          class="mb-1.5 h-7 w-7 shrink-0 rounded-full object-cover shadow-note"
+          class="mb-1.5 h-7 w-7 shrink-0 rounded-full object-cover shadow-control"
         />
 
         <textarea
@@ -51,9 +51,9 @@
           :disabled="submitting"
         ></textarea>
 
-        <button
-          type="button"
-          class="button-toolbar h-10 min-h-10 w-10 shrink-0 rounded-full p-0"
+        <AppButton
+          variant="toolbar"
+          class="h-10 min-h-10 w-10 shrink-0 rounded-full p-0"
           :disabled="uploading || imageUrls.length >= RATE_LIMITS.imageUploads.commentMaxImages"
           :title="uploading
             ? t('comments.imageProcessing')
@@ -64,7 +64,7 @@
           @click="commentFileInputRef?.click()"
         >
           <AppIcon name="image" />
-        </button>
+        </AppButton>
         <input
           ref="commentFileInputRef"
           type="file"
@@ -74,27 +74,32 @@
           multiple
           @change="handleImagePicked"
         />
-        <button
+        <AppButton
           type="submit"
-          class="button-icon-filled h-10 min-h-10 w-10 shrink-0 bg-ink-900 text-white hover:bg-ink-800 dark:bg-ink-100 dark:text-ink-900 dark:hover:bg-ink-200"
+          variant="icon-filled"
+          class="h-10 min-h-10 w-10 shrink-0 bg-ink-900 text-white hover:bg-ink-800 dark:bg-ink-100 dark:text-ink-900 dark:hover:bg-ink-200"
           :disabled="submitting || uploading || (!commentContent.trim() && imageUrls.length === 0)"
           :title="t(submitting ? 'comments.sending' : 'comments.postComment')"
           :aria-label="t('comments.postComment')"
         >
           <AppIcon name="send" />
-        </button>
+        </AppButton>
       </div>
     </div>
 
-    <p v-if="error || uploadError" class="pl-1.5 text-xs font-semibold text-error">
+    <InlineMessage v-if="error || uploadError" class="pl-1.5">
       {{ t('comments.error', { message: t(error || uploadError) }) }}
-    </p>
+    </InlineMessage>
   </form>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
+import ImageRemoveButton from '@/components/ui/atoms/ImageRemoveButton.vue';
+import EditorSurface from '@/components/ui/molecules/EditorSurface.vue';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';

@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
+import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
@@ -88,7 +88,7 @@ import FacilityComposer from '@/components/FacilityComposer.vue';
 import FacilityStatusDialog from '@/components/FacilityStatusDialog.vue';
 import FacilityTable from '@/components/FacilityTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import ContentListState from '@/components/ui/ContentListState.vue';
+import ContentListState from '@/components/ui/organisms/ContentListState.vue';
 import { useFacilities } from '@/composables/useFacilities';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';

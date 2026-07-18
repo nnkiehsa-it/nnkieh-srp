@@ -23,7 +23,7 @@
     </template>
 
     <template #supplement>
-      <div v-if="issue.support_enabled" class="mt-4 rounded-xl bg-ink-50/85 px-3 py-2.5 dark:bg-ink-900/55">
+      <SurfacePanel v-if="issue.support_enabled" variant="inset" class="mt-4 px-3 py-2.5">
         <div class="flex items-center justify-between gap-3 text-xs">
           <span class="font-semibold tabular-nums text-ink-700 dark:text-ink-300">
             {{ t('issue.countGoalSupports', { count: supportCount, goal: issue.support_goal ?? 0 }) }}
@@ -38,20 +38,20 @@
             :style="supportProgressStyle"
           ></div>
         </div>
-      </div>
+      </SurfacePanel>
       <p v-else class="mt-4 text-xs text-ink-400 dark:text-ink-500">{{ t('issue.thisProposalDoesNotRequireSupport') }}</p>
     </template>
 
     <template #actions>
-      <button
-        type="button"
-        class="button-toolbar h-8 w-8 rounded-full p-0"
+      <AppButton
+        variant="toolbar"
+        class="h-8 w-8 rounded-full p-0"
         :title="t('comments.viewComments')"
         :aria-label="t('comments.viewComments')"
         @click.stop="openDetails('comments')"
       >
         <AppIcon name="comment" />
-      </button>
+      </AppButton>
       <VoteButtons
         v-if="issue.support_enabled"
         :author-fixed="issue.isOwnIssue"
@@ -84,8 +84,10 @@ import { toRef } from 'vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import IssueAdminMenu from '@/components/IssueAdminMenu.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import ContentCardShell from '@/components/ui/ContentCardShell.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import ContentCardShell from '@/components/ui/organisms/ContentCardShell.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useIssueItemController } from '@/composables/useIssueItemController';
 import type { IssueRecord } from '@/types';
 import { useI18n } from '@/i18n';

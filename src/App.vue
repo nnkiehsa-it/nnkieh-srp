@@ -79,7 +79,7 @@ import AppInstallPromptDialog from '@/components/AppInstallPromptDialog.vue';
 import AppUpdatePromptDialog from '@/components/AppUpdatePromptDialog.vue';
 import PushPermissionPromptDialog from '@/components/PushPermissionPromptDialog.vue';
 import ActionFeedbackBar from '@/components/ActionFeedbackBar.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import LoadingSpinner from '@/components/ui/atoms/LoadingSpinner.vue';
 import { useAppInstallPrompt } from '@/composables/useAppInstallPrompt';
 import { useAppStartupGate } from '@/composables/useAppStartupGate';
 import { useAppUpdate } from '@/composables/useAppUpdate';

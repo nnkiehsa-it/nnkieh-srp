@@ -47,9 +47,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import DropdownPanel from '@/components/ui/DropdownPanel.vue';
-import SelectionMark from '@/components/ui/SelectionMark.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import DropdownPanel from '@/components/ui/molecules/DropdownPanel.vue';
+import SelectionMark from '@/components/ui/atoms/SelectionMark.vue';
 import { ISSUE_FILTER_OPTIONS } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
 import type { IssueFilter } from '@/types';

@@ -573,7 +573,7 @@ test('backend list actions use stable cursor pagination at the service boundary'
 test('content feeds share 30-item batches and bounded load-more controls', async () => {
   const pageSize = await read('src/lib/page-size.ts');
   const infiniteScroll = await read('src/composables/useInfiniteScroll.ts');
-  const loadMoreControl = await read('src/components/ui/FeedLoadMoreControl.vue');
+  const loadMoreControl = await read('src/components/ui/molecules/FeedLoadMoreControl.vue');
   const issueSearch = await read('src/composables/useIssueSearch.ts');
   const feedMigration = await read('supabase/migrations/202607140001_unified_feed_pagination.sql');
   const issueRead = await read('supabase/functions/backendAction/issue-read.ts');
@@ -731,9 +731,9 @@ test('proposal manager access is config-driven and category-scoped', async () =>
   const issueRead = await read('supabase/functions/backendAction/issue-read.ts');
   const migration = await read('supabase/migrations/202607150006_category_scoped_proposal_access.sql');
   const lookupMigration = await read('supabase/migrations/202607150007_access_lookup_and_facility_status.sql');
-  const selectionControl = await read('src/components/ui/SelectionOptionButton.vue');
+  const selectionControl = await read('src/components/ui/molecules/SelectionOptionButton.vue');
   const facilityDialog = await read('src/components/FacilityStatusDialog.vue');
-  const statusTransitionDialog = await read('src/components/ui/StatusTransitionDialog.vue');
+  const statusTransitionDialog = await read('src/components/ui/organisms/StatusTransitionDialog.vue');
 
   assert.ok(categoryConfig.categories.every((category) => typeof category.labelKey === 'string'));
   assert.match(accessView, /import \{ ISSUE_CATEGORIES \} from '@\/generated\/issue-categories'/u);
@@ -764,9 +764,9 @@ test('facility next actions and account UID use existing detail controls', async
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const shareUrl = await read('src/composables/useShareUrl.ts');
   const proposalFooter = await read('src/components/IssueDetailSupportFooter.vue');
-  const detailActionGroup = await read('src/components/ui/DetailActionGroup.vue');
-  const operationTimes = await read('src/components/ui/OperationTimeList.vue');
-  const detailRouteState = await read('src/components/ui/DetailRouteState.vue');
+  const detailActionGroup = await read('src/components/ui/molecules/DetailActionGroup.vue');
+  const operationTimes = await read('src/components/ui/molecules/OperationTimeList.vue');
+  const detailRouteState = await read('src/components/ui/organisms/DetailRouteState.vue');
 
   assert.match(facilityDetail, /FacilityDetailPagePanel/u);
   assert.match(facilityDetail, /DetailRouteState/u);
@@ -1016,7 +1016,7 @@ test('Google redirect recovery runs only after an explicit redirect fallback', a
   const authActions = await read('src/composables/sessionAuthActions.ts');
   const session = await read('src/composables/useSession.ts');
   const loginPanel = await read('src/components/LoginPanel.vue');
-  const loginButton = await read('src/components/ui/GoogleLoginButton.vue');
+  const loginButton = await read('src/components/ui/molecules/GoogleLoginButton.vue');
 
   assert.match(firebase, /browserPopupRedirectResolver/u);
   assert.match(firebase, /popupRedirectResolver: browserPopupRedirectResolver/u);
@@ -1180,12 +1180,12 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   const commentComposer = await read('src/components/CommentComposer.vue');
   const commentItem = await read('src/components/CommentItem.vue');
   const commentThread = await read('src/components/CommentThreadPanel.vue');
-  const detailShell = await read('src/components/ui/DetailPageShell.vue');
+  const detailShell = await read('src/components/ui/organisms/DetailPageShell.vue');
   const issueComposer = await read('src/components/IssueComposer.vue');
   const announcementComposer = await read('src/components/AnnouncementComposerDialog.vue');
   const facilityComposer = await read('src/components/FacilityComposer.vue');
-  const composerShell = await read('src/components/ui/EntryComposerShell.vue');
-  const countedField = await read('src/components/ui/CountedTextField.vue');
+  const composerShell = await read('src/components/ui/organisms/EntryComposerShell.vue');
+  const countedField = await read('src/components/ui/molecules/CountedTextField.vue');
   const feedbackBar = await read('src/components/ActionFeedbackBar.vue');
   const responsiveStyles = await read('src/styles/responsive.css');
   const baseStyles = await read('src/styles/base.css');
@@ -1220,7 +1220,7 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(composerShell, /class="entry-composer__footer"/u);
   assert.match(composerShell, /class="entry-composer__actions"/u);
   assert.match(composerShell, /md:max-h-screen/u);
-  assert.equal((composerShell.match(/entry-composer__action button-secondary/gu) ?? []).length, 2);
+  assert.equal((composerShell.match(/<AppButton[\s\S]*?variant="secondary"[\s\S]*?class="entry-composer__action"/gu) ?? []).length, 2);
   assert.match(countedField, /v-model="value"/u);
   assert.match(composerShell, /min-h-\[220px\]/u);
   assert.match(composerShell, /editor-class="flex-1 min-h-\[180px\]"/u);
@@ -1233,8 +1233,8 @@ test('primary navigation keeps desktop chrome while mobile routes use a source-a
   const app = await read('src/App.vue');
   const appShell = await read('src/components/AppShell.vue');
   const mobileHeader = await read('src/components/app-shell/AppMobileHeader.vue');
-  const detailShell = await read('src/components/ui/DetailPageShell.vue');
-  const detailSkeleton = await read('src/components/ui/SkeletonDetail.vue');
+  const detailShell = await read('src/components/ui/organisms/DetailPageShell.vue');
+  const detailSkeleton = await read('src/components/ui/organisms/SkeletonDetail.vue');
   const issueBoard = await read('src/components/IssueBoard.vue');
   const facilitiesView = await read('src/views/FacilitiesView.vue');
   const routeComponents = await read('src/router/route-components.ts');
@@ -1278,14 +1278,14 @@ test('primary navigation keeps desktop chrome while mobile routes use a source-a
   assert.match(hierarchy, /name === 'issue-detail' && isMyProposals[\s\S]*NESTED_DETAIL_NAVIGATION_DEPTH/u);
   assert.match(hierarchy, /state\?\.navigationOrigin !== 'notifications'[\s\S]*router\.back\(\)/u);
   assert.match(notificationNavigation, /state: NOTIFICATION_NAVIGATION_STATE/u);
-  assert.match(detailShell, /v-if="isDesktopViewport"[\s\S]*class="panel hidden/u);
+  assert.match(detailShell, /<SurfacePanel[\s\S]{0,120}v-if="isDesktopViewport"[\s\S]{0,120}as="article"[\s\S]{0,120}class="hidden/u);
   assert.match(detailShell, /<section class="h-full min-h-0[\s\S]*v-else[\s\S]*class="flex h-full min-h-0/u);
-  assert.match(detailSkeleton, /<div class="h-full min-h-0[\s\S]*v-else[\s\S]*class="flex h-full min-h-0/u);
+  assert.match(detailSkeleton, /<div\s+class="h-full min-h-0[\s\S]*v-else[\s\S]*class="flex h-full min-h-0/u);
   assert.doesNotMatch(detailShell, /100dvh-var\(--app-header-height\)/u);
   assert.doesNotMatch(detailSkeleton, /100dvh-var\(--app-header-height\)/u);
   assert.match(detailShell, /v-else[\s\S]{0,240}pb-\[5px\]/u);
   assert.match(detailSkeleton, /v-else[\s\S]{0,240}pb-\[5px\]/u);
-  assert.match(mobileHeader, /button-icon app-header__back/u);
+  assert.match(mobileHeader, /<AppButton[\s\S]{0,120}variant="icon"[\s\S]{0,120}class="app-header__back/u);
   assert.match(baseStyles, /\.app-header__back \{[\s\S]*height: 1\.875rem;[\s\S]*width: 1\.875rem/u);
   assert.match(baseStyles, /@media \(max-width: 767px\) \{[\s\S]*--app-header-height: 3rem/u);
   assert.doesNotMatch(detailShell, /v-else[\s\S]{0,120}class="panel/u);
@@ -1309,11 +1309,11 @@ test('proposals, announcements, and facilities share list cards and detail panel
     read('src/components/AnnouncementDetailPagePanel.vue'),
     read('src/components/FacilityDetailPagePanel.vue'),
   ]);
-  const cardCollection = await read('src/components/ui/ContentCardCollection.vue');
-  const cardShell = await read('src/components/ui/ContentCardShell.vue');
-  const cardSkeleton = await read('src/components/ui/ContentCardSkeleton.vue');
+  const cardCollection = await read('src/components/ui/organisms/ContentCardCollection.vue');
+  const cardShell = await read('src/components/ui/organisms/ContentCardShell.vue');
+  const cardSkeleton = await read('src/components/ui/organisms/ContentCardSkeleton.vue');
   const detailPagePanel = await read('src/components/ContentDetailPagePanel.vue');
-  const detailActionGroup = await read('src/components/ui/DetailActionGroup.vue');
+  const detailActionGroup = await read('src/components/ui/molecules/DetailActionGroup.vue');
   const detailActionComponents = await Promise.all([
     read('src/components/IssueDetailSupportFooter.vue'),
     read('src/components/AnnouncementDetailActions.vue'),
@@ -1324,7 +1324,7 @@ test('proposals, announcements, and facilities share list cards and detail panel
   const detailRouteQuery = await read('src/composables/useDetailRouteQuery.ts');
   const shareUrl = await read('src/composables/useShareUrl.ts');
   const statuses = await read('src/constants/statuses.ts');
-  const contentListState = await read('src/components/ui/ContentListState.vue');
+  const contentListState = await read('src/components/ui/organisms/ContentListState.vue');
   const contentListRuntime = await read('src/composables/useContentListRuntime.ts');
   const contentListConsumers = await Promise.all([
     read('src/components/IssueBoard.vue'),
@@ -1450,7 +1450,7 @@ test('navigation and contextual creation share the same responsive information a
   const announcementsView = await read('src/views/AnnouncementsView.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const issueComposer = await read('src/components/IssueComposer.vue');
-  const composerShell = await read('src/components/ui/EntryComposerShell.vue');
+  const composerShell = await read('src/components/ui/organisms/EntryComposerShell.vue');
   const controls = await read('src/styles/controls.css');
 
   assert.match(appShell, /label: t\('issue\.proposal'\)/u);
@@ -1465,17 +1465,17 @@ test('navigation and contextual creation share the same responsive information a
   assert.ok(desktopSidebar.indexOf('to="/notifications"') < desktopSidebar.indexOf('to="/settings"'));
   assert.match(boardControls, /v-if="createLabel"[\s\S]*name="plus"/u);
   assert.ok(boardControls.indexOf('name="search"') < boardControls.indexOf('v-if="createLabel"'));
-  assert.match(boardControls, /class="button-contextual h-8 w-8 min-w-8[\s\S]*name="plus"/u);
+  assert.match(boardControls, /<AppButton[\s\S]{0,120}variant="contextual"[\s\S]{0,120}class="h-8 w-8 min-w-8[\s\S]*name="plus"/u);
   assert.doesNotMatch(boardControls, /<span class="truncate">\{\{ createLabel \}\}<\/span>/u);
   assert.match(issueBoard, /t\('issue\.addToCategory'/u);
   assert.match(facilitiesView, /:create-label="t\('facility\.addFacility'\)"[\s\S]*@create="composerOpen = true"/u);
   assert.match(announcementsView, /v-if="isAdmin"[\s\S]*:aria-label="t\('announcement\.newAnnouncement'\)"/u);
   assert.match(issueComposer, /EntryComposerShell/u);
-  assert.match(composerShell, /class="button-dialog-close/u);
-  assert.match(composerShell, /type="submit"[\s\S]*class="entry-composer__action button-secondary"/u);
+  assert.match(composerShell, /<AppButton[\s\S]{0,120}variant="icon"[\s\S]{0,240}name="close"/u);
+  assert.match(composerShell, /<AppButton[\s\S]*type="submit"[\s\S]*variant="secondary"[\s\S]*class="entry-composer__action"/u);
   assert.doesNotMatch(issueComposer, /entry-composer__action button-contextual/u);
   assert.match(controls, /\.button-contextual \{[\s\S]*bg-surface[\s\S]*box-shadow: var\(--shadow-card\)/u);
-  assert.match(controls, /\.button-dialog-close \{[\s\S]*bg-surface[\s\S]*box-shadow: var\(--shadow-card\)/u);
+  assert.doesNotMatch(controls, /\.button-dialog-close\b/u);
   assert.ok(settingsPanel.indexOf('issue.myProposal') < settingsPanel.indexOf('dashboard.statistics'));
   assert.ok(settingsPanel.indexOf('dashboard.statistics') < settingsPanel.indexOf('access.roleManagement'));
   assert.ok(settingsPanel.indexOf('access.roleManagement') < settingsPanel.indexOf('settings.restartApp'));
@@ -1488,13 +1488,13 @@ test('authenticated route pages share one content width and AppShell owns horizo
   const primitives = await read('src/styles/primitives.css');
   const contentStyles = await read('src/styles/content.css');
   const appShell = await read('src/components/AppShell.vue');
-  const viewportFrame = await read('src/components/ui/ViewportFrame.vue');
-  const routePageFrame = await read('src/components/ui/RoutePageFrame.vue');
+  const viewportFrame = await read('src/components/ui/organisms/ViewportFrame.vue');
+  const routePageFrame = await read('src/components/ui/organisms/RoutePageFrame.vue');
   const mobileHeader = await read('src/components/app-shell/AppMobileHeader.vue');
   const mobileNav = await read('src/components/app-shell/AppMobileBottomNav.vue');
   const feedbackBar = await read('src/components/ActionFeedbackBar.vue');
-  const emptyState = await read('src/components/ui/EmptyStatePanel.vue');
-  const pageLoadFailure = await read('src/components/ui/PageLoadFailure.vue');
+  const emptyState = await read('src/components/ui/molecules/EmptyStatePanel.vue');
+  const pageLoadFailure = await read('src/components/ui/molecules/PageLoadFailure.vue');
   const issueBoard = await read('src/components/IssueBoard.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const routePages = await Promise.all([
@@ -1539,7 +1539,7 @@ test('authenticated route pages share one content width and AppShell owns horizo
   [issueBoard, routePages[1]]
     .forEach((page) => assert.match(page, /scroll-shadow-bleed[\s\S]*overflow-y-auto overflow-x-hidden/u));
   assert.match(emptyState, /class="flex w-full min-w-0/u);
-  assert.match(pageLoadFailure, /class="panel panel-pad flex w-full min-w-0/u);
+  assert.match(pageLoadFailure, /<SurfacePanel padding="lg" class="flex w-full min-w-0/u);
   assert.match(feedbackBar, /action-feedback-card[\s\S]*min-h-14 w-full/u);
   assert.match(contentStyles, /\.settings-scroll--flat \{[\s\S]*@apply overflow-visible px-0 py-3/u);
   assert.match(settingsPanel, /flat \? 'settings-panel--flat overflow-visible' : 'overflow-hidden'/u);
@@ -1557,21 +1557,46 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const styleEntry = await read('src/style.css');
   const baseStyles = await read('src/styles/base.css');
   const primitives = await read('src/styles/primitives.css');
-  const appButton = await read('src/components/ui/AppButton.vue');
-  const surfacePanel = await read('src/components/ui/SurfacePanel.vue');
-  const dropdownPanel = await read('src/components/ui/DropdownPanel.vue');
-  const dropdownMenu = await read('src/components/ui/DropdownMenu.vue');
-  const contentCard = await read('src/components/ui/ContentCardShell.vue');
+  const appButton = await read('src/components/ui/atoms/AppButton.vue');
+  const iconTile = await read('src/components/ui/atoms/IconTile.vue');
+  const switchIndicator = await read('src/components/ui/atoms/SwitchIndicator.vue');
+  const characterCount = await read('src/components/ui/atoms/CharacterCount.vue');
+  const inlineAlert = await read('src/components/ui/atoms/InlineAlert.vue');
+  const inlineMessage = await read('src/components/ui/atoms/InlineMessage.vue');
+  const skeletonBlock = await read('src/components/ui/atoms/SkeletonBlock.vue');
+  const imageRemoveButton = await read('src/components/ui/atoms/ImageRemoveButton.vue');
+  const tagBadge = await read('src/components/ui/atoms/TagBadge.vue');
+  const iconListRow = await read('src/components/ui/molecules/IconListRow.vue');
+  const labeledListSection = await read('src/components/ui/molecules/LabeledListSection.vue');
+  const sectionHeader = await read('src/components/ui/molecules/SectionHeader.vue');
+  const countedTextField = await read('src/components/ui/molecules/CountedTextField.vue');
+  const countedTextareaField = await read('src/components/ui/molecules/CountedTextareaField.vue');
+  const dialogActionRow = await read('src/components/ui/molecules/DialogActionRow.vue');
+  const dialogHeading = await read('src/components/ui/molecules/DialogHeading.vue');
+  const editorSurface = await read('src/components/ui/molecules/EditorSurface.vue');
+  const editorModeBar = await read('src/components/ui/molecules/EditorModeBar.vue');
+  const surfacePanel = await read('src/components/ui/molecules/SurfacePanel.vue');
+  const listSurfaceRow = await read('src/components/ui/molecules/ListSurfaceRow.vue');
+  const dropdownPanel = await read('src/components/ui/molecules/DropdownPanel.vue');
+  const dropdownMenu = await read('src/components/ui/molecules/DropdownMenu.vue');
+  const contentCard = await read('src/components/ui/organisms/ContentCardShell.vue');
+  const contentCardCollection = await read('src/components/ui/organisms/ContentCardCollection.vue');
+  const dialogShell = await read('src/components/ui/organisms/DialogShell.vue');
+  const confirmDialog = await read('src/components/ConfirmDialog.vue');
+  const entryComposer = await read('src/components/ui/organisms/EntryComposerShell.vue');
+  const markdownImageEditor = await read('src/components/ui/organisms/MarkdownImageEditor.vue');
   const compactMenu = await read('src/components/CompactActionMenu.vue');
   const facilityMenu = await read('src/components/FacilityAdminMenu.vue');
   const boardControls = await read('src/components/BoardControls.vue');
+  const loginPanel = await read('src/components/LoginPanel.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const commentComposer = await read('src/components/CommentComposer.vue');
-  const contentCardSkeleton = await read('src/components/ui/ContentCardSkeleton.vue');
-  const segmentedControl = await read('src/components/ui/PillSegmentedControl.vue');
+  const contentCardSkeleton = await read('src/components/ui/organisms/ContentCardSkeleton.vue');
+  const segmentedControl = await read('src/components/ui/molecules/PillSegmentedControl.vue');
   const controls = await read('src/styles/controls.css');
   const notifications = await read('src/views/NotificationsView.vue');
   const settingsView = await read('src/views/SettingsView.vue');
+  const dashboardView = await read('src/views/DashboardView.vue');
   const checker = await read('scripts/check-ui-primitives.mjs');
 
   assert.match(styleEntry, /@import "\.\/styles\/primitives\.css";/u);
@@ -1583,6 +1608,22 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
     '.surface-control',
     '.surface-card',
     '.surface-floating',
+    '.switch-indicator',
+    '.switch-indicator--checked',
+    '.inline-alert',
+    '.inline-alert--error',
+    '.inline-alert--warning',
+    '.inline-message',
+    '.inline-message--error',
+    '.dialog-card',
+    '.dialog-title',
+    '.dialog-description',
+    '.dialog-actions',
+    '.editor-surface',
+    '.editor-surface--elevated',
+    '.editor-surface--muted',
+    '.editor-mode-bar',
+    '.list-section-label',
     '.list-surface',
     '.list-surface-row',
     '.dropdown-panel',
@@ -1596,24 +1637,55 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
     assert.ok(primitives.includes(primitive), `missing UI primitive ${primitive}`);
   }
 
-  assert.match(appButton, /type ButtonVariant = 'contextual'[\s\S]*'toolbar'/u);
+  assert.match(appButton, /type ButtonVariant =[\s\S]*\| 'contextual'[\s\S]*\| 'toolbar'/u);
+  assert.match(appButton, /'icon-pill': 'button-icon-pill'/u);
+  assert.match(iconTile, /tone\?: 'danger' \| 'info' \| 'inverse' \| 'neutral' \| 'surface' \| 'warning'/u);
+  assert.match(switchIndicator, /role="switch"[\s\S]*:aria-checked="checked"/u);
+  assert.match(characterCount, /current > warningAt[\s\S]*\{\{ current \}\} \/ \{\{ max \}\}/u);
+  assert.match(inlineAlert, /class="inline-alert"[\s\S]*inline-alert--\$\{tone\}[\s\S]*:aria-live="live"/u);
+  assert.match(inlineMessage, /class="inline-message"[\s\S]*inline-message--\$\{tone\}[\s\S]*inline-message--\$\{size\}/u);
+  assert.match(skeletonBlock, /<component :is="as" class="skeleton-block" aria-hidden="true">/u);
+  assert.match(imageRemoveButton, /class="button-remove-image"[\s\S]*<AppIcon name="close"/u);
+  assert.match(tagBadge, /size === 'sm' \? 'tag-sm' : 'tag'/u);
+  assert.match(iconListRow, /<ListSurfaceRow[\s\S]*<AppIcon :name="icon"[\s\S]*<slot name="trailing">/u);
+  assert.match(labeledListSection, /class="list-section-label"[\s\S]*<SurfacePanel variant="list">/u);
+  assert.match(sectionHeader, /<component :is="headingAs"[\s\S]*<slot name="trailing"/u);
+  assert.match(countedTextField, /<CharacterCount :current="value\.length"/u);
+  assert.match(countedTextareaField, /<textarea[\s\S]*<CharacterCount :current="value\.length"/u);
+  assert.match(dialogActionRow, /<footer class="dialog-actions">[\s\S]*<slot \/>/u);
+  assert.match(dialogHeading, /class="dialog-eyebrow"[\s\S]*class="dialog-title"[\s\S]*class="dialog-description"/u);
+  assert.match(editorSurface, /class="editor-surface"[\s\S]*editor-surface--elevated/u);
+  assert.match(editorModeBar, /class="editor-mode-bar"[\s\S]*<AppButton variant="toolbar"/u);
   assert.match(surfacePanel, /type SurfaceVariant = 'card' \| 'control' \| 'floating' \| 'inset' \| 'list'/u);
+  assert.match(listSurfaceRow, /class="list-surface-row"[\s\S]*list-surface-row--interactive/u);
   assert.match(dropdownPanel, /class="dropdown-panel"/u);
   assert.match(dropdownMenu, /<DropdownPanel[\s\S]*useDropdownPosition[\s\S]*useClickOutside/u);
   assert.match(contentCard, /surface-card surface-card--interactive/u);
+  assert.match(dialogShell, /<DialogOverlay[\s\S]*ref="dialogRef"[\s\S]*useBodyScrollLock[\s\S]*useDialogFocus/u);
+  assert.match(confirmDialog, /<DialogShell[\s\S]*described-by="confirm-dialog-message"/u);
+  assert.match(confirmDialog, /<DialogActionRow>[\s\S]*<AppButton/u);
+  assert.match(confirmDialog, /<DialogHeading[\s\S]*description-id="confirm-dialog-message"/u);
+  assert.match(entryComposer, /<DialogShell[\s\S]*labelled-by="entry-composer-title"/u);
   [compactMenu, facilityMenu].forEach((menu) => assert.match(menu, /<DropdownMenu/u));
   assert.match(boardControls, /<DropdownPanel/u);
-  assert.match(settingsPanel, /list-surface/u);
-  assert.match(settingsPanel, /settings-row list-surface-row list-surface-row--interactive/u);
+  assert.match(settingsPanel, /<LabeledListSection[\s\S]*<IconListRow/u);
+  assert.match(settingsPanel, /<SwitchIndicator[\s\S]*:checked=/u);
+  assert.match(settingsPanel, /<ListSurfaceRow[\s\S]*interactive/u);
   assert.match(commentComposer, /control-frame/u);
+  assert.match(commentComposer, /<EditorSurface[\s\S]*tone="muted"[\s\S]*<ImageRemoveButton/u);
   assert.match(contentCardSkeleton, /<SurfacePanel[\s\S]*class="issue-card skeleton-card"/u);
   assert.match(segmentedControl, /ACTIVE_SEGMENT_WIDTH_REM = 7/u);
   assert.match(segmentedControl, /:style="containerStyle"/u);
   assert.match(controls, /\.segmented-control__button--active \{[\s\S]*width: 7rem/u);
   assert.match(controls, /\.segmented-control__button--compact \{[\s\S]*width: 2rem/u);
-  assert.match(notifications, /notification-group-row list-surface-row list-surface-row--interactive/u);
-  assert.match(notifications, /notification-group-row list-surface-row/u);
+  assert.match(notifications, /<ListSurfaceRow[\s\S]*interactive[\s\S]*class="notification-group-row"/u);
+  assert.match(notifications, /<ListSurfaceRow[\s\S]*as="div"[\s\S]*class="notification-group-row"/u);
   assert.match(settingsView, /v-if="loading"[\s\S]*<SurfacePanel variant="list"/u);
+  assert.match(loginPanel, /<InlineAlert[\s\S]*tone="error"[\s\S]*compact/u);
+  assert.match(contentCardCollection, /<InlineMessage v-else-if="error"[\s\S]*size="sm"/u);
+  assert.equal([...dashboardView.matchAll(/<SectionHeader\b/gu)].length, 4);
+  assert.equal([...markdownImageEditor.matchAll(/<EditorModeBar\b/gu)].length, 3);
+  assert.doesNotMatch(dashboardView, /dashboard-section-(?:head|title|subtitle)/u);
 
   assert.equal(packageJson.scripts['check:ui'], 'node scripts/check-ui-primitives.mjs');
   assert.match(packageJson.scripts['verify:local'], /npm run check:ui/u);
@@ -1621,6 +1693,8 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(checker, /hard-codes floating viewport gutters/u);
   assert.match(checker, /defines an arbitrary shadow/u);
   assert.match(checker, /assembles a card surface manually/u);
+  assert.match(checker, /assembles dialog behavior directly/u);
+  assert.match(checker, /assembles dialog actions directly/u);
 });
 
 test('pull requests and backend deployments retain the local integration gate', async () => {

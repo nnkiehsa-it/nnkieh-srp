@@ -1,6 +1,6 @@
 <template>
   <RoutePageFrame padding="responsive">
-    <form class="panel panel-pad" @submit.prevent="findUser">
+    <SurfacePanel as="form" padding="lg" @submit.prevent="findUser">
       <label for="access-user-lookup" class="field-label">{{ t('access.findAUser') }}</label>
       <div class="mt-2 flex gap-2">
         <input
@@ -12,16 +12,16 @@
           :placeholder="t('access.enterYourCampusEmailOrUid')"
           :disabled="loading || Boolean(savingUid)"
         />
-        <button type="submit" class="button-primary shrink-0" :disabled="loading || Boolean(savingUid) || !lookup.trim()">
+        <AppButton type="submit" variant="primary" class="shrink-0" :disabled="loading || Boolean(savingUid) || !lookup.trim()">
           <BusyButtonContent :busy="loading" :label="t('access.find')" :busy-label="t('access.searching')" />
-        </button>
+        </AppButton>
       </div>
       <p class="mt-2 text-xs leading-5 text-ink-500">{{ t('access.enterAFullSchoolEmailAddressOrUid') }}</p>
-    </form>
+    </SurfacePanel>
 
     <EmptyStatePanel v-if="error" class="mt-4" title="access.unableToFindUser" :description="error" icon="warning" />
 
-    <article v-if="user" class="panel panel-pad mt-4">
+    <SurfacePanel v-if="user" as="article" padding="lg" class="mt-4">
       <div class="flex items-center gap-3 border-b border-ink-100 pb-4 dark:border-ink-800">
         <UserAvatar :photo-url="user.photoUrl" :name="user.name" size="md" />
         <div class="min-w-0">
@@ -78,17 +78,19 @@
           </div>
         </div>
       </div>
-    </article>
+    </SurfacePanel>
   </RoutePageFrame>
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
+import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed, ref } from 'vue';
-import SelectionOptionButton from '@/components/ui/SelectionOptionButton.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
-import BusyButtonContent from '@/components/ui/BusyButtonContent.vue';
-import UserAvatar from '@/components/ui/UserAvatar.vue';
+import SelectionOptionButton from '@/components/ui/molecules/SelectionOptionButton.vue';
+import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
+import BusyButtonContent from '@/components/ui/atoms/BusyButtonContent.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import UserAvatar from '@/components/ui/atoms/UserAvatar.vue';
 import { ISSUE_CATEGORIES } from '@/generated/issue-categories';
 import { listRoleAssignments, setUserRoles, type AccessUser } from '@/services/access';
 import type { RoleCode } from '@/services/session-role';

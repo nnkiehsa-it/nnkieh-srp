@@ -2,16 +2,16 @@
   <header class="app-header fixed inset-x-0 top-0 z-40 w-full backdrop-blur-md transition-colors duration-300 md:hidden">
     <ViewportFrame class="app-header__inner flex items-center justify-between">
       <div class="flex min-w-0 items-center gap-2">
-        <button
+        <AppButton
           v-if="showBackButton"
-          type="button"
-          class="button-icon app-header__back shrink-0 md:hidden"
+          variant="icon"
+          class="app-header__back shrink-0 md:hidden"
           :aria-label="backLabel"
           :title="backLabel"
           @click="$emit('back')"
         >
           <AppIcon name="chevron-left" :size="4.5" />
-        </button>
+        </AppButton>
         <h1 class="app-header__title flex min-w-0 items-center text-ink-950 dark:text-ink-50" :aria-label="title">
           <IssueCategorySelector
             v-if="categoryFilter && categoryLabel"
@@ -29,8 +29,9 @@
 
 <script setup lang="ts">
 import IssueCategorySelector from '@/components/IssueCategorySelector.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import ViewportFrame from '@/components/ui/ViewportFrame.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import ViewportFrame from '@/components/ui/organisms/ViewportFrame.vue';
 import type { IssueFilter } from '@/types';
 
 defineProps<{

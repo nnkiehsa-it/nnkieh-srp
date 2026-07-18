@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import StatusTransitionDialog from '@/components/ui/StatusTransitionDialog.vue';
+import StatusTransitionDialog from '@/components/ui/organisms/StatusTransitionDialog.vue';
 import { INPUT_LIMITS } from '@/constants/input-limits';
 import type { FacilityStatus } from '@/types';
 

@@ -65,8 +65,8 @@ module.exports = {
         'on-warning-container': 'rgb(var(--color-on-warning-container) / <alpha-value>)',
       },
       boxShadow: {
-        note: 'var(--shadow-control)',
-        elevated: 'var(--shadow-card)',
+        control: 'var(--shadow-control)',
+        card: 'var(--shadow-card)',
         floating: 'var(--shadow-floating)',
       },
     },

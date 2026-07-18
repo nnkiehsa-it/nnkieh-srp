@@ -35,9 +35,9 @@
 </template>
 
 <script setup lang="ts">
-import DetailActionButton from '@/components/ui/DetailActionButton.vue';
-import DetailActionGroup from '@/components/ui/DetailActionGroup.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import DetailActionButton from '@/components/ui/molecules/DetailActionButton.vue';
+import DetailActionGroup from '@/components/ui/molecules/DetailActionGroup.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import type { FacilityRecord, OperationTimeListItem } from '@/types';
 import { useI18n } from '@/i18n';
 

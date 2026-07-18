@@ -23,17 +23,17 @@
         />
 
         <div class="static md:relative" @click.stop @pointerdown.stop>
-          <button
-            type="button"
-            class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
-            :class="{ 'button-toolbar--active': isSortOpen || sortOption !== 'latest' }"
+          <AppButton
+            variant="toolbar"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
+            :active="isSortOpen || sortOption !== 'latest'"
             :title="t('common.filterBoard', { board: boardTitle })"
             :aria-label="t('common.filterBoard', { board: boardTitle })"
             :aria-expanded="isSortOpen"
             @click="toggleSort"
           >
             <AppIcon name="sort" class="h-4 w-4" />
-          </button>
+          </AppButton>
 
           <transition name="popover">
             <DropdownPanel
@@ -60,17 +60,17 @@
         </div>
 
         <div class="static md:relative" @click.stop @pointerdown.stop>
-          <button
-            type="button"
-            class="button-toolbar flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
-            :class="{ 'button-toolbar--active': isSearchOpen || searchQuery }"
+          <AppButton
+            variant="toolbar"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-0 md:h-9 md:w-9"
+            :active="Boolean(isSearchOpen || searchQuery)"
             :title="t('common.searchBoard', { board: boardTitle })"
             :aria-label="t('common.searchBoard', { board: boardTitle })"
             :aria-expanded="isSearchOpen"
             @click="toggleSearch"
           >
             <AppIcon name="search" class="h-4 w-4" />
-          </button>
+          </AppButton>
 
           <transition name="popover">
             <DropdownPanel
@@ -90,15 +90,15 @@
                   :placeholder="searchPlaceholder"
                   @input="(e) => emit('update:searchQuery', (e.target as HTMLInputElement).value)"
                 />
-                <button
+                <AppButton
                   v-if="searchQuery"
-                  type="button"
-                  class="button-toolbar absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full p-0"
+                  variant="toolbar"
+                  class="absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full p-0"
                   :aria-label="t('common.clearSearch')"
                   @click="emit('clearSearch')"
                 >
                   <AppIcon name="close" :size="3" />
-                </button>
+                </AppButton>
               </form>
               <p
                 v-if="searchHint"
@@ -111,16 +111,16 @@
           </transition>
         </div>
 
-        <button
+        <AppButton
           v-if="createLabel"
-          type="button"
-          class="button-contextual h-8 w-8 min-w-8 shrink-0 p-0"
+          variant="contextual"
+          class="h-8 w-8 min-w-8 shrink-0 p-0"
           :aria-label="createLabel"
           :title="createLabel"
           @click="$emit('create')"
         >
           <AppIcon name="plus" :size="4" :stroke-width="2.4" />
-        </button>
+        </AppButton>
       </div>
     </div>
   </div>
@@ -130,9 +130,10 @@
 import { computed, nextTick, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import IssueCategorySelector from '@/components/IssueCategorySelector.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import DropdownPanel from '@/components/ui/DropdownPanel.vue';
-import PillSegmentedControl from '@/components/ui/PillSegmentedControl.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import DropdownPanel from '@/components/ui/molecules/DropdownPanel.vue';
+import PillSegmentedControl from '@/components/ui/molecules/PillSegmentedControl.vue';
 import { DEFAULT_ISSUE_CATEGORY, isIssueCategory } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
 import type { FacilitySortOption, IssueFilter, IssueSortOption } from '@/types';

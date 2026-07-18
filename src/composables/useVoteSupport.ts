@@ -41,10 +41,10 @@ export function useVoteSupport(options: VoteSupportOptions) {
     return count;
   });
 
-  const supportClass = computed(() =>
+  const supportVariant = computed<'icon-pill' | 'icon-pill-filled'>(() =>
     optimisticSupported.value
-      ? 'button-icon-pill-filled'
-      : 'button-icon-pill',
+      ? 'icon-pill-filled'
+      : 'icon-pill',
   );
 
   async function toggle() {
@@ -98,7 +98,7 @@ export function useVoteSupport(options: VoteSupportOptions) {
     busy,
     optimisticSupported,
     displaySupportCount,
-    supportClass,
+    supportVariant,
     toggle,
   };
 }

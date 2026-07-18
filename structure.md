@@ -14,7 +14,7 @@
 - `config/rate-limits.config.json` — Supabase 精確業務配額、對應 API error code 與圖片壓縮設定入口
 - `config/backend-actions.config.json` — Cloudflare 原生防刷群組與 Supabase 細部業務配額映射
 - `config/data-retention.config.json` — 已結案內容、通知、事件、log、暫存與維護紀錄保留期的單一設定入口
-- `structure.md` / `AGENTS.md` / `design-qa.md` — 結構地圖 / 代理人規則 / 最近一次視覺比對紀錄
+- `structure.md` / `AGENTS.md` / `ui-design-system.md` / `design-qa.md` — 結構地圖 / 代理人規則 / 前端 UI 復用與新增設計規範 / 最近一次視覺比對紀錄
 - `package.json` — scripts（typecheck、lint、build、check:edge、test:architecture、verify:local…）
 - `index.html` / `vite.config.ts` / `vercel.json` / `eslint.config.js` / `tsconfig*.json` / `tailwind.config.cjs`
 - `.env.example` / `.gitignore` / `skills-lock.json`
@@ -53,7 +53,7 @@
 - `sw.ts` — PWA SW、快取策略、FCM 背景通知
 - `style.css` — 全域樣式載入入口；依序載入 base、primitives 與領域樣式
 - `styles/base.css` — design tokens、全域基礎與頁面骨架
-- `styles/primitives.css` — viewport、control／card／floating 表面與陰影、list、dropdown、control frame 的單一可復用視覺契約
+- `styles/primitives.css` — viewport、control／card／floating 表面與陰影、list、dropdown、control frame 的單一可復用視覺契約；Tailwind 陰影名稱同樣只使用 `shadow-control`、`shadow-card`、`shadow-floating`
 - `styles/components.css` / `controls.css` — 共用表面、互動狀態、按鈕與欄位
 - `styles/navigation.css` — 桌面側欄與手機底部導覽
 - `styles/content.css` / `responsive.css` — 列表、設定、統計、Dialog 與跨裝置覆寫
@@ -73,21 +73,17 @@
 
 ---
 
-## components/ui（無業務）
+## components/ui（Atomic Design，無業務）
 
-- `AppButton.vue` / `SurfacePanel.vue` / `DropdownPanel.vue` / `DropdownMenu.vue` — 按鈕、表面／卡片與 dropdown 的規範入口；領域元件只用 props／slots 組合
-- `ViewportFrame.vue` / `RoutePageFrame.vue` — AppShell 的 viewport gutter／safe-area 寬度與 route page 的 max-width、全高 flex、垂直 padding、底部導覽安全距離入口；route view 不自行計算 viewport 或拼裝頁面骨架
-- `LoadingSpinner.vue` / `BusyButtonContent.vue` / `FeedLoadMoreControl.vue` / `SelectionOptionButton.vue` — spinner、busy 按鈕內容、共用載入更多與一致的選取列控制
-- `EntryComposerShell.vue` / `CountedTextField.vue` — 提案、公告、設備共用的發布骨架、字數欄位與 Markdown 圖片編輯器設定
-- `ContentCardCollection.vue` / `ContentCardShell.vue` — 提案、公告、設備共用的列表狀態、卡片表面、作者／標題／時間／狀態與操作區；領域元件只填資料及差異 slots
-- `DetailRouteState.vue` — 提案、公告、設備詳情共用的全高狀態容器，以及登入等待、loading、逾時、離線及讀取錯誤狀態；確保 skeleton／錯誤／內容維持相同高度鏈
-- `StatusTransitionDialog.vue` — 提案與設備共用的狀態選擇、結果填寫、字數、錯誤及 busy 流程；各領域只提供狀態與文案
-- `AppIcon.vue` / `BrandMark.vue` / `UserAvatar.vue` / `DecorativeGlow.vue`
-- `EmptyStatePanel.vue` / `PageLoadFailure.vue` / `ContentListState.vue` / `SearchHighlight.vue`（三領域共用載入失敗、不可用、錯誤、空內容與分頁狀態殼）
-- `PillSegmentedControl.vue` / `SelectionMark.vue` / `DetailActionButton.vue` / `DetailActionGroup.vue` / `DetailPageShell.vue` / `OperationTimeList.vue`（詳情頁共用操作列、分享／刪除動作與狀態時間列；手機詳情使用無卡片的高利用率內容層，桌面保留 panel）
-- `DialogOverlay.vue` / `GoogleLoginButton.vue`
-- Markdown：`MarkdownImageEditor.vue`、`MarkdownToolbar.vue`、`MarkdownImagePreviews.vue`、`MarkdownImageToolbarStatus.vue`、`MarkdownTableBlockCard.vue`、`TableGridPicker.vue`、`VisualTableEditor.vue`
-- Skeleton：`ContentCardSkeleton`（提案／公告／設備共用、固定兩張並對齊實際卡片區段）、`SkeletonCommentList`、`SkeletonDashboard`、`SkeletonDetail`（詳情標題固定單行並對齊手機無卡片布局）；動畫由 `primitives.css` 的 `skeleton-block`／`skeleton-card` 統一
+- `atoms/` — 不依賴其他 UI 組裝層的最小視覺與互動單位：`AppButton.vue`、`AppIcon.vue`、`ImageRemoveButton.vue`、`IconTile.vue`、`TagBadge.vue`、`SwitchIndicator.vue`、`CharacterCount.vue`、`InlineAlert.vue`、`InlineMessage.vue`、`SkeletonBlock.vue`、`BrandMark.vue`、`BusyButtonContent.vue`、`DecorativeGlow.vue`、`LoadingSpinner.vue`、`SelectionMark.vue`、`UserAvatar.vue`；新頁面不得自行複製按鈕、圖片移除鍵、圖示容器、徽章、switch、字數顯示、alert／inline message、skeleton、品牌、avatar 或 loading 樣式
+- `molecules/` — 由 atoms 組成、可獨立重用的局部控制與狀態：`SurfacePanel`／`EditorSurface`／dropdown、`EditorModeBar`、`ListSurfaceRow`、`IconListRow`、`LabeledListSection`、`SectionHeader`、`CountedTextField`、`CountedTextareaField`、`DialogHeading`、`DialogActionRow`、選取控制、詳情操作、空狀態／錯誤、Markdown 工具列與圖片預覽；molecule 不得依賴 organism
+- `organisms/` — 可直接供 route view 或領域元件填入資料／slots 的完整區塊：內容卡集合與 skeleton、列表狀態、詳情殼與 route 狀態、`DialogShell`、Composer、Markdown／表格編輯器、狀態 Dialog、`ViewportFrame` 與 `RoutePageFrame`
+- 依賴方向固定為 `atoms → molecules → organisms`；同層可組合，低層不得反向 import 高層，`check:ui` 會阻止 flat path 與逆向依賴
+- `organisms/ViewportFrame.vue` / `organisms/RoutePageFrame.vue` — AppShell 的 viewport gutter／safe-area 寬度與 route page 的 max-width、全高 flex、垂直 padding、底部導覽安全距離入口；route view 不自行計算 viewport 或拼裝頁面骨架
+- `organisms/ContentCardCollection.vue` / `ContentCardShell.vue` / `ContentCardSkeleton.vue` — 提案、公告、設備共用的列表狀態、卡片表面、作者／標題／時間／狀態與操作區；領域元件只填資料及差異 slots
+- `organisms/DetailRouteState.vue` / `DetailPageShell.vue` / `SkeletonDetail.vue` — 三領域詳情共用的完整高度鏈、狀態、操作與 responsive panel
+- `organisms/EntryComposerShell.vue` / `MarkdownImageEditor.vue` / `VisualTableEditor.vue` — 三領域 Composer 與 Markdown／表格編輯流程；較小控制留在 molecules
+- `organisms/DialogShell.vue` — Dialog overlay、card surface、scroll lock、focus trap、ARIA 與 dismiss/persistent 行為的唯一完整外殼；領域 Dialog 只填內容與 actions
 
 ---
 

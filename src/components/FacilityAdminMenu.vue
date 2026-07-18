@@ -31,9 +31,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import AppButton from '@/components/ui/AppButton.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import DropdownMenu from '@/components/ui/DropdownMenu.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import DropdownMenu from '@/components/ui/molecules/DropdownMenu.vue';
 import { isFacilityClosed } from '@/constants/statuses';
 import type { FacilitySummary } from '@/types';
 import { useI18n } from '@/i18n';

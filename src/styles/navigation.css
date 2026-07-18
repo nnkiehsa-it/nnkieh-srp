@@ -127,7 +127,7 @@
   }
 
   .app-sidebar__toggle {
-    @apply absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border-0 bg-surface text-ink-500 shadow-note hover:text-ink-900 dark:bg-surface dark:text-ink-400 dark:hover:text-ink-100;
+    @apply absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border-0 bg-surface text-ink-500 shadow-control hover:text-ink-900 dark:bg-surface dark:text-ink-400 dark:hover:text-ink-100;
   }
 
   .app-sidebar__item {
@@ -135,7 +135,7 @@
   }
 
   .app-sidebar__item--active {
-    @apply bg-ink-100/90 text-ink-900 shadow-note dark:bg-ink-800/80 dark:text-ink-100;
+    @apply bg-ink-100/90 text-ink-900 shadow-control dark:bg-ink-800/80 dark:text-ink-100;
   }
 
   .app-sidebar__item::after {

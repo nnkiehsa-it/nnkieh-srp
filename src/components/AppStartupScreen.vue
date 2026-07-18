@@ -13,7 +13,7 @@
 
       <div v-if="stalled" class="startup-screen__recovery">
         <p>{{ t('common.theAppFailedToStartTryAgain') }}</p>
-        <button type="button" class="button-primary" @click="emit('retry')">{{ t('common.retry') }}</button>
+        <AppButton variant="primary" @click="emit('retry')">{{ t('common.retry') }}</AppButton>
       </div>
       <LoadingSpinner v-else :size="6" class="startup-screen__loader" />
     </div>
@@ -21,8 +21,9 @@
 </template>
 
 <script setup lang="ts">
-import BrandMark from '@/components/ui/BrandMark.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import BrandMark from '@/components/ui/atoms/BrandMark.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import LoadingSpinner from '@/components/ui/atoms/LoadingSpinner.vue';
 import { APP_NAME, SCHOOL_NAME } from '@/constants/app';
 import { useI18n } from '@/i18n';
 

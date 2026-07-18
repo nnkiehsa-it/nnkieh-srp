@@ -1,135 +1,134 @@
 <template>
-  <DialogOverlay :open="open" padded z-index-class="z-[80]" :persistent="preventDismiss">
-    <section
-      ref="dialogRef"
-      class="panel dialog-card flex flex-col !overflow-hidden md:max-w-2xl md:max-h-[min(85dvh,780px)]"
-      data-dialog-root
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="app-install-prompt-title"
-      aria-describedby="app-install-prompt-description"
-      tabindex="-1"
+  <DialogShell
+    :open="open"
+    :persistent="preventDismiss"
+    :padded-surface="false"
+    labelled-by="app-install-prompt-title"
+    described-by="app-install-prompt-description"
+    surface-class="dialog-card flex flex-col !overflow-hidden md:max-w-2xl md:max-h-[min(85dvh,780px)]"
+    z-index-class="z-[80]"
+    @close="emit('close')"
+  >
+    <div class="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-5 md:px-8 md:pt-8 md:pb-6">
+      <div class="flex items-start justify-between gap-4 pb-2">
+        <div class="flex min-w-0 items-start gap-4">
+          <IconTile tone="surface" aria-hidden="true">
+            <AppIcon :name="content.icon" :size="6" :stroke-width="2.1" class="text-current" :class="content.iconToneClass" />
+          </IconTile>
+
+          <div class="min-w-0 flex-1">
+            <h2 id="app-install-prompt-title" class="text-[1.75rem] font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-3xl">
+              {{ content.title }}
+            </h2>
+            <p v-if="content.description" id="app-install-prompt-description" class="mt-2 max-w-2xl text-sm leading-6 text-ink-600 dark:text-ink-300 md:text-base">
+              {{ content.description }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <div class="flex flex-wrap items-center gap-2">
+          <TagBadge class="border-primary/30 bg-primary-container/70 text-on-primary-container dark:border-primary/40 dark:bg-primary-container/30 dark:text-primary">
+            {{ content.badge }}
+          </TagBadge>
+          <TagBadge v-if="content.secondaryBadge" class="border-ink-200/80 bg-white/80 text-ink-600 dark:border-ink-700/80 dark:bg-ink-900/70 dark:text-ink-300">
+            {{ content.secondaryBadge }}
+          </TagBadge>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t('app.install.steps') }}</h3>
+          <TagBadge>{{ t('app.install.stepCount', { count: content.steps.length }) }}</TagBadge>
+        </div>
+
+        <ol v-if="content.steps.length" class="mt-4 space-y-3">
+          <li
+            v-for="(step, index) in content.steps"
+            :key="`${index}-${step.title}`"
+            class="flex gap-3 border-b border-ink-100/80 pb-3 last:border-b-0 last:pb-0 dark:border-ink-800/80"
+          >
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-900 text-sm font-bold text-white dark:bg-ink-100 dark:text-ink-900">
+              {{ index + 1 }}
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ step.title }}</span>
+              <span v-if="step.description" class="mt-1 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ step.description }}</span>
+            </span>
+          </li>
+        </ol>
+
+        <div v-if="content.notes.length || content.actionTitle" class="mt-6 space-y-4">
+          <div v-if="content.notes.length">
+            <h4 class="text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('app.install.notes') }}</h4>
+            <ul class="mt-3 space-y-2">
+              <li
+                v-for="note in content.notes"
+                :key="note"
+                class="flex gap-2 text-sm leading-6 text-ink-600 dark:text-ink-300"
+              >
+                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
+                <span>{{ note }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="content.actionTitle">
+            <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">{{ content.actionTitle }}</p>
+            <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ content.actionDescription }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <DialogActionRow
+      v-if="!preventDismiss || content.primaryLabel"
+      class="border-t border-ink-100 bg-white/95 px-5 pb-6 pt-4 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95 md:px-8 md:pb-8 md:pt-4"
     >
-      <div class="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-5 md:px-8 md:pt-8 md:pb-6">
-        <div class="flex items-start justify-between gap-4 pb-2">
-          <div class="flex min-w-0 items-start gap-4">
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/60 bg-white/90 shadow-note dark:border-ink-700/80 dark:bg-ink-900/80" aria-hidden="true">
-              <AppIcon :name="content.icon" :size="6" :stroke-width="2.1" class="text-current" :class="content.iconToneClass" />
-            </div>
-
-            <div class="min-w-0 flex-1">
-              <h2 id="app-install-prompt-title" class="text-[1.75rem] font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-3xl">
-                {{ content.title }}
-              </h2>
-              <p v-if="content.description" id="app-install-prompt-description" class="mt-2 max-w-2xl text-sm leading-6 text-ink-600 dark:text-ink-300 md:text-base">
-                {{ content.description }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-5">
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="tag border-primary/30 bg-primary-container/70 text-on-primary-container dark:border-primary/40 dark:bg-primary-container/30 dark:text-primary">
-              {{ content.badge }}
-            </span>
-            <span v-if="content.secondaryBadge" class="tag border-ink-200/80 bg-white/80 text-ink-600 dark:border-ink-700/80 dark:bg-ink-900/70 dark:text-ink-300">
-              {{ content.secondaryBadge }}
-            </span>
-          </div>
-        </div>
-
-        <div class="mt-6">
-          <div class="flex items-center justify-between gap-3">
-            <h3 class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t('app.install.steps') }}</h3>
-            <span class="tag">{{ t('app.install.stepCount', { count: content.steps.length }) }}</span>
-          </div>
-
-          <ol v-if="content.steps.length" class="mt-4 space-y-3">
-            <li
-              v-for="(step, index) in content.steps"
-              :key="`${index}-${step.title}`"
-              class="flex gap-3 border-b border-ink-100/80 pb-3 last:border-b-0 last:pb-0 dark:border-ink-800/80"
-            >
-              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-900 text-sm font-bold text-white dark:bg-ink-100 dark:text-ink-900">
-                {{ index + 1 }}
-              </span>
-              <span class="min-w-0">
-                <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ step.title }}</span>
-                <span v-if="step.description" class="mt-1 block text-xs leading-5 text-ink-500 dark:text-ink-400">{{ step.description }}</span>
-              </span>
-            </li>
-          </ol>
-
-          <div v-if="content.notes.length || content.actionTitle" class="mt-6 space-y-4">
-            <div v-if="content.notes.length">
-              <h4 class="text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('app.install.notes') }}</h4>
-              <ul class="mt-3 space-y-2">
-                <li
-                  v-for="note in content.notes"
-                  :key="note"
-                  class="flex gap-2 text-sm leading-6 text-ink-600 dark:text-ink-300"
-                >
-                  <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span>
-                  <span>{{ note }}</span>
-                </li>
-              </ul>
-            </div>
-
-            <div v-if="content.actionTitle">
-              <p class="text-sm font-semibold text-ink-900 dark:text-ink-100">{{ content.actionTitle }}</p>
-              <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ content.actionDescription }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-if="!preventDismiss || content.primaryLabel"
-        class="dialog-actions border-t border-ink-100 bg-white/95 px-5 pb-6 pt-4 backdrop-blur dark:border-ink-800 dark:bg-ink-950/95 md:px-8 md:pb-8 md:pt-4"
+      <AppButton
+        v-if="!preventDismiss"
+        variant="secondary"
+        @click="handleSecondaryAction"
       >
-        <button
-          v-if="!preventDismiss"
-          type="button"
-          class="button-secondary"
-          @click="handleSecondaryAction"
-        >
-          {{ content.secondaryLabel }}
-        </button>
-        <button
-          v-if="content.primaryLabel"
-          type="button"
-          class="button-primary gap-2"
-          data-autofocus
-          :disabled="installing"
-          @click="handlePrimaryAction"
-        >
-          <AppIcon v-bind="primaryIconProps" class="shrink-0" />
-          {{ content.primaryLabel }}
-        </button>
-      </div>
-    </section>
+        {{ content.secondaryLabel }}
+      </AppButton>
+      <AppButton
+        v-if="content.primaryLabel"
+        variant="primary"
+        class="gap-2"
+        data-autofocus
+        :disabled="installing"
+        @click="handlePrimaryAction"
+      >
+        <AppIcon v-bind="primaryIconProps" class="shrink-0" />
+        {{ content.primaryLabel }}
+      </AppButton>
+    </DialogActionRow>
+  </DialogShell>
 
-    <ConfirmDialog
-      :danger="false"
-      :open="isSkipConfirmOpen"
-      title="app.install.areYouSureYouWantToSkipItFirst"
-      message="app.install.skipConfirmation"
-      cancel-label="app.install.continueToView"
-      confirm-label="app.install.confirmSkip"
-      @cancel="isSkipConfirmOpen = false"
-      @confirm="confirmSkip"
-    />
-  </DialogOverlay>
+  <ConfirmDialog
+    :danger="false"
+    :open="isSkipConfirmOpen"
+    title="app.install.areYouSureYouWantToSkipItFirst"
+    message="app.install.skipConfirmation"
+    cancel-label="app.install.continueToView"
+    confirm-label="app.install.confirmSkip"
+    @cancel="isSkipConfirmOpen = false"
+    @confirm="confirmSkip"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import { computed, ref } from 'vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import IconTile from '@/components/ui/atoms/IconTile.vue';
+import TagBadge from '@/components/ui/atoms/TagBadge.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import DialogOverlay from '@/components/ui/DialogOverlay.vue';
-import { useBodyScrollLock } from '@/composables/useBodyScrollLock';
-import { useDialogFocus } from '@/composables/useDialogFocus';
+import DialogShell from '@/components/ui/organisms/DialogShell.vue';
+import DialogActionRow from '@/components/ui/molecules/DialogActionRow.vue';
 import type { AppInstallPromptMode } from '@/composables/useAppInstallPrompt';
 import type { InAppBrowserName } from '@/lib/in-app-browser';
 import type { AppInstallPromptReason, IosBrowserGuide } from '@/lib/pwa-install';
@@ -305,13 +304,6 @@ const isSkipConfirmOpen = ref(false);
 
 const preventDismiss = computed(() => {
   return props.mode === 'in-app-browser' || props.mode === 'ios-open-safari';
-});
-
-useBodyScrollLock(toRef(props, 'open'));
-
-const { dialogRef } = useDialogFocus(toRef(props, 'open'), {
-  onClose: () => emit('close'),
-  persistent: preventDismiss,
 });
 
 function handlePrimaryAction() {

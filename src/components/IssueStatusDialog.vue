@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import StatusTransitionDialog from '@/components/ui/StatusTransitionDialog.vue';
+import StatusTransitionDialog from '@/components/ui/organisms/StatusTransitionDialog.vue';
 import { INPUT_LIMITS } from '@/constants/input-limits';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { moderateIssueStatus, updateIssueResult } from '@/services/issues';

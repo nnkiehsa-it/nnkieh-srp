@@ -31,8 +31,8 @@
 
 <script setup lang="ts">
 import IssueTableRow from './IssueTableRow.vue';
-import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
-import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
+import ContentCardCollection from '@/components/ui/organisms/ContentCardCollection.vue';
+import ContentCardSkeleton from '@/components/ui/organisms/ContentCardSkeleton.vue';
 import { useSession } from '@/composables/useSession';
 import type { IssueRecord } from '@/types';
 

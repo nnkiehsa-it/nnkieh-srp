@@ -1,4 +1,4 @@
-import type { AppIconName } from '@/components/ui/AppIcon.vue';
+import type { AppIconName } from '@/components/ui/atoms/AppIcon.vue';
 
 export type MarkdownEditorCommandId =
   | 'h1'

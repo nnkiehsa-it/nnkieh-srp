@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import ContentDetailBody from '@/components/ContentDetailBody.vue';
-import DetailPageShell from '@/components/ui/DetailPageShell.vue';
+import DetailPageShell from '@/components/ui/organisms/DetailPageShell.vue';
 
 withDefaults(defineProps<{
   authorName: string;

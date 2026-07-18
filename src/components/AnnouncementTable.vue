@@ -29,8 +29,8 @@
 
 <script setup lang="ts">
 import AnnouncementTableRow from './AnnouncementTableRow.vue';
-import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
-import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
+import ContentCardCollection from '@/components/ui/organisms/ContentCardCollection.vue';
+import ContentCardSkeleton from '@/components/ui/organisms/ContentCardSkeleton.vue';
 import type { AnnouncementRecord } from '@/types';
 
 defineProps<{

@@ -83,7 +83,7 @@ import { useRoute, useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
 import IssueBoardTable from '@/components/IssueBoardTable.vue';
 import IssueComposer from '@/components/IssueComposer.vue';
-import ContentListState from '@/components/ui/ContentListState.vue';
+import ContentListState from '@/components/ui/organisms/ContentListState.vue';
 import { useIssueBoardData } from '@/composables/useIssueBoardData';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { useSession } from '@/composables/useSession';

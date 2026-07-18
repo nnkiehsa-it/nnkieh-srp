@@ -1,5 +1,5 @@
 import type { RouteLocationRaw } from 'vue-router';
-import type { AppIconName } from '@/components/ui/AppIcon.vue';
+import type { AppIconName } from '@/components/ui/atoms/AppIcon.vue';
 
 export interface AppNavigationItem {
   icon: AppIconName;

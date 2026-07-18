@@ -73,7 +73,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppDesktopSidebar from '@/components/app-shell/AppDesktopSidebar.vue';
 import AppMobileBottomNav from '@/components/app-shell/AppMobileBottomNav.vue';
 import AppMobileHeader from '@/components/app-shell/AppMobileHeader.vue';
-import ViewportFrame from '@/components/ui/ViewportFrame.vue';
+import ViewportFrame from '@/components/ui/organisms/ViewportFrame.vue';
 import { SCHOOL_NAME } from '@/constants/app';
 import { DEFAULT_ISSUE_ROUTE_FILTER, ISSUE_CATEGORY_LABELS, isIssueCategory } from '@/constants/categories';
 import { refreshFromActiveNavigation } from '@/composables/useActiveNavigationRefresh';

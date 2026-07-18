@@ -1,22 +1,4 @@
 @layer components {
-  .panel {
-    @apply border-0 bg-surface dark:bg-surface;
-    border-radius: var(--radius-outer);
-    box-shadow: var(--shadow-card);
-    transition:
-      opacity var(--motion-duration-panel) var(--motion-ease),
-      transform var(--motion-duration-panel) var(--motion-ease),
-      box-shadow var(--motion-duration-panel) var(--motion-ease),
-      border-color var(--motion-duration-panel) var(--motion-ease),
-      background-color var(--motion-duration) var(--motion-ease),
-      color var(--motion-duration) var(--motion-ease);
-    will-change: transform, opacity;
-  }
-
-  .panel-pad {
-    padding: var(--panel-padding);
-  }
-
   .tap-target {
     min-height: var(--tap-target);
     min-width: var(--tap-target);
@@ -109,7 +91,7 @@
   }
 
   .interactive-surface {
-    @apply border-0 bg-surface text-ink-800 shadow-note dark:bg-surface dark:text-ink-100;
+    @apply border-0 bg-surface text-ink-800 shadow-control dark:bg-surface dark:text-ink-100;
   }
 
   .interactive-surface:disabled,
@@ -155,7 +137,7 @@
   }
 
   .nav-item--current {
-    @apply bg-ink-800 text-white shadow-note dark:bg-ink-100 dark:text-ink-900;
+    @apply bg-ink-800 text-white shadow-control dark:bg-ink-100 dark:text-ink-900;
   }
 
   .nav-item--idle {

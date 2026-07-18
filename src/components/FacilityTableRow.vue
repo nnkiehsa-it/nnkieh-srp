@@ -19,28 +19,25 @@
     </template>
 
     <template #supplement>
-      <div class="mt-4 rounded-xl bg-ink-50/85 px-3 py-2.5 dark:bg-ink-900/55">
+      <SurfacePanel variant="inset" class="mt-4 px-3 py-2.5">
         <div class="flex items-center justify-between gap-3 text-xs">
           <span class="truncate text-ink-500 dark:text-ink-400">{{ facility.location }}</span>
           <span class="shrink-0 font-semibold tabular-nums text-ink-700 dark:text-ink-300">{{ t('facility.affectedCount', { count: facility.affected_count }) }}</span>
         </div>
-      </div>
+      </SurfacePanel>
     </template>
 
     <template #actions>
-      <button
-        type="button"
-        :class="[
-          facility.currentUserAffected ? 'button-icon-pill-filled' : 'button-icon-pill',
-          '!h-8 !gap-1 !px-2.5 text-xs',
-        ]"
+      <AppButton
+        :variant="facility.currentUserAffected ? 'icon-pill-filled' : 'icon-pill'"
+        class="!h-8 !gap-1 !px-2.5 text-xs"
         :disabled="affecting || facility.isOwnFacility || isClosed"
         :title="t(facility.isOwnFacility ? 'facility.authorIncludedInAffectedCount' : 'facility.iAlsoEncountered')"
         @click="emit('toggle-affected', facility)"
       >
         <AppIcon name="hand" :size="4" />
         <span>{{ facility.affected_count }}</span>
-      </button>
+      </AppButton>
     </template>
   </ContentCardShell>
 </template>
@@ -48,8 +45,10 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
 import FacilityAdminMenu from '@/components/FacilityAdminMenu.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import ContentCardShell from '@/components/ui/ContentCardShell.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import ContentCardShell from '@/components/ui/organisms/ContentCardShell.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { FACILITY_STATUS_LABELS, isFacilityClosed } from '@/constants/statuses';
 import { formatDate } from '@/lib/format';

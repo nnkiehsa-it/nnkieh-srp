@@ -1,8 +1,8 @@
 <template>
   <div class="relative">
-    <button
-      type="button"
-      :class="[supportClass, compact ? '!h-8 !px-2.5 !gap-1 text-xs' : '']"
+    <AppButton
+      :variant="supportVariant"
+      :class="compact ? '!h-8 !px-2.5 !gap-1 text-xs' : ''"
       :disabled="busy || supportClosed || authorFixed"
       :title="supportTitle"
       :aria-label="t(authorFixed ? 'issue.theAuthorAutomaticallySupportsThisProposal' : optimisticSupported ? 'common.removeSupport' : 'issue.supportProposal')"
@@ -14,13 +14,14 @@
         class="font-semibold select-none leading-none"
         :class="compact ? 'text-[11px]' : 'text-sm'"
       >{{ displaySupportCount }}</span>
-    </button>
+    </AppButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
 import { useVoteSupport } from '@/composables/useVoteSupport';
 import { useI18n } from '@/i18n';
 
@@ -52,7 +53,7 @@ const {
   busy,
   optimisticSupported,
   displaySupportCount,
-  supportClass,
+  supportVariant,
   toggle,
 } = useVoteSupport({
   issueId: toRef(props, 'issueId'),

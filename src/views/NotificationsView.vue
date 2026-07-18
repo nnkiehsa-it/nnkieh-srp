@@ -2,44 +2,74 @@
   <RoutePageFrame bottom-safe layout="fill" padding="compact">
     <div class="min-h-0 flex-1">
       <div :key="notificationPanelKey">
-        <SurfacePanel v-if="loading" variant="list" :aria-label="t('notification.notificationsLoading')">
-          <div
+        <SurfacePanel
+          v-if="loading"
+          variant="list"
+          :aria-label="t('notification.notificationsLoading')"
+        >
+          <ListSurfaceRow
             v-for="index in 2"
             :key="index"
-            class="notification-group-row list-surface-row"
+            as="div"
+            class="notification-group-row"
           >
-            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+            <SkeletonBlock as="div" class="h-10 w-10 shrink-0 rounded-2xl" />
             <div class="min-w-0 flex-1 space-y-2 pt-1">
-              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
-              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
-              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <SkeletonBlock as="div" class="h-3 w-2/3 rounded-full" />
+              <SkeletonBlock as="div" class="h-3 w-full rounded-full" />
+              <SkeletonBlock as="div" class="h-2.5 w-1/3 rounded-full" />
             </div>
-          </div>
+          </ListSurfaceRow>
         </SurfacePanel>
 
-        <SurfacePanel v-else-if="error && notifications.length === 0" variant="list" class="flex flex-col items-center justify-center px-6 py-10 text-center">
+        <SurfacePanel
+          v-else-if="error && notifications.length === 0"
+          variant="list"
+          class="flex flex-col items-center justify-center px-6 py-10 text-center"
+        >
           <AppIcon name="circle-alert" :size="8" class="text-error" />
-          <p class="mt-3 text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('notification.failedToLoadNotifications') }}</p>
-          <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ t(error) }}</p>
-          <button type="button" class="button-secondary mt-4 h-9 px-4 text-xs font-semibold" @click.stop="retryNotifications">
-            {{ t('dashboard.refresh') }}
-          </button>
+          <p class="mt-3 text-sm font-semibold text-ink-900 dark:text-ink-100">
+            {{ t("notification.failedToLoadNotifications") }}
+          </p>
+          <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">
+            {{ t(error) }}
+          </p>
+          <AppButton
+            variant="secondary"
+            class="mt-4 h-9 px-4 text-xs font-semibold"
+            @click.stop="retryNotifications"
+          >
+            {{ t("dashboard.refresh") }}
+          </AppButton>
         </SurfacePanel>
 
-        <SurfacePanel v-else-if="notifications.length === 0" variant="list" class="flex flex-col items-center justify-center px-6 py-12 text-center">
-          <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-100 text-ink-400 dark:bg-ink-800 dark:text-ink-500" aria-hidden="true">
+        <SurfacePanel
+          v-else-if="notifications.length === 0"
+          variant="list"
+          class="flex flex-col items-center justify-center px-6 py-12 text-center"
+        >
+          <IconTile
+            size="lg"
+            tone="neutral"
+            elevation="none"
+            aria-hidden="true"
+          >
             <AppIcon name="bell" :size="6" />
-          </span>
-          <p class="mt-4 text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('notification.noNotificationsYet') }}</p>
-          <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">{{ t('notification.newActivityWillAppearHere') }}</p>
+          </IconTile>
+          <p class="mt-4 text-sm font-semibold text-ink-900 dark:text-ink-100">
+            {{ t("notification.noNotificationsYet") }}
+          </p>
+          <p class="mt-1 text-xs leading-5 text-ink-500 dark:text-ink-400">
+            {{ t("notification.newActivityWillAppearHere") }}
+          </p>
         </SurfacePanel>
 
         <SurfacePanel v-else variant="list">
-          <button
+          <ListSurfaceRow
             v-for="notification in notifications"
             :key="notification.id"
-            type="button"
-            class="notification-group-row list-surface-row list-surface-row--interactive"
+            interactive
+            class="notification-group-row"
             @click.stop="openNotification(notification)"
           >
             <AuthorAvatar
@@ -48,7 +78,11 @@
               :photo-url="notification.actor_photo_url ?? null"
               :name="notification.actor_name ?? t('navigation.user')"
               size="sm"
-              :alt-text="t('notification.nameAvatar', { name: notification.actor_name ?? t('navigation.user') })"
+              :alt-text="
+                t('notification.nameAvatar', {
+                  name: notification.actor_name ?? t('navigation.user'),
+                })
+              "
               class="mt-0.5 shrink-0"
             />
             <span
@@ -62,33 +96,48 @@
 
             <span class="min-w-0 flex-1">
               <span class="flex items-start justify-between gap-3">
-                <span class="line-clamp-2 text-sm font-semibold leading-5 text-ink-950 dark:text-ink-55">
+                <span
+                  class="line-clamp-2 text-sm font-semibold leading-5 text-ink-950 dark:text-ink-55"
+                >
                   {{ title(notification) }}
                 </span>
-                <span v-if="!notification.is_read" class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-info" :aria-label="t('notification.unread')"></span>
+                <span
+                  v-if="!notification.is_read"
+                  class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-info"
+                  :aria-label="t('notification.unread')"
+                ></span>
               </span>
-              <span class="mt-0.5 line-clamp-2 text-xs leading-5 text-ink-600 dark:text-ink-300">
+              <span
+                class="mt-0.5 line-clamp-2 text-xs leading-5 text-ink-600 dark:text-ink-300"
+              >
                 {{ body(notification) }}
               </span>
-              <span class="mt-1.5 block text-[11px] font-medium text-ink-400 dark:text-ink-500">
+              <span
+                class="mt-1.5 block text-[11px] font-medium text-ink-400 dark:text-ink-500"
+              >
                 {{ formatDate(notification.created_at) }}
               </span>
             </span>
 
-            <AppIcon name="chevron-right" :size="4" class="mt-7 shrink-0 text-ink-300 dark:text-ink-600" />
-          </button>
+            <AppIcon
+              name="chevron-right"
+              :size="4"
+              class="mt-7 shrink-0 text-ink-300 dark:text-ink-600"
+            />
+          </ListSurfaceRow>
 
-          <div
+          <ListSurfaceRow
             v-if="loadingMore"
-            class="notification-group-row list-surface-row border-t border-ink-100/70 dark:border-ink-800/70"
+            as="div"
+            class="notification-group-row border-t border-ink-100/70 dark:border-ink-800/70"
           >
-            <div class="h-10 w-10 shrink-0 rounded-2xl bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+            <SkeletonBlock as="div" class="h-10 w-10 shrink-0 rounded-2xl" />
             <div class="min-w-0 flex-1 space-y-2 pt-1">
-              <div class="h-3 w-2/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
-              <div class="h-3 w-full rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
-              <div class="h-2.5 w-1/3 rounded-full bg-ink-100/60 dark:bg-ink-800 skeleton-block"></div>
+              <SkeletonBlock as="div" class="h-3 w-2/3 rounded-full" />
+              <SkeletonBlock as="div" class="h-3 w-full rounded-full" />
+              <SkeletonBlock as="div" class="h-2.5 w-1/3 rounded-full" />
             </div>
-          </div>
+          </ListSurfaceRow>
 
           <FeedLoadMoreControl
             v-show="!loadingMore"
@@ -98,7 +147,12 @@
             :error="Boolean(error)"
             @load-more="loadMoreNotifications"
           />
-          <div v-if="hasMore" ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
+          <div
+            v-if="hasMore"
+            ref="loadMoreSentinel"
+            class="h-1"
+            aria-hidden="true"
+          ></div>
         </SurfacePanel>
       </div>
     </div>
@@ -106,19 +160,23 @@
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
-import { computed, onMounted } from 'vue';
-import AuthorAvatar from '@/components/AuthorAvatar.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import SurfacePanel from '@/components/ui/SurfacePanel.vue';
-import FeedLoadMoreControl from '@/components/ui/FeedLoadMoreControl.vue';
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
-import { useNotificationNavigation } from '@/composables/useNotificationNavigation';
-import { useNotificationDisplay } from '@/composables/useNotificationDisplay';
-import { useNotifications } from '@/composables/useNotifications';
-import { formatDate } from '@/lib/format';
-import type { NotificationRecord } from '@/types';
-import { useI18n } from '@/i18n';
+import RoutePageFrame from "@/components/ui/organisms/RoutePageFrame.vue";
+import { computed, onMounted } from "vue";
+import AuthorAvatar from "@/components/AuthorAvatar.vue";
+import AppIcon from "@/components/ui/atoms/AppIcon.vue";
+import AppButton from "@/components/ui/atoms/AppButton.vue";
+import IconTile from "@/components/ui/atoms/IconTile.vue";
+import SkeletonBlock from "@/components/ui/atoms/SkeletonBlock.vue";
+import SurfacePanel from "@/components/ui/molecules/SurfacePanel.vue";
+import FeedLoadMoreControl from "@/components/ui/molecules/FeedLoadMoreControl.vue";
+import ListSurfaceRow from "@/components/ui/molecules/ListSurfaceRow.vue";
+import { useInfiniteScroll } from "@/composables/useInfiniteScroll";
+import { useNotificationNavigation } from "@/composables/useNotificationNavigation";
+import { useNotificationDisplay } from "@/composables/useNotificationDisplay";
+import { useNotifications } from "@/composables/useNotifications";
+import { formatDate } from "@/lib/format";
+import type { NotificationRecord } from "@/types";
+import { useI18n } from "@/i18n";
 
 const { openNotificationTarget } = useNotificationNavigation();
 const { body, icon, iconClass, isComment, title } = useNotificationDisplay();
@@ -136,8 +194,12 @@ const {
 } = useNotifications();
 initializeNotifications();
 
-const infiniteScrollDisabled = computed(() =>
-  loading.value || loadingMore.value || Boolean(error.value) || !hasMore.value
+const infiniteScrollDisabled = computed(
+  () =>
+    loading.value ||
+    loadingMore.value ||
+    Boolean(error.value) ||
+    !hasMore.value,
 );
 const { sentinel: loadMoreSentinel } = useInfiniteScroll({
   disabled: infiniteScrollDisabled,
@@ -145,10 +207,10 @@ const { sentinel: loadMoreSentinel } = useInfiniteScroll({
 });
 
 const notificationPanelKey = computed(() => {
-  if (loading.value) return 'loading';
-  if (error.value && notifications.value.length === 0) return 'error';
-  if (notifications.value.length === 0) return 'empty';
-  return 'list';
+  if (loading.value) return "loading";
+  if (error.value && notifications.value.length === 0) return "error";
+  if (notifications.value.length === 0) return "empty";
+  return "list";
 });
 
 onMounted(() => {

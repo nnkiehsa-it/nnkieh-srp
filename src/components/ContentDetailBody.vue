@@ -32,7 +32,7 @@
     <div class="min-h-0 py-2" :class="scrollContent ? 'my-2 flex-1 overflow-y-auto pr-2' : ''">
       <div
         v-if="noticeContent"
-        class="mb-4 rounded-[var(--radius-inner)] border-0 px-4 py-3 text-sm shadow-note"
+        class="mb-4 rounded-[var(--radius-inner)] border-0 px-4 py-3 text-sm shadow-control"
         :class="noticeTone === 'error'
           ? 'bg-error-container/80 text-on-error-container'
           : 'bg-success-container/80 text-on-success-container'"

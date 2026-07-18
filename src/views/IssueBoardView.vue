@@ -8,26 +8,31 @@
       @retry="reloadPage"
     />
 
-    <div v-else-if="sessionLoading" class="space-y-5" :aria-label="t('issue.loadingProposals')" aria-busy="true">
+    <div
+      v-else-if="sessionLoading"
+      class="space-y-5"
+      :aria-label="t('issue.loadingProposals')"
+      aria-busy="true"
+    >
       <div class="board-controls relative z-20 space-y-3">
         <div class="flex flex-row items-center justify-between gap-3 md:mt-0">
-          <span class="skeleton-block hidden h-8 w-32 rounded md:block"></span>
-          <div class="flex w-full shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:w-auto">
-            <span class="skeleton-block h-8 w-[9.375rem] rounded-full"></span>
-            <span class="skeleton-block h-8 w-8 rounded-full md:h-9 md:w-9"></span>
-            <span class="skeleton-block h-8 w-8 rounded-full md:h-9 md:w-9"></span>
-            <span class="skeleton-block h-8 w-8 rounded-full"></span>
+          <SkeletonBlock class="hidden h-8 w-32 rounded md:block" />
+          <div
+            class="flex w-full shrink-0 items-center justify-end gap-1.5 sm:gap-2 md:w-auto"
+          >
+            <SkeletonBlock class="h-8 w-[9.375rem] rounded-full" />
+            <SkeletonBlock class="h-8 w-8 rounded-full md:h-9 md:w-9" />
+            <SkeletonBlock class="h-8 w-8 rounded-full md:h-9 md:w-9" />
+            <SkeletonBlock class="h-8 w-8 rounded-full" />
           </div>
         </div>
       </div>
-      <IssueBoardTable
-        :issues="[]"
-        :loading="true"
-        error=""
-      />
+      <IssueBoardTable :issues="[]" :loading="true" error="" />
     </div>
 
-    <div v-else-if="!isAllowedUser" class="sr-only" role="status">{{ t('auth.redirectingToSignIn') }}</div>
+    <div v-else-if="!isAllowedUser" class="sr-only" role="status">
+      {{ t("auth.redirectingToSignIn") }}
+    </div>
 
     <IssueBoard
       v-if="isAllowedUser"
@@ -39,15 +44,16 @@
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
-import { computed, ref } from 'vue';
-import { useI18n } from '@/i18n';
-import IssueBoard from '@/components/IssueBoard.vue';
-import IssueBoardTable from '@/components/IssueBoardTable.vue';
-import PageLoadFailure from '@/components/ui/PageLoadFailure.vue';
-import { useSession } from '@/composables/useSession';
-import { useLoadingTimeout } from '@/composables/useLoadingTimeout';
-import { resetAppConnection } from '@/lib/reconnect';
+import RoutePageFrame from "@/components/ui/organisms/RoutePageFrame.vue";
+import SkeletonBlock from "@/components/ui/atoms/SkeletonBlock.vue";
+import { computed, ref } from "vue";
+import { useI18n } from "@/i18n";
+import IssueBoard from "@/components/IssueBoard.vue";
+import IssueBoardTable from "@/components/IssueBoardTable.vue";
+import PageLoadFailure from "@/components/ui/molecules/PageLoadFailure.vue";
+import { useSession } from "@/composables/useSession";
+import { useLoadingTimeout } from "@/composables/useLoadingTimeout";
+import { resetAppConnection } from "@/lib/reconnect";
 
 const { t } = useI18n();
 const { initialized, isAllowedUser, loading } = useSession();

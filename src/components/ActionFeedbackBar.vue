@@ -7,8 +7,9 @@
         aria-live="polite"
         aria-atomic="true"
       >
-        <div
-          class="action-feedback-card pointer-events-auto flex min-h-14 w-full items-center gap-3 rounded-[1.125rem] bg-surface/96 px-3.5 py-3 text-ink-800 shadow-floating backdrop-blur-xl dark:bg-surface/96 dark:text-ink-100"
+        <SurfacePanel
+          variant="floating"
+          class="action-feedback-card pointer-events-auto flex min-h-14 w-full items-center gap-3 bg-surface/96 px-3.5 py-3 text-ink-800 backdrop-blur-xl dark:bg-surface/96 dark:text-ink-100"
           :class="toneClass"
           role="status"
         >
@@ -19,15 +20,15 @@
           <p class="min-w-0 flex-1 text-sm font-semibold leading-5 tracking-[0.01em]">
             {{ t(feedback.message) }}
           </p>
-          <button
+          <AppButton
             v-if="feedback.action"
-            type="button"
-            class="button-toolbar shrink-0 px-3 text-current"
+            variant="toolbar"
+            class="shrink-0 px-3 text-current"
             @click="handleAction"
           >
             {{ t(feedback.action.label) }}
-          </button>
-        </div>
+          </AppButton>
+        </SurfacePanel>
       </div>
     </Transition>
   </Teleport>
@@ -35,8 +36,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import AppIcon, { type AppIconName } from '@/components/ui/AppIcon.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import AppIcon, { type AppIconName } from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import LoadingSpinner from '@/components/ui/atoms/LoadingSpinner.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { useI18n } from '@/i18n';
 

@@ -17,19 +17,20 @@
     @back="emit('back')"
   >
     <template #header>
-      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">
+      <TagBadge class="border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">
         {{ categoryLabel }}
-      </span>
-      <span class="tag font-semibold shadow-note" :class="statusClass">
+      </TagBadge>
+      <TagBadge elevated class="font-semibold" :class="statusClass">
         {{ statusLabel }}
-      </span>
-      <span
+      </TagBadge>
+      <TagBadge
         v-if="issue.support_enabled && issue.support_met_at"
-        class="tag bg-success-container font-semibold text-on-success-container shadow-note"
+        elevated
+        class="bg-success-container font-semibold text-on-success-container"
       >
         <span class="hidden md:inline">{{ t('issue.proposalAuthor') }}</span>
         <span class="md:hidden">{{ t('issue.author') }}</span>
-      </span>
+      </TagBadge>
     </template>
 
     <template #actions="{ compact }">
@@ -116,8 +117,9 @@ import { useStatusStyling } from '@/composables/useStatusStyling';
 import { getSupportProgressPercent, getSupportRemainingLabel } from '@/lib/issue-status';
 import type { IssueRecord } from '@/types';
 
-import AppIcon from '@/components/ui/AppIcon.vue';
-import EmptyStatePanel from '@/components/ui/EmptyStatePanel.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import TagBadge from '@/components/ui/atoms/TagBadge.vue';
+import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
 import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
 import IssueDetailSupportFooter from '@/components/IssueDetailSupportFooter.vue';
 import IssueComments from '@/components/IssueComments.vue';

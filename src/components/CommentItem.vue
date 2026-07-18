@@ -40,16 +40,16 @@
             </div>
           </div>
           <div v-if="(!isReply && canReply) || canDelete" class="-mr-1 flex shrink-0 items-center gap-0.5 self-start">
-            <button
+            <AppButton
               v-if="!isReply && canReply"
-              type="button"
-              class="button-toolbar h-8 w-8 rounded-full p-0 opacity-80 transition-opacity group-hover:opacity-100"
+              variant="toolbar"
+              class="h-8 w-8 rounded-full p-0 opacity-80 transition-opacity group-hover:opacity-100"
               :aria-label="t('comments.replyToComment')"
               :title="t('comments.replyToComment')"
               @click="emit('reply')"
             >
               <AppIcon name="reply" :size="4" :stroke-width="2" />
-            </button>
+            </AppButton>
             <CompactActionMenu
               v-if="canDelete"
               class="shrink-0 opacity-80 transition-opacity group-hover:opacity-100"
@@ -107,7 +107,8 @@ import { computed, ref, watch } from 'vue';
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
 import CompactActionMenu from '@/components/CompactActionMenu.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
 import { formatDate } from '@/lib/format';
 import { useI18n } from '@/i18n';
 import type { DiscussionCommentRecord } from '@/types';

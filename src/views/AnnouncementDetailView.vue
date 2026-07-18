@@ -41,8 +41,8 @@
 <script setup lang="ts">
 import AnnouncementDetailPagePanel from '@/components/AnnouncementDetailPagePanel.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import DetailRouteState from '@/components/ui/DetailRouteState.vue';
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
+import DetailRouteState from '@/components/ui/organisms/DetailRouteState.vue';
+import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { useAnnouncementDetail } from '@/composables/useAnnouncementDetail';
 import { useAuthenticatedDetailState } from '@/composables/useAuthenticatedDetailState';
 import { resetAppConnection } from '@/lib/reconnect';

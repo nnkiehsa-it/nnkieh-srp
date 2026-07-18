@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="app-sidebar fixed inset-y-0 left-0 z-40 hidden flex-col border-0 bg-surface/94 py-4 shadow-elevated backdrop-blur-xl dark:bg-surface/94 md:flex"
+    class="app-sidebar fixed inset-y-0 left-0 z-40 hidden flex-col border-0 bg-surface/94 py-4 shadow-card backdrop-blur-xl dark:bg-surface/94 md:flex"
     :aria-label="t('navigation.desktopMainNavigation')"
     @click="handleSidebarClick"
   >
@@ -73,9 +73,9 @@
 
 <script setup lang="ts">
 import { RouterLink, type RouteLocationRaw } from 'vue-router';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import BrandMark from '@/components/ui/BrandMark.vue';
-import UserAvatar from '@/components/ui/UserAvatar.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import BrandMark from '@/components/ui/atoms/BrandMark.vue';
+import UserAvatar from '@/components/ui/atoms/UserAvatar.vue';
 import type { AppNavigationItem } from './types';
 import { useI18n } from '@/i18n';
 

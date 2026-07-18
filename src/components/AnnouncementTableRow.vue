@@ -14,21 +14,18 @@
     </template>
 
     <template #actions>
-      <button
-        type="button"
-        class="button-toolbar h-8 w-8 rounded-full p-0"
+      <AppButton
+        variant="toolbar"
+        class="h-8 w-8 rounded-full p-0"
         :title="t('comments.viewComments')"
         :aria-label="t('comments.viewComments')"
         @click.stop="emit('openComments', announcement)"
       >
         <AppIcon name="comment" />
-      </button>
-      <button
-        type="button"
-        :class="[
-          announcement.currentUserLiked ? 'button-icon-pill-filled' : 'button-icon-pill',
-          '!h-8 !gap-1 !px-2.5 text-xs',
-        ]"
+      </AppButton>
+      <AppButton
+        :variant="announcement.currentUserLiked ? 'icon-pill-filled' : 'icon-pill'"
+        class="!h-8 !gap-1 !px-2.5 text-xs"
         :disabled="liking"
         :title="t(announcement.currentUserLiked ? 'announcement.removeLike' : 'announcement.like')"
         :aria-label="t(announcement.currentUserLiked ? 'announcement.removeLike' : 'announcement.like')"
@@ -36,7 +33,7 @@
       >
         <AppIcon name="thumbs-up" />
         <span class="text-sm font-semibold leading-none tabular-nums">{{ announcement.like_count }}</span>
-      </button>
+      </AppButton>
     </template>
   </ContentCardShell>
 </template>
@@ -45,8 +42,9 @@
 import { computed } from 'vue';
 import type { AnnouncementRecord } from '@/types';
 import CompactActionMenu from '@/components/CompactActionMenu.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import ContentCardShell from '@/components/ui/ContentCardShell.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import ContentCardShell from '@/components/ui/organisms/ContentCardShell.vue';
 import { formatDateOnly } from '@/lib/format';
 import { useI18n } from '@/i18n';
 

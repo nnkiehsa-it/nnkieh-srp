@@ -16,8 +16,8 @@
     @back="emit('back')"
   >
     <template #header>
-      <span class="tag border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('facility.facility') }}</span>
-      <span class="tag font-semibold shadow-note" :class="statusClass">{{ statusLabel }}</span>
+      <TagBadge class="border-ink-200 bg-ink-100/50 dark:border-ink-800 dark:bg-ink-950/50">{{ t('facility.facility') }}</TagBadge>
+      <TagBadge elevated class="font-semibold" :class="statusClass">{{ statusLabel }}</TagBadge>
     </template>
 
     <template #actions="{ compact }">
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import FacilityDetailActions from '@/components/FacilityDetailActions.vue';
 import ContentDetailPagePanel from '@/components/ContentDetailPagePanel.vue';
+import TagBadge from '@/components/ui/atoms/TagBadge.vue';
 import type { FacilityRecord, OperationTimeListItem } from '@/types';
 import { useI18n } from '@/i18n';
 

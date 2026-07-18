@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import UserAvatar from '@/components/ui/UserAvatar.vue';
+import UserAvatar from '@/components/ui/atoms/UserAvatar.vue';
 import { useAuthorAvatarUrl } from '@/composables/useAuthorAvatar';
 
 const props = withDefaults(defineProps<{

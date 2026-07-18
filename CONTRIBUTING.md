@@ -4,6 +4,8 @@
 
 感謝你參與 Novae。送出 issue 或 pull request 前，請閱讀完整的[繁中貢獻指南](https://tavricccc.github.io/novae-website/docs/contributing.html)，其中包含環境建立、測試、安全回報、文件同步與 review 要求。
 
+新增或調整前端頁面、共用元件與視覺 primitive 時，另請遵守本 repo 的 [`ui-design-system.md`](ui-design-system.md)。
+
 - 一般前端／重構：`npm run verify:local`
 - 後端 action、權限、RPC、RLS、migration、Edge 或 worker：`npm run verify:integration`
 - 大型變更／合併前：`npm run verify:all`
@@ -13,6 +15,8 @@ Windows 直接執行 npm 指令；整合驗證會自動使用 WSL。新增 actio
 ## English
 
 Thank you for contributing to Novae. Before opening an issue or pull request, read the complete [English contributing guide](https://tavricccc.github.io/novae-website/docs/en/contributing.html) for setup, verification, security reporting, documentation synchronization, and review expectations.
+
+When adding or changing frontend pages, reusable components, or visual primitives, also follow this repository's [`ui-design-system.md`](ui-design-system.md).
 
 - Frontend and ordinary refactors: `npm run verify:local`
 - Backend actions, permissions, RPCs, RLS, migrations, Edge, or workers: `npm run verify:integration`

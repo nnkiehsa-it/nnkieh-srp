@@ -9,8 +9,8 @@
     margin-left: max(var(--app-viewport-gutter), env(safe-area-inset-left));
     margin-right: max(var(--app-viewport-gutter), env(safe-area-inset-right));
     width: calc(
-      100% - max(var(--app-viewport-gutter), env(safe-area-inset-left))
-      - max(var(--app-viewport-gutter), env(safe-area-inset-right))
+      100% - max(var(--app-viewport-gutter), env(safe-area-inset-left)) -
+        max(var(--app-viewport-gutter), env(safe-area-inset-right))
     );
   }
 
@@ -122,6 +122,226 @@
     padding: var(--panel-padding);
   }
 
+  /* Atomic icon container used by empty, warning, prompt, and brand states. */
+  .icon-tile {
+    align-items: center;
+    border: 0;
+    border-radius: 1rem;
+    display: inline-flex;
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+
+  .icon-tile--md {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .icon-tile--lg {
+    height: 3.5rem;
+    width: 3.5rem;
+  }
+
+  .icon-tile--xl {
+    height: 4rem;
+    width: 4rem;
+  }
+
+  .icon-tile--info {
+    background-color: rgb(var(--color-info-container));
+    color: rgb(var(--color-info));
+  }
+
+  .icon-tile--warning {
+    background-color: rgb(var(--color-warning-container));
+    color: rgb(var(--color-warning));
+  }
+
+  .icon-tile--danger {
+    background-color: rgb(var(--color-error-container));
+    color: rgb(var(--color-error));
+  }
+
+  .icon-tile--neutral {
+    background-color: rgb(var(--color-secondary-container) / 0.72);
+    color: rgb(var(--color-on-surface-variant));
+  }
+
+  .icon-tile--inverse {
+    background-color: rgb(var(--color-on-surface));
+    color: rgb(var(--color-surface));
+  }
+
+  .icon-tile--surface {
+    background-color: rgb(var(--color-surface) / 0.9);
+    color: rgb(var(--color-on-surface-variant));
+    outline: 1px solid rgb(var(--color-outline) / 0.16);
+  }
+
+  .icon-tile--elevation-control {
+    box-shadow: var(--shadow-control);
+  }
+
+  .icon-tile--elevation-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .switch-indicator {
+    align-items: center;
+    background-color: rgb(var(--color-secondary-container));
+    border: 0;
+    border-radius: 9999px;
+    box-shadow: inset 0 1px 3px rgb(var(--color-shadow) / 0.08);
+    display: inline-flex;
+    flex-shrink: 0;
+    height: 1.75rem;
+    padding: 0.125rem;
+    transition:
+      background-color var(--motion-duration) var(--motion-ease),
+      transform var(--motion-duration-press) var(--motion-ease);
+    width: 3rem;
+  }
+
+  .switch-indicator--checked {
+    background-color: rgb(var(--color-on-surface));
+  }
+
+  .switch-indicator__thumb {
+    background-color: white;
+    border-radius: 9999px;
+    box-shadow: var(--shadow-control);
+    display: block;
+    height: 1.375rem;
+    transform: translateX(0);
+    transition: transform var(--motion-duration) var(--motion-ease);
+    width: 1.375rem;
+  }
+
+  .switch-indicator--checked .switch-indicator__thumb {
+    transform: translateX(1.25rem);
+  }
+
+  .switch-indicator:active:not([aria-disabled="true"]) {
+    transform: scale(0.985);
+  }
+
+  .list-section-label {
+    color: rgb(var(--color-on-surface-variant));
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1rem;
+    margin: 0 0 0.5rem;
+    padding-inline: 0.25rem;
+  }
+
+  .inline-alert {
+    border-radius: 0.75rem;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .inline-alert--compact {
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .inline-alert--error {
+    background-color: rgb(var(--color-error-container));
+    border-color: rgb(var(--color-error) / 0.2);
+    color: rgb(var(--color-on-error-container));
+  }
+
+  .inline-alert--info {
+    background-color: rgb(var(--color-secondary-container) / 0.7);
+    border-color: rgb(var(--color-outline) / 0.18);
+    color: rgb(var(--color-on-secondary-container));
+  }
+
+  .inline-alert--success {
+    background-color: rgb(var(--color-success-container) / 0.7);
+    border-color: rgb(var(--color-success) / 0.2);
+    color: rgb(var(--color-on-success-container));
+  }
+
+  .inline-alert--warning {
+    background-color: rgb(var(--color-warning-container) / 0.4);
+    border-color: rgb(var(--color-warning) / 0.2);
+    color: rgb(var(--color-on-warning-container));
+  }
+
+  .inline-message {
+    font-weight: 600;
+  }
+
+  .inline-message--xs {
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+  }
+
+  .inline-message--sm {
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+  }
+
+  .inline-message--error {
+    color: rgb(var(--color-error));
+  }
+
+  .inline-message--muted {
+    color: rgb(var(--color-on-surface-variant));
+  }
+
+  .inline-message--success {
+    color: rgb(var(--color-success));
+  }
+
+  .inline-message--warning {
+    color: rgb(var(--color-warning));
+  }
+
+  .dialog-card {
+    @apply w-full max-w-lg;
+  }
+
+  .dialog-eyebrow {
+    @apply text-xs font-semibold tracking-wide text-ink-500 dark:text-ink-400;
+  }
+
+  .dialog-title {
+    @apply mt-1 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50;
+  }
+
+  .dialog-description {
+    @apply mt-3 text-sm font-normal leading-7 text-ink-600 dark:text-ink-300;
+  }
+
+  .dialog-actions {
+    @apply mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end;
+  }
+
+  .editor-surface {
+    @apply rounded-xl border border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-900;
+  }
+
+  .editor-surface--elevated {
+    box-shadow: var(--shadow-control);
+  }
+
+  .editor-surface--muted {
+    @apply bg-ink-50 dark:bg-ink-900;
+  }
+
+  .editor-mode-bar {
+    @apply flex shrink-0 select-none items-center justify-between border-b border-ink-100 bg-ink-50/30 px-3 py-1 text-[11px] text-ink-500 dark:border-ink-800 dark:bg-ink-950/10;
+  }
+
   /*
    * List primitives
    * The container owns clipping/dividers; rows own interaction and spacing.
@@ -195,7 +415,7 @@
     outline-offset: 2px;
   }
 
-  .dropdown-item:active:not(:disabled):not([aria-disabled='true']) {
+  .dropdown-item:active:not(:disabled):not([aria-disabled="true"]) {
     transform: translateY(0.5px) scale(0.985);
   }
 

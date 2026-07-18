@@ -6,7 +6,7 @@
   >
     <div ref="navRef" class="app-bottom-nav__inner relative mx-auto grid grid-cols-5 gap-1">
       <div
-        class="pointer-events-none absolute rounded-full bg-ink-100/90 shadow-note dark:bg-ink-800/80"
+        class="pointer-events-none absolute rounded-full bg-ink-100/90 shadow-control dark:bg-ink-800/80"
         :style="[indicatorStyle, { transition: 'all 280ms cubic-bezier(0.16, 1, 0.3, 1)' }]"
       ></div>
 
@@ -58,8 +58,8 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import UserAvatar from '@/components/ui/UserAvatar.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import UserAvatar from '@/components/ui/atoms/UserAvatar.vue';
 import type { AppNavigationItem } from './types';
 import { useI18n } from '@/i18n';
 

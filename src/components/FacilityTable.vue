@@ -29,8 +29,8 @@
 
 <script setup lang="ts">
 import FacilityTableRow from '@/components/FacilityTableRow.vue';
-import ContentCardCollection from '@/components/ui/ContentCardCollection.vue';
-import ContentCardSkeleton from '@/components/ui/ContentCardSkeleton.vue';
+import ContentCardCollection from '@/components/ui/organisms/ContentCardCollection.vue';
+import ContentCardSkeleton from '@/components/ui/organisms/ContentCardSkeleton.vue';
 import type { FacilitySummary } from '@/types';
 
 withDefaults(defineProps<{

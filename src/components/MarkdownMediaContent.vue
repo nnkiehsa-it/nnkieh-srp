@@ -15,26 +15,34 @@
           class="flex aspect-[4/3] w-full flex-col items-center justify-center bg-error-container/40 p-2 text-center text-error"
         >
           <AppIcon name="warning" :size="5" />
-          <span class="mt-1 text-[10px] font-medium">{{ t('media.loadFailed') }}</span>
+          <span class="mt-1 text-[10px] font-medium">{{
+            t("media.loadFailed")
+          }}</span>
         </div>
-        <div
+        <SkeletonBlock
           v-else-if="image.uploadId && !image.isUploadResolved"
-          class="flex aspect-[4/3] w-full skeleton-block items-center justify-center bg-ink-200/60 text-ink-400 dark:bg-ink-700/50 dark:text-ink-500"
+          as="div"
+          class="flex aspect-[4/3] w-full items-center justify-center text-ink-400 dark:text-ink-500"
         >
           <LoadingSpinner :size="5" />
-        </div>
+        </SkeletonBlock>
         <img
           v-else
           :src="image.src"
           :alt="image.alt || fallbackAlt"
           class="aspect-[4/3] w-full object-cover"
           loading="lazy"
-        >
+        />
       </button>
     </div>
 
-    <div v-if="textContent" class="font-sans text-sm font-normal leading-relaxed text-ink-700 dark:text-ink-200 sm:text-base">
-      <p v-if="plainText" class="whitespace-pre-wrap break-words">{{ textContent }}</p>
+    <div
+      v-if="textContent"
+      class="font-sans text-sm font-normal leading-relaxed text-ink-700 dark:text-ink-200 sm:text-base"
+    >
+      <p v-if="plainText" class="whitespace-pre-wrap break-words">
+        {{ textContent }}
+      </p>
       <MarkdownRenderer v-else :content="textContent" />
     </div>
 
@@ -45,19 +53,19 @@
           class="fixed inset-0 z-[70] flex h-dvh items-center justify-center bg-ink-950/90 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-sm"
           @click.self="selectedImage = null"
         >
-          <button
-            type="button"
-            class="button-icon-filled absolute right-4 top-[calc(1rem+env(safe-area-inset-top))] border-white/20 bg-white text-ink-950 hover:bg-white/90"
+          <AppButton
+            variant="icon-filled"
+            class="absolute right-4 top-[calc(1rem+env(safe-area-inset-top))] border-white/20 bg-white text-ink-950 hover:bg-white/90"
             :aria-label="t('markdown.closeImage')"
             @click="selectedImage = null"
           >
             <AppIcon name="close" :size="5" />
-          </button>
+          </AppButton>
           <img
             :src="selectedImage.fullSrc || selectedImage.src"
             :alt="selectedImage.alt || fallbackAlt"
             class="max-h-full max-w-full object-contain"
-          >
+          />
         </div>
       </Transition>
     </Teleport>
@@ -65,14 +73,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import MarkdownRenderer from '@/components/MarkdownRenderer.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import { stripMarkdownImages } from '@/lib/markdown-images';
-import { useResolvedMarkdown } from '@/composables/useResolvedMarkdown';
-import type { MarkdownImageRecord } from '@/types';
-import { useI18n } from '@/i18n';
+import { computed, ref } from "vue";
+import MarkdownRenderer from "@/components/MarkdownRenderer.vue";
+import LoadingSpinner from "@/components/ui/atoms/LoadingSpinner.vue";
+import SkeletonBlock from "@/components/ui/atoms/SkeletonBlock.vue";
+import AppIcon from "@/components/ui/atoms/AppIcon.vue";
+import AppButton from "@/components/ui/atoms/AppButton.vue";
+import { stripMarkdownImages } from "@/lib/markdown-images";
+import { useResolvedMarkdown } from "@/composables/useResolvedMarkdown";
+import type { MarkdownImageRecord } from "@/types";
+import { useI18n } from "@/i18n";
 
 const props = defineProps<{
   content: string;

@@ -2,16 +2,16 @@
   <RoutePageFrame class="space-y-5">
     <div class="flex items-center justify-end gap-3 md:justify-between">
       <h2 class="hidden shrink-0 text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block">{{ t('announcement.announcement') }}</h2>
-      <button
+      <AppButton
         v-if="isAdmin"
-        type="button"
-        class="button-contextual h-8 w-8 min-w-8 shrink-0 p-0"
+        variant="contextual"
+        class="h-8 w-8 min-w-8 shrink-0 p-0"
         :aria-label="t('announcement.newAnnouncement')"
         :title="t('announcement.newAnnouncement')"
         @click="openComposer"
       >
         <AppIcon name="plus" :size="4" />
-      </button>
+      </AppButton>
     </div>
 
     <ContentListState
@@ -88,13 +88,14 @@
 </template>
 
 <script setup lang="ts">
-import RoutePageFrame from '@/components/ui/RoutePageFrame.vue';
+import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed } from 'vue';
 import AnnouncementComposerDialog from '@/components/AnnouncementComposerDialog.vue';
 import AnnouncementTable from '@/components/AnnouncementTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import ContentListState from '@/components/ui/ContentListState.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import ContentListState from '@/components/ui/organisms/ContentListState.vue';
 import { useAnnouncementManagement } from '@/composables/useAnnouncementManagement';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { useI18n } from '@/i18n';

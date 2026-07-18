@@ -29,9 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import AppButton from '@/components/ui/AppButton.vue';
-import AppIcon from '@/components/ui/AppIcon.vue';
-import DropdownMenu from '@/components/ui/DropdownMenu.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
+import DropdownMenu from '@/components/ui/molecules/DropdownMenu.vue';
 import { useI18n } from '@/i18n';
 
 const { t } = useI18n();

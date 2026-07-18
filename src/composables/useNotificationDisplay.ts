@@ -1,4 +1,4 @@
-import type { AppIconName } from '@/components/ui/AppIcon.vue';
+import type { AppIconName } from '@/components/ui/atoms/AppIcon.vue';
 import { FACILITY_STATUS_LABELS, ISSUE_STATUS_LABELS } from '@/constants/statuses';
 import { useI18n } from '@/i18n';
 import type { NotificationRecord } from '@/types';
