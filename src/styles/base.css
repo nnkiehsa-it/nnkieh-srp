@@ -390,9 +390,20 @@
 
     .route-push-enter-active,
     .route-pop-leave-active {
-      border-radius: 1.5rem 0 0 1.5rem;
-      box-shadow: var(--shadow-floating);
       z-index: 2;
+    }
+
+    .route-push-enter-active::before,
+    .route-pop-leave-active::before {
+      bottom: 0;
+      box-shadow: var(--shadow-floating);
+      content: '';
+      left: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      width: 1px;
+      z-index: 1;
     }
 
     .route-push-leave-active,

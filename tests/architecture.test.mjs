@@ -1269,9 +1269,11 @@ test('primary navigation keeps desktop chrome while mobile routes use a source-a
   assert.doesNotMatch(baseStyles, /\.app-root\[data-bottom-nav='true'\] \.app-main-content \{[\s\S]{0,160}calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
   assert.match(baseStyles, /\.route-push-enter-active,[\s\S]*contain: layout paint;[\s\S]*transition: transform 380ms cubic-bezier\(0\.32, 0\.72, 0, 1\)/u);
   assert.match(baseStyles, /\.route-push-enter-from,[\s\S]*translate3d\(100%, 0, 0\)/u);
-  assert.match(baseStyles, /\.route-push-enter-active,[\s\S]*border-radius: 1\.5rem 0 0 1\.5rem;[\s\S]*box-shadow: var\(--shadow-floating\)/u);
+  assert.match(baseStyles, /\.route-push-enter-active,\s*\.route-pop-leave-active \{\s*z-index: 2;\s*\}/u);
+  assert.match(baseStyles, /\.route-push-enter-active::before,[\s\S]*box-shadow: var\(--shadow-floating\);[\s\S]*width: 1px/u);
   assert.match(baseStyles, /\.route-pop-enter-from[\s\S]*translate3d\(-20%, 0, 0\)/u);
   assert.match(baseStyles, /\.app-root\[data-sidebar='false'\] \.app-main-content/u);
+  assert.match(appShell, /<ViewportFrame as="main" class="flex min-h-0 flex-1 flex-col">/u);
   assert.match(navigationStyles, /\.mobile-nav-enter-from,[\s\S]*translateY\(18px\) scale\(0\.96\)/u);
   assert.match(hierarchy, /name === 'issue-detail' && isMyProposals[\s\S]*NESTED_DETAIL_NAVIGATION_DEPTH/u);
   assert.match(hierarchy, /state\?\.navigationOrigin !== 'notifications'[\s\S]*router\.back\(\)/u);
@@ -1514,7 +1516,7 @@ test('authenticated route pages share one content width and AppShell owns horizo
   assert.match(baseStyles, /\.route-page \{[\s\S]*max-width: var\(--app-content-max-width\);[\s\S]*min-width: 0;[\s\S]*width: 100%;/u);
   assert.doesNotMatch(baseStyles, /\.app-viewport-frame/u);
   assert.match(viewportFrame, /class="viewport-frame"[\s\S]*'viewport-content': content/u);
-  assert.match(appShell, /<ViewportFrame as="main" class="min-h-0 flex-1">/u);
+  assert.match(appShell, /<ViewportFrame as="main" class="flex min-h-0 flex-1 flex-col">/u);
   assert.match(mobileHeader, /<ViewportFrame/u);
   assert.doesNotMatch(mobileHeader, /mx-auto|max-w-/u);
   assert.match(mobileNav, /viewport-floating-inline/u);
