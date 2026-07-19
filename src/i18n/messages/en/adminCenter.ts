@@ -34,7 +34,7 @@ const messages = {
   'adminCenter.facilityResponsibilityHelp': 'Receive new-report notifications and respond or update status for these categories.',
   'adminCenter.otherResponsibility': 'Other platform work',
   'adminCenter.otherResponsibilityHelp': 'Management tools that are not tied to a specific record category.',
-  'adminCenter.autoSaveHelp': 'Permission selections save immediately; there is no separate Save button.',
+  'adminCenter.autoSaveHelp': 'Click the "Save changes" button below to apply the new permission settings.',
   'adminCenter.fullAccessSummary': 'Currently has full platform management access',
   'adminCenter.scopedAccessSummary': 'Currently responsible for {count} categories or tools',
   'adminCenter.accessSaved': 'Management access updated',

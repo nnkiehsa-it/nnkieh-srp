@@ -34,7 +34,7 @@ const messages = {
   'adminCenter.facilityResponsibilityHelp': '會收到該分類的新報修通知，並可回覆與更新處理狀態。',
   'adminCenter.otherResponsibility': '其他平台工作',
   'adminCenter.otherResponsibilityHelp': '不屬於特定案件分類的管理功能。',
-  'adminCenter.autoSaveHelp': '權限勾選會立即儲存；不需要另外按下儲存按鈕。',
+  'adminCenter.autoSaveHelp': '請點擊下方「儲存變更」按鈕以套用最新權限設定。',
   'adminCenter.fullAccessSummary': '目前擁有完整平台管理權限',
   'adminCenter.scopedAccessSummary': '目前負責 {count} 個分類或功能',
   'adminCenter.accessSaved': '管理權限已更新',

@@ -76,6 +76,7 @@ const messages = {
   'common.creating': 'Creating...',
   'common.yes': 'Yes',
   'common.no': 'No',
+  'common.reset': 'Reset',
 } as const;
 
 export default messages;

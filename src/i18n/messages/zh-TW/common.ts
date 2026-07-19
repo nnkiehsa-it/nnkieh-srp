@@ -76,6 +76,7 @@ const messages = {
   'common.creating': '建立中…',
   'common.yes': '是',
   'common.no': '否',
+  'common.reset': '重設',
 } as const;
 
 export default messages;

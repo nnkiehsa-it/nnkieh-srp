@@ -90,7 +90,7 @@
               <AppIcon name="comment" :size="4" class="text-primary-600 dark:text-primary-400" />
               <span>{{ t('adminCenter.proposalResponsibility') }}</span>
               <span class="text-xs font-normal text-ink-500">
-                ({{ t('adminCenter.categoryListCount', { count: user.managedIssueCategoryIds.length }) }})
+                ({{ t('adminCenter.categoryListCount', { count: draftIssueCategoryIds.length }) }})
               </span>
             </span>
             <AppIcon
@@ -115,9 +115,9 @@
                 :key="category.id"
                 :label="category.label"
                 :description="t('access.reviewAndManageProposalsInCategory', { category: category.label })"
-                :selected="user.managedIssueCategoryIds.includes(category.id)"
+                :selected="draftIssueCategoryIds.includes(category.id)"
                 :disabled="Boolean(savingUid)"
-                @select="toggleCategory(category.id)"
+                @click="toggleCategory(category.id)"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@
               <AppIcon name="wrench" :size="4" class="text-primary-600 dark:text-primary-400" />
               <span>{{ t('adminCenter.facilityResponsibility') }}</span>
               <span class="text-xs font-normal text-ink-500">
-                ({{ t('adminCenter.categoryListCount', { count: user.managedFacilityCategoryIds.length }) }})
+                ({{ t('adminCenter.categoryListCount', { count: draftFacilityCategoryIds.length }) }})
               </span>
             </span>
             <AppIcon
@@ -159,9 +159,9 @@
                 :key="category.id"
                 :label="category.label"
                 :description="t('access.handleFacilityReportsInCategory', { category: category.label })"
-                :selected="user.managedFacilityCategoryIds.includes(category.id)"
+                :selected="draftFacilityCategoryIds.includes(category.id)"
                 :disabled="Boolean(savingUid)"
-                @select="toggleFacilityCategory(category.id)"
+                @click="toggleFacilityCategory(category.id)"
               />
             </div>
           </div>
@@ -178,7 +178,7 @@
               <AppIcon name="megaphone" :size="4" class="text-primary-600 dark:text-primary-400" />
               <span>{{ t('adminCenter.otherResponsibility') }}</span>
               <span class="text-xs font-normal text-ink-500">
-                ({{ user.roles.includes('announcement-manager') ? 1 : 0 }})
+                ({{ draftRoles.includes('announcement-manager') ? 1 : 0 }})
               </span>
             </span>
             <AppIcon
@@ -197,9 +197,9 @@
             <SelectionOptionButton
               label="access.announcementManagement"
               description="access.publishAndDeleteAnnouncements"
-              :selected="user.roles.includes('announcement-manager')"
+              :selected="draftRoles.includes('announcement-manager')"
               :disabled="Boolean(savingUid)"
-              @select="toggleScopedRole('announcement-manager')"
+              @click="toggleScopedRole('announcement-manager')"
             />
           </div>
         </SurfacePanel>
@@ -207,9 +207,29 @@
 
       <InlineMessage v-if="error">{{ error }}</InlineMessage>
 
-      <p class="border-t border-ink-100 pt-4 text-xs leading-5 text-ink-500 dark:border-ink-800">
-        {{ t('adminCenter.autoSaveHelp') }}
-      </p>
+      <!-- Save / Reset actions row, only active when hasChanges is true -->
+      <div class="flex items-center justify-between gap-3 border-t border-ink-100 pt-5 dark:border-ink-800">
+        <p class="text-xs leading-5 text-ink-500">
+          {{ t('adminCenter.autoSaveHelp') }}
+        </p>
+        <div class="flex items-center gap-3">
+          <AppButton
+            v-if="hasChanges"
+            variant="secondary"
+            :disabled="Boolean(savingUid)"
+            @click="resetChanges"
+          >
+            {{ t('common.reset') }}
+          </AppButton>
+          <AppButton
+            variant="primary"
+            :disabled="!hasChanges || Boolean(savingUid)"
+            @click="saveChanges"
+          >
+            <BusyButtonContent :busy="Boolean(savingUid)" :label="t('common.save')" :busy-label="t('common.saving')" />
+          </AppButton>
+        </div>
+      </div>
     </SurfacePanel>
   </section>
 </template>
@@ -239,24 +259,58 @@ const user = ref<AccessUser | null>(null);
 const loading = ref(false);
 const error = ref('');
 const savingUid = ref('');
-const isPlatformAdmin = computed(() => user.value?.roles.includes('platform-admin') === true);
 const expandedSection = ref<'issue' | 'facility' | 'other' | null>(null);
+
+// Draft state
+const draftRoles = ref<RoleCode[]>([]);
+const draftIssueCategoryIds = ref<string[]>([]);
+const draftFacilityCategoryIds = ref<string[]>([]);
+
+const isPlatformAdmin = computed(() => draftRoles.value.includes('platform-admin'));
 
 const responsibilityCount = computed(() => {
   if (!user.value || isPlatformAdmin.value) return 0;
-  return user.value.managedIssueCategoryIds.length
-    + user.value.managedFacilityCategoryIds.length
-    + Number(user.value.roles.includes('announcement-manager'));
+  return draftIssueCategoryIds.value.length
+    + draftFacilityCategoryIds.value.length
+    + Number(draftRoles.value.includes('announcement-manager'));
 });
 
 const accessSummary = computed(() => isPlatformAdmin.value
   ? t('adminCenter.fullAccessSummary')
   : t('adminCenter.scopedAccessSummary', { count: responsibilityCount.value }));
 
-// Watch user to reset active accordion section
-watch(user, () => {
-  expandedSection.value = null;
+// Compare current draft with original database values
+const hasChanges = computed(() => {
+  if (!user.value) return false;
+
+  const sameRoles = draftRoles.value.length === user.value.roles.length &&
+    draftRoles.value.every(r => user.value!.roles.includes(r));
+
+  const sameIssues = draftIssueCategoryIds.value.length === user.value.managedIssueCategoryIds.length &&
+    draftIssueCategoryIds.value.every(id => user.value!.managedIssueCategoryIds.includes(id));
+
+  const sameFacilities = draftFacilityCategoryIds.value.length === user.value.managedFacilityCategoryIds.length &&
+    draftFacilityCategoryIds.value.every(id => user.value!.managedFacilityCategoryIds.includes(id));
+
+  return !sameRoles || !sameIssues || !sameFacilities;
 });
+
+function resetChanges() {
+  if (!user.value) {
+    draftRoles.value = [];
+    draftIssueCategoryIds.value = [];
+    draftFacilityCategoryIds.value = [];
+    return;
+  }
+  draftRoles.value = [...user.value.roles];
+  draftIssueCategoryIds.value = [...user.value.managedIssueCategoryIds];
+  draftFacilityCategoryIds.value = [...user.value.managedFacilityCategoryIds];
+}
+
+watch(user, () => {
+  resetChanges();
+  expandedSection.value = null;
+}, { immediate: true });
 
 function toggleSection(section: 'issue' | 'facility' | 'other') {
   expandedSection.value = expandedSection.value === section ? null : section;
@@ -279,15 +333,21 @@ async function findUser() {
   }
 }
 
-async function saveAccess(roles: RoleCode[], categories: string[], facilityCategories: string[]) {
+async function saveChanges() {
   if (!user.value) return;
   savingUid.value = user.value.uid;
   error.value = '';
   try {
-    const result = await setUserRoles(user.value.uid, roles, categories, facilityCategories);
+    const result = await setUserRoles(
+      user.value.uid,
+      draftRoles.value,
+      draftIssueCategoryIds.value,
+      draftFacilityCategoryIds.value
+    );
     user.value.roles = result.roles;
     user.value.managedIssueCategoryIds = result.managedIssueCategoryIds;
     user.value.managedFacilityCategoryIds = result.managedFacilityCategoryIds;
+    resetChanges();
     show(t('adminCenter.accessSaved'), 'success');
   } catch (caught) {
     error.value = caught instanceof Error ? t(caught.message) : t('access.saveFailed');
@@ -296,43 +356,39 @@ async function saveAccess(roles: RoleCode[], categories: string[], facilityCateg
   }
 }
 
-async function selectPlatformAdmin() {
-  if (!user.value || isPlatformAdmin.value) return;
-  await saveAccess(['platform-admin'], [], []);
+function selectPlatformAdmin() {
+  if (isPlatformAdmin.value) return;
+  draftRoles.value = ['platform-admin'];
+  draftIssueCategoryIds.value = [];
+  draftFacilityCategoryIds.value = [];
 }
 
-async function selectScopedManager() {
-  if (!user.value || !isPlatformAdmin.value) return;
-  await saveAccess([], [], []);
+function selectScopedManager() {
+  if (!isPlatformAdmin.value) return;
+  draftRoles.value = [];
+  draftIssueCategoryIds.value = [];
+  draftFacilityCategoryIds.value = [];
 }
 
-async function togglePlatformAdmin() {
-  if (!user.value) return;
-  await saveAccess(isPlatformAdmin.value ? [] : ['platform-admin'], [], []);
+function toggleCategory(categoryId: string) {
+  if (isPlatformAdmin.value) return;
+  draftIssueCategoryIds.value = draftIssueCategoryIds.value.includes(categoryId)
+    ? draftIssueCategoryIds.value.filter((value) => value !== categoryId)
+    : [...draftIssueCategoryIds.value, categoryId];
 }
 
-async function toggleCategory(categoryId: string) {
-  if (!user.value || isPlatformAdmin.value) return;
-  const categories = user.value.managedIssueCategoryIds.includes(categoryId)
-    ? user.value.managedIssueCategoryIds.filter((value) => value !== categoryId)
-    : [...user.value.managedIssueCategoryIds, categoryId];
-  await saveAccess(user.value.roles.filter((role) => role !== 'proposal-manager'), categories, user.value.managedFacilityCategoryIds);
+function toggleFacilityCategory(categoryId: string) {
+  if (isPlatformAdmin.value) return;
+  draftFacilityCategoryIds.value = draftFacilityCategoryIds.value.includes(categoryId)
+    ? draftFacilityCategoryIds.value.filter((value) => value !== categoryId)
+    : [...draftFacilityCategoryIds.value, categoryId];
 }
 
-async function toggleFacilityCategory(categoryId: string) {
-  if (!user.value || isPlatformAdmin.value) return;
-  const categories = user.value.managedFacilityCategoryIds.includes(categoryId)
-    ? user.value.managedFacilityCategoryIds.filter((value) => value !== categoryId)
-    : [...user.value.managedFacilityCategoryIds, categoryId];
-  await saveAccess(user.value.roles.filter((role) => role !== 'general-affairs'), user.value.managedIssueCategoryIds, categories);
-}
-
-async function toggleScopedRole(role: Extract<RoleCode, 'announcement-manager'>) {
-  if (!user.value || isPlatformAdmin.value) return;
-  const roles = user.value.roles.includes(role)
-    ? user.value.roles.filter((value) => value !== role)
-    : [...user.value.roles.filter((value) => value !== 'proposal-manager'), role];
-  await saveAccess(roles, user.value.managedIssueCategoryIds, user.value.managedFacilityCategoryIds);
+function toggleScopedRole(role: Extract<RoleCode, 'announcement-manager'>) {
+  if (isPlatformAdmin.value) return;
+  draftRoles.value = draftRoles.value.includes(role)
+    ? draftRoles.value.filter((value) => value !== role)
+    : [...draftRoles.value, role];
 }
 
 onMounted(() => { void refresh(); });
