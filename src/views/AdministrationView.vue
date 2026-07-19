@@ -2,23 +2,15 @@
   <RoutePageFrame padding="responsive">
     <div class="mx-auto w-full max-w-5xl space-y-6 py-4">
       <header>
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-primary-600">{{ t('adminCenter.eyebrow') }}</p>
-        <h1 class="mt-2 text-2xl font-bold text-ink-950 dark:text-ink-50">{{ t('adminCenter.title') }}</h1>
+        <h1 class="text-2xl font-bold text-ink-950 dark:text-ink-50">{{ t('adminCenter.title') }}</h1>
         <p class="mt-2 max-w-3xl text-sm leading-6 text-ink-500">{{ t('adminCenter.description') }}</p>
       </header>
 
-      <div class="grid gap-3 md:grid-cols-2" role="navigation" :aria-label="t('adminCenter.sections')">
-        <SelectionOptionButton
-          label="adminCenter.categoriesTab"
-          description="adminCenter.categoriesTabHelp"
-          :selected="activeTab === 'categories'"
-          @select="setTab('categories')"
-        />
-        <SelectionOptionButton
-          label="adminCenter.membersTab"
-          description="adminCenter.membersTabHelp"
-          :selected="activeTab === 'members'"
-          @select="setTab('members')"
+      <div class="flex pb-2">
+        <PillSegmentedControl
+          :model-value="activeTab"
+          :options="tabOptions"
+          @update:model-value="setTab"
         />
       </div>
 
@@ -39,7 +31,8 @@ import { computed, reactive, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CategoryWorkflowPanel from '@/components/admin/CategoryWorkflowPanel.vue';
 import MemberAccessPanel from '@/components/admin/MemberAccessPanel.vue';
-import SelectionOptionButton from '@/components/ui/molecules/SelectionOptionButton.vue';
+import PillSegmentedControl from '@/components/ui/molecules/PillSegmentedControl.vue';
+import type { PillSegmentedControlOption } from '@/components/ui/molecules/PillSegmentedControl.vue';
 import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { useI18n } from '@/i18n';
 
@@ -50,6 +43,11 @@ const router = useRouter();
 const { t } = useI18n();
 const activeTab = computed<AdministrationTab>(() => route.query.tab === 'members' ? 'members' : 'categories');
 const visitedTabs = reactive(new Set<AdministrationTab>([activeTab.value]));
+
+const tabOptions = computed<readonly PillSegmentedControlOption<AdministrationTab>[]>(() => [
+  { value: 'categories', label: t('adminCenter.categoriesTabLabel'), icon: 'comment' },
+  { value: 'members', label: t('adminCenter.membersTabLabel'), icon: 'user' },
+]);
 
 watch(activeTab, (tab) => { visitedTabs.add(tab); });
 
