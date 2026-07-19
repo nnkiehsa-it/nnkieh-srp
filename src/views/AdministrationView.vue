@@ -6,12 +6,41 @@
         <p class="mt-2 max-w-3xl text-sm leading-6 text-ink-500">{{ t('adminCenter.description') }}</p>
       </header>
 
-      <div class="flex pb-2">
-        <PillSegmentedControl
-          :model-value="activeTab"
-          :options="tabOptions"
-          @update:model-value="setTab"
-        />
+      <!-- Horizontal descriptive card tabs -->
+      <div class="grid gap-3 sm:grid-cols-2" role="navigation" :aria-label="t('adminCenter.sections')">
+        <button
+          type="button"
+          class="flex flex-col items-start text-left p-4 rounded-xl border transition-all duration-200"
+          :class="activeTab === 'categories'
+            ? 'border-primary-500 bg-primary-50/30 dark:bg-primary-950/20 ring-1 ring-primary-500'
+            : 'border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:border-ink-300 dark:hover:border-ink-700'"
+          @click="setTab('categories')"
+        >
+          <span class="flex items-center gap-2 font-bold text-sm" :class="activeTab === 'categories' ? 'text-primary-700 dark:text-primary-300' : 'text-ink-900 dark:text-ink-100'">
+            <AppIcon name="comment" :size="4" />
+            <span>{{ t('adminCenter.categoriesTabLabel') }}</span>
+          </span>
+          <span class="mt-1 text-xs text-ink-500">
+            {{ t('adminCenter.categoriesTabHelp') }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="flex flex-col items-start text-left p-4 rounded-xl border transition-all duration-200"
+          :class="activeTab === 'members'
+            ? 'border-primary-500 bg-primary-50/30 dark:bg-primary-950/20 ring-1 ring-primary-500'
+            : 'border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:border-ink-300 dark:hover:border-ink-700'"
+          @click="setTab('members')"
+        >
+          <span class="flex items-center gap-2 font-bold text-sm" :class="activeTab === 'members' ? 'text-primary-700 dark:text-primary-300' : 'text-ink-900 dark:text-ink-100'">
+            <AppIcon name="user" :size="4" />
+            <span>{{ t('adminCenter.membersTabLabel') }}</span>
+          </span>
+          <span class="mt-1 text-xs text-ink-500">
+            {{ t('adminCenter.membersTabHelp') }}
+          </span>
+        </button>
       </div>
 
       <CategoryWorkflowPanel
@@ -31,8 +60,7 @@ import { computed, reactive, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CategoryWorkflowPanel from '@/components/admin/CategoryWorkflowPanel.vue';
 import MemberAccessPanel from '@/components/admin/MemberAccessPanel.vue';
-import PillSegmentedControl from '@/components/ui/molecules/PillSegmentedControl.vue';
-import type { PillSegmentedControlOption } from '@/components/ui/molecules/PillSegmentedControl.vue';
+import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { useI18n } from '@/i18n';
 
@@ -43,11 +71,6 @@ const router = useRouter();
 const { t } = useI18n();
 const activeTab = computed<AdministrationTab>(() => route.query.tab === 'members' ? 'members' : 'categories');
 const visitedTabs = reactive(new Set<AdministrationTab>([activeTab.value]));
-
-const tabOptions = computed<readonly PillSegmentedControlOption<AdministrationTab>[]>(() => [
-  { value: 'categories', label: t('adminCenter.categoriesTabLabel'), icon: 'comment' },
-  { value: 'members', label: t('adminCenter.membersTabLabel'), icon: 'user' },
-]);
 
 watch(activeTab, (tab) => { visitedTabs.add(tab); });
 
