@@ -45,11 +45,11 @@ function normalizeSummary(value: RawFacility): FacilitySummary {
 }
 
 export async function listFacilities(input: {
-  bucket: 'active' | 'closed'; query?: string; sort?: FacilitySortOption; status?: FacilityStatus | ''; cursor?: FacilityCursor | null;
+  bucket: 'active' | 'closed'; categoryId: string; query?: string; sort?: FacilitySortOption; status?: FacilityStatus | ''; cursor?: FacilityCursor | null;
 }, options: { signal?: AbortSignal } = {}): Promise<FacilityPageResult> {
   await prepareContentRevisionRead();
   const cacheKey = createContentCacheKey([
-    'facility-list-page', input.bucket, input.status ?? '', input.sort ?? 'latest', input.query ?? '',
+    'facility-list-page', input.categoryId, input.bucket, input.status ?? '', input.sort ?? 'latest', input.query ?? '',
     input.cursor?.id ?? 'first', input.cursor?.createdAt ?? '', input.cursor?.affectedCount ?? '',
   ]);
   const cached = await getCachedContentPersistent<FacilityPageResult>(cacheKey);

@@ -1,5 +1,5 @@
 import { asRecord, asString } from "../_shared/http.ts";
-import { canManageFacilityCategory, hasPermission, requireFacilityCategoryPermission } from "./auth.ts";
+import { canManageFacilityCategory, requireFacilityCategoryPermission } from "./auth.ts";
 import { getFacilityCategories } from "./categories.ts";
 import type { AuthContext, BackendSupabase, JsonRecord } from "./types.ts";
 import { validateMarkdownUploadsBeforeCreate } from "./uploads.ts";
@@ -102,10 +102,14 @@ export async function handleFacilityAction(
 
 export async function listFacilities(payload: JsonRecord, auth: AuthContext, supabase: BackendSupabase) {
   const cursor = asRecord(payload.cursor);
+  const categoryId = asString(payload.categoryId).trim();
+  const categories = await getFacilityCategories(supabase);
+  if (!categories.some((category) => category.id === categoryId)) throw new Error("invalid-facility-category");
   const { data, error } = await supabase.schema("app_api").rpc("backend_list_facilities", {
     actor_uid: auth.uid,
-    actor_can_manage: hasPermission(auth, "facility.manage"),
+    actor_is_admin: auth.isAdmin,
     bucket: asString(payload.bucket, "active") === "closed" ? "closed" : "active",
+    category_filter: categoryId,
     status_filter: asString(payload.status),
     search_query: optionalText(payload.query, "search", INPUT_LIMITS.search).trim(),
     sort_name: asString(payload.sort) === "most-affected" ? "most-affected" : "latest",
@@ -113,6 +117,7 @@ export async function listFacilities(payload: JsonRecord, auth: AuthContext, sup
     cursor_number: cursor.affectedCount === undefined ? null : Math.round(asNumber(cursor.affectedCount, 0)),
     cursor_id: asUuid(cursor.id) || null,
     page_size: Math.round(asNumber(payload.pageSize, 20)),
+    managed_category_ids: auth.managedFacilityCategoryIds,
   });
   if (error) throw error;
   const result = asRecord(data);

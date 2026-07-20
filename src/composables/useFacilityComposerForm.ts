@@ -6,8 +6,9 @@ import { RATE_LIMITS } from '@/generated/rate-limits';
 import type { FacilityRecord } from '@/types';
 import { getDefaultFacilityCategoryId } from '@/composables/useCategories';
 
-export function useFacilityComposerForm(open: Ref<boolean>, onClose: () => void, onSubmitted: (facility: FacilityRecord) => void) {
-  const form = reactive({ categoryId: getDefaultFacilityCategoryId(), title: '', location: '', content: '' });
+export function useFacilityComposerForm(open: Ref<boolean>, initialCategoryId: Ref<string>, onClose: () => void, onSubmitted: (facility: FacilityRecord) => void) {
+  const selectedCategoryId = () => initialCategoryId.value || getDefaultFacilityCategoryId();
+  const form = reactive({ categoryId: selectedCategoryId(), title: '', location: '', content: '' });
   const images = useMarkdownImageUpload(toRef(form, 'content'), { maxImages: RATE_LIMITS.imageUploads.facilityMaxImages });
   const submitting = ref(false);
   const error = ref('');
@@ -15,9 +16,9 @@ export function useFacilityComposerForm(open: Ref<boolean>, onClose: () => void,
   const { show, start } = useActionFeedback();
 
   function reset() {
-    form.categoryId = getDefaultFacilityCategoryId(); form.title = ''; form.location = ''; form.content = ''; error.value = ''; showPreview.value = false; images.resetImages();
+    form.categoryId = selectedCategoryId(); form.title = ''; form.location = ''; form.content = ''; error.value = ''; showPreview.value = false; images.resetImages();
   }
-  watch(open, (value) => { if (!value) reset(); });
+  watch(open, (value) => { if (!value) reset(); else form.categoryId = selectedCategoryId(); });
 
   async function close() {
     if (submitting.value || images.uploading.value) return;

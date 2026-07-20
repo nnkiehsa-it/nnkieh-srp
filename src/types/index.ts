@@ -19,6 +19,7 @@ export type NotificationType =
   | 'announcement_comment_created'
   | 'facility_status_changed'
   | 'facility_report_created'
+  | 'issue_created'
   | 'issue_comment_created'
   | 'issue_status_changed'
   | 'support_goal_met'

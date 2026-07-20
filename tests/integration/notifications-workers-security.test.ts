@@ -123,6 +123,96 @@ integrationTest("notification state, push preferences, and dashboard permissions
   assert.ok("operations" in dashboard);
 });
 
+integrationTest("new proposal and facility notifications are personal to category managers", async () => {
+  const admin = await seedActor(`category-notification-admin-${crypto.randomUUID()}`, { roles: ["platform-admin"] });
+  const issueCategoryId = `notify-issue-${crypto.randomUUID().slice(0, 8)}`;
+  const facilityCategoryId = `notify-facility-${crypto.randomUUID().slice(0, 8)}`;
+  await callAction("saveIssueCategory", {
+    category: {
+      authorVisible: true,
+      commentsEnabled: true,
+      id: issueCategoryId,
+      isActive: true,
+      isDefault: false,
+      label: "通知測試提案",
+      readAccess: "school",
+      responseDeadlineDays: null,
+      sortOrder: 20_000,
+      supportDeadlineDays: null,
+      supportEnabled: false,
+      supportGoal: null,
+    },
+    requestId: requestId("notification-issue-category"),
+  }, admin.auth);
+  await callAction("saveFacilityCategory", {
+    category: {
+      id: facilityCategoryId,
+      isActive: true,
+      isDefault: false,
+      label: "通知測試設備",
+      sortOrder: 20_000,
+    },
+    requestId: requestId("notification-facility-category"),
+  }, admin.auth);
+
+  const managers = await Promise.all(Array.from({ length: 4 }, (_, index) => seedActor(
+    `category-notification-manager-${index}-${crypto.randomUUID()}`,
+    { categoryIds: [issueCategoryId], facilityCategoryIds: [facilityCategoryId] },
+  )));
+  const issueAuthor = await seedActor(`category-notification-issue-author-${crypto.randomUUID()}`);
+  const facilityAuthor = await seedActor(`category-notification-facility-author-${crypto.randomUUID()}`);
+  const issueResult = asRecord(await callAction("createIssue", {
+    category: issueCategoryId,
+    content: "Category manager proposal notification integration content",
+    requestId: requestId("category-notification-issue"),
+    title: "Category notification proposal",
+  }, issueAuthor.auth));
+  const facilityResult = asRecord(await callAction("createFacility", {
+    categoryId: facilityCategoryId,
+    content: "Category manager facility notification integration content",
+    location: "Integration room",
+    requestId: requestId("category-notification-facility"),
+    title: "Category notification facility",
+  }, facilityAuthor.auth));
+  const issueId = String(asRecord(issueResult.issue).id);
+  const facilityId = String(asRecord(facilityResult.facility).id);
+
+  const workerUrl = `${requiredEnv("SUPABASE_FUNCTIONS_URL").replace(/\/+$/u, "")}/outboxWorker`;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    const { data, error } = await supabase.schema("app_private").from("notifications")
+      .select("recipient_uid,source,target_id,type").in("target_id", [issueId, facilityId]);
+    if (error) throw error;
+    if ((data ?? []).length >= managers.length * 2) break;
+    const response = await fetch(workerUrl, {
+      headers: {
+        authorization: `Bearer ${requiredEnv("WEBHOOK_SECRET")}`,
+        "x-novae-origin-secret": requiredEnv("EDGE_ORIGIN_SECRET"),
+      },
+      method: "POST",
+    });
+    assert.ok(response.ok || response.status === 429, `outbox worker returned ${response.status}`);
+    await new Promise((resolve) => setTimeout(resolve, 550));
+  }
+
+  const { data: notifications, error: notificationError } = await supabase.schema("app_private")
+    .from("notifications")
+    .select("recipient_uid,source,target_id,type")
+    .in("target_id", [issueId, facilityId]);
+  if (notificationError) throw notificationError;
+  const managerUids = new Set(managers.map((manager) => manager.auth.uid));
+  const issueNotifications = (notifications ?? []).filter((row) => row.target_id === issueId);
+  const facilityNotifications = (notifications ?? []).filter((row) => row.target_id === facilityId);
+  assert.equal(issueNotifications.length, managerUids.size);
+  assert.equal(facilityNotifications.length, managerUids.size);
+  for (const notification of [...issueNotifications, ...facilityNotifications]) {
+    assert.equal(notification.source, "user");
+    assert.ok(managerUids.has(String(notification.recipient_uid)));
+    assert.notEqual(notification.recipient_uid, admin.auth.uid);
+  }
+  assert.ok(issueNotifications.every((row) => row.type === "issue_created"));
+  assert.ok(facilityNotifications.every((row) => row.type === "facility_report_created"));
+});
+
 integrationTest("worker database lifecycles and maintenance RPC", async () => {
   const { data: categoryRows, error: categoryError } = await supabase.schema("app_private")
     .from("issue_categories").select("id").eq("is_active", true).order("sort_order");

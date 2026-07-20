@@ -66,7 +66,8 @@ function isCommentNotificationType(type: string) {
 }
 
 function isIssueUpdateNotificationType(type: string) {
-  return type === "issue_status_changed"
+  return type === "issue_created"
+    || type === "issue_status_changed"
     || type === "facility_status_changed"
     || type === "issue_deleted"
     || type === "support_goal_met";
@@ -82,10 +83,16 @@ function commentIdForEvent(event: OutboxEvent) {
 function notificationForEvent(event: OutboxEvent): Record<string, unknown> | null {
   if (event.payload.retention_cleanup === true) return null;
   const title = asString(event.payload.title, event.event_type);
-  if (event.event_type === "issue.created") return null;
+  if (event.event_type === "issue.created") {
+    return {
+      source: "user", type: "issue_created", target_type: "issue", target_id: event.target_id,
+      title: "收到新的提案", actor_uid: event.actor_uid,
+      body_preview: title, issue_category: asString(event.payload.category),
+    };
+  }
   if (event.event_type === "facility.created") {
     return {
-      source: "admin", type: "facility_report_created", target_type: "facility", target_id: event.target_id,
+      source: "user", type: "facility_report_created", target_type: "facility", target_id: event.target_id,
       title: "新的設備報修", actor_uid: event.actor_uid,
       body_preview: title,
     };
@@ -568,12 +575,19 @@ async function createNotificationsForEvent(
   supabase: AppSupabase,
   event: OutboxEvent,
 ) {
-  if (event.event_type === "facility.created") {
-    const base = notificationForEvent(event);
+  if (event.event_type === "issue.created" || event.event_type === "facility.created") {
+    let base = notificationForEvent(event);
     if (!base) return { hasNotification: false };
-    const categoryId = asString(event.payload.category_id);
-    const { data, error } = await supabase.schema("app_private").from("user_facility_category_assignments")
-      .select("uid").eq("category_id", categoryId).eq("notify_on_created", true);
+    const actorPhotoUrl = await findCachedAvatarUrl(supabase, event.actor_uid);
+    if (actorPhotoUrl) base = { ...base, actor_photo_url: actorPhotoUrl };
+    const isFacility = event.event_type === "facility.created";
+    const categoryId = asString(event.payload[isFacility ? "category_id" : "category"]);
+    const assignmentTable = isFacility
+      ? "user_facility_category_assignments"
+      : "user_issue_category_assignments";
+    let query = supabase.schema("app_private").from(assignmentTable).select("uid").eq("category_id", categoryId);
+    if (isFacility) query = query.eq("notify_on_created", true);
+    const { data, error } = await query;
     if (error) throw error;
     const recipients = [...new Set((data ?? []).map((row) => asString(row.uid)).filter((uid) => uid && uid !== event.actor_uid))];
     const notifications = await Promise.all(recipients.map(async (recipientUid) => ({

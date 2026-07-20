@@ -16,7 +16,7 @@ const FIREBASE_USER_MEMORY_CACHE_MAX = 200;
 const LOCAL_AUTH_EMULATOR_PATTERN = /^(?:127\.0\.0\.1|localhost|host\.docker\.internal):\d{2,5}$/u;
 const firebaseUserMemoryCache = new Map<string, { expiresAt: number; user: Record<string, unknown> }>();
 
-function authEmulatorHost() {
+export function firebaseAuthEmulatorHost() {
   if (Deno.env.get("LOCAL_TEST_MODE") !== "true") return "";
   const host = Deno.env.get("FIREBASE_AUTH_EMULATOR_HOST")?.trim() ?? "";
   if (!LOCAL_AUTH_EMULATOR_PATTERN.test(host)) throw new Error("invalid-local-test-config");
@@ -24,7 +24,7 @@ function authEmulatorHost() {
 }
 
 function identityToolkitUrl(path: string, apiKey: string) {
-  const emulatorHost = authEmulatorHost();
+  const emulatorHost = firebaseAuthEmulatorHost();
   const base = emulatorHost
     ? `http://${emulatorHost}/identitytoolkit.googleapis.com/v1`
     : "https://identitytoolkit.googleapis.com/v1";
@@ -172,7 +172,7 @@ export async function requireVerifiedFirebaseUser(request: Request): Promise<Fir
   const idToken = requireAuthHeader(request);
   const projectId = requireEnv("FIREBASE_PROJECT_ID");
   let payload: Record<string, unknown>;
-  if (authEmulatorHost()) {
+  if (firebaseAuthEmulatorHost()) {
     payload = decodeJwtPayload(idToken);
     const now = Math.floor(Date.now() / 1000);
     if (payload.aud !== projectId || payload.iss !== `https://securetoken.google.com/${projectId}`

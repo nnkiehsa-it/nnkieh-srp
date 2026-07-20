@@ -56,12 +56,13 @@ import type { FacilityRecord } from '@/types';
 import { useCategories } from '@/composables/useCategories';
 import { useI18n } from '@/i18n';
 
-const props = defineProps<{ open: boolean }>();
+const props = defineProps<{ categoryId: string; open: boolean }>();
 const emit = defineEmits<{ close: []; submitted: [facility: FacilityRecord] }>();
 const { activeFacilityCategories } = useCategories();
 const { t } = useI18n();
 const { editorImages, error, form, images, showPreview, submitting, close, submit } = useFacilityComposerForm(
   toRef(props, 'open'),
+  toRef(props, 'categoryId'),
   () => emit('close'),
   (facility) => emit('submitted', facility),
 );

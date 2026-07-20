@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue';
 import { deleteFacility, listFacilities, toggleFacilityAffected, updateFacilityStatus } from '@/services/facilities';
 import { isAbortFailure } from '@/lib/request';
 import { normalizeSearchText } from '@/lib/search';
@@ -6,7 +6,7 @@ import { FACILITY_STATUS_LABELS, isFacilityClosed } from '@/constants/statuses';
 import type { FacilityCursor, FacilitySortOption, FacilityStatus, FacilitySummary } from '@/types';
 import { subscribeContentRevisionChanges } from '@/services/content-revisions';
 
-export function useFacilities() {
+export function useFacilities(categoryId: Ref<string>) {
   const bucket = ref<'active' | 'closed'>('active');
   const status = ref<FacilityStatus | ''>('');
   const sort = ref<FacilitySortOption>('latest');
@@ -44,7 +44,7 @@ export function useFacilities() {
       const normalizedQuery = normalizeSearchText(committedQuery.value);
       const remoteQuery = normalizedQuery.length >= MIN_REMOTE_SEARCH_LENGTH ? normalizedQuery : '';
       const result = await listFacilities({
-        bucket: bucket.value, status: status.value, sort: sort.value,
+        bucket: bucket.value, categoryId: categoryId.value, status: status.value, sort: sort.value,
         query: remoteQuery,
         cursor: append ? cursor.value : null,
       }, { signal: controller.signal });
@@ -148,7 +148,7 @@ export function useFacilities() {
   }
 
   const unsubscribeRevision = subscribeContentRevisionChanges('facilities', () => load());
-  watch([status, sort], () => { cursor.value = null; void load(); });
+  watch([categoryId, status, sort], () => { cursor.value = null; void load(); });
   watch(bucket, () => { status.value = ''; cursor.value = null; void load(); });
   onMounted(() => void load());
   onBeforeUnmount(() => {

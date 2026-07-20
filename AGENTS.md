@@ -56,8 +56,16 @@
 
 - 不因重構改路由名、table／RPC／RLS、Edge action、Storage path、部署設定。
 - 權限在 RLS／Edge；前端條件只負責顯示。
+- 平台總管理員只由後端 `ADMIN_EMAILS` 環境變數決定；不得新增 UI、action、RPC 或資料表欄位來授予或撤銷平台總管理員。
+- 提案與設備管理權限以分類指派為範圍；平台總管理員可跨分類處理，但一般分類管理員不得靠全域 permission 繞過分類檢查。管理介面採「先選分類，再查看／新增／修改／撤銷該分類負責人」。
+- 新提案與新設備回報只通知該分類明確指派的負責人並排除作者；不得因平台總管理員身分自動收件。個人通知使用 user scope，避免混入管理員廣播。
 - 已部署 migration 不回改；只新增後續 migration。
 - 通知、outbox、刪除工作等高風險不順手改。
+
+## 路由與初始設定
+
+- `issues` named route 必須帶合法 `filter`；需要預設值時使用共用的 `getDefaultIssueRouteFilter`，不得組出缺少 required param 的導航。
+- Setup 先讓使用者確認語言，再設定至少一個提案分類與設備分類；完成操作必須可安全重試，若資料庫已提交而回應中斷，前端刷新狀態後直接進入已完成流程。
 
 ## 驗證
 
@@ -65,6 +73,7 @@
 其中 `check:ui` 會拒絕舊 dropdown、任意陰影、手組卡片與自行管理 viewport gutter；不要跳過或以例外規避。
 後端 action、權限、RPC、RLS、migration、worker：加跑 `npm run verify:integration`；Windows 入口會自動轉入 WSL，不手動維護第二套 Windows 流程。
 大型變更／交付前：`npm run verify:all`。
+完整本地測試環境：`npm run test:env`，Ready 後可用 Auth Emulator 建立任意測試帳號；以 `Ctrl+C` 關閉全部本地服務。多人、多分類、多權限壓力矩陣使用 `npm run verify:stress`。
 新增 backend action 必須在 `tests/integration/` 加入有 assertion 的成功與拒絕案例；角色／scope 變更至少驗證 allowed、denied、跨 scope。`action-coverage.test.ts` 只作漏測防線，不得用無 assertion 呼叫敷衍。
 失敗與 warning 能修就修，否則在報告說明。
 

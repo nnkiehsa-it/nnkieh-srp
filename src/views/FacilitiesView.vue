@@ -1,12 +1,13 @@
 <template>
   <RoutePageFrame layout="fill" class="relative gap-5">
     <BoardControls
+      v-model:active-filter="category"
       v-model:status-tab="bucket"
       v-model:search-query="query"
       v-model:sort-option="sort"
       mode="facility"
-      active-filter=""
-      :active-category-label="t('facility.facility')"
+      :active-category-label="activeCategoryLabel"
+      :category-options="categoryOptions"
       :create-label="t('facility.addFacility')"
       :search-hint="searchHint"
       @create="composerOpen = true"
@@ -57,7 +58,7 @@
       </ContentListState>
     </div>
 
-    <FacilityComposer :open="composerOpen" @close="composerOpen = false" @submitted="handleSubmitted" />
+    <FacilityComposer :open="composerOpen" :category-id="category" @close="composerOpen = false" @submitted="handleSubmitted" />
     <FacilityStatusDialog
       v-if="selectedFacility"
       :open="statusDialogOpen"
@@ -81,8 +82,8 @@
 
 <script setup lang="ts">
 import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
 import FacilityComposer from '@/components/FacilityComposer.vue';
 import FacilityStatusDialog from '@/components/FacilityStatusDialog.vue';
@@ -95,9 +96,19 @@ import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { normalizeSearchText } from '@/lib/search';
 import type { FacilityRecord, FacilityStatus, FacilitySummary } from '@/types';
 import { useI18n } from '@/i18n';
+import { findFacilityCategory, getDefaultFacilityCategoryId, useCategories } from '@/composables/useCategories';
 
+const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const { activeFacilityCategories } = useCategories();
+const routeCategory = Array.isArray(route.query.category) ? route.query.category[0] : route.query.category;
+const category = ref(findFacilityCategory(routeCategory)?.isActive ? routeCategory as string : getDefaultFacilityCategoryId());
+const activeCategoryLabel = computed(() => findFacilityCategory(category.value)?.label ?? t('facility.facility'));
+const categoryOptions = computed(() => activeFacilityCategories.value.map((entry) => ({
+  label: entry.label,
+  value: entry.id,
+})));
 const composerOpen = ref(false);
 const {
   affectingFacilityId,
@@ -116,7 +127,7 @@ const {
   sort,
   submitSearch,
   toggleAffected,
-} = useFacilities();
+} = useFacilities(category);
 const selectedFacility = ref<FacilitySummary | null>(null);
 const statusDialogOpen = ref(false);
 const statusSaving = ref(false);
@@ -157,12 +168,28 @@ const emptyDescription = computed(() => committedQuery.value.trim()
   ? t('facility.noFacilityReportsMatchQuery', { query: committedQuery.value.trim() })
   : t('facility.noFacilityReportsInStatus', { status: t(bucket.value === 'closed' ? 'facility.caseClosed' : 'facility.processing') }));
 
+watch(category, (value) => {
+  if (!findFacilityCategory(value)?.isActive) {
+    category.value = getDefaultFacilityCategoryId();
+    return;
+  }
+  const current = Array.isArray(route.query.category) ? route.query.category[0] : route.query.category;
+  if (current === value) return;
+  void router.replace({ query: { ...route.query, category: value } });
+});
+watch(() => route.query.category, (value) => {
+  const requested = Array.isArray(value) ? value[0] : value;
+  if (requested && findFacilityCategory(requested)?.isActive && requested !== category.value) {
+    category.value = requested;
+  }
+});
+
 function openDetails(facility: FacilitySummary) {
   void router.push({ name: 'facility-detail', params: { facilityId: facility.id } });
 }
 
 function handleSubmitted(facility: FacilityRecord) {
-  facilities.value.unshift(facility);
+  if (facility.category_id === category.value) facilities.value.unshift(facility);
 }
 
 async function handleToggleAffected(facility: FacilitySummary) {

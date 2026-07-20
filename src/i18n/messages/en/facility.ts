@@ -1,5 +1,6 @@
 const messages = {
   'facility.category': 'Report category',
+  'facility.chooseCategory': 'Choose a facility report category',
   'facility.selectCategory': 'Select a report category.',
   'facility.admin.changeStatus': 'Change facility status',
   'facility.admin.delete': 'Delete facility',

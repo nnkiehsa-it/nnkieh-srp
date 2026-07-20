@@ -337,6 +337,9 @@ test('outbox, webhooks, FCM, and Notion deletion marks are guarded', async () =>
   assert.match(syncUser, /requireEligibleFirebaseUser/u);
   assert.ok(syncUser.indexOf('requireOriginSecret(request)') < syncUser.indexOf('requireEligibleFirebaseUser(request)'));
   assert.match(syncUser, /requireMethod\(request, "POST"\)/u);
+  assert.match(syncUser, /firebaseAuthEmulatorHost\(\)/u);
+  assert.match(syncUser, /identitytoolkit\.googleapis\.com\/v1\/projects\/\$\{encodeURIComponent\(projectId\)\}\/accounts:update/u);
+  assert.doesNotMatch(syncUser, /LOCAL_TEST_MODE[^\n]*!== "true"/u);
   assert.match(outboxWorker, /requireBearerSecret/u);
   assert.ok(outboxWorker.indexOf('requireOriginSecret(request)') < outboxWorker.indexOf('requireBearerSecret(request)'));
   assert.match(outboxWorker, /requireMethod\(request, "POST"\)/u);
@@ -740,6 +743,7 @@ test('proposal and facility manager access is runtime-configured and category-sc
   const migration = await read('supabase/migrations/202607150006_category_scoped_proposal_access.sql');
   const lookupMigration = await read('supabase/migrations/202607150007_access_lookup_and_facility_status.sql');
   const atomicAccessMigration = await read('supabase/migrations/202607200002_atomic_user_access.sql');
+  const facilityParityMigration = await read('supabase/migrations/202607200004_facility_category_parity_and_personal_notifications.sql');
   const selectionControl = await read('src/components/ui/molecules/SelectionOptionButton.vue');
   const facilityDialog = await read('src/components/FacilityStatusDialog.vue');
   const statusTransitionDialog = await read('src/components/ui/organisms/StatusTransitionDialog.vue');
@@ -758,6 +762,10 @@ test('proposal and facility manager access is runtime-configured and category-sc
   assert.match(atomicAccessMigration, /facility_categories where id = any\(facility_ids\) and is_active/u);
   assert.match(atomicAccessMigration, /access_assignment_audit/u);
   assert.match(auth, /canManageIssueCategory/u);
+  assert.match(auth, /return auth\.isAdmin \|\| auth\.managedFacilityCategoryIds\.includes\(categoryId\)/u);
+  assert.match(facilityParityMigration, /facility\.category_id = category_filter/u);
+  assert.match(facilityParityMigration, /'category_id', category_id/u);
+  assert.match(facilityParityMigration, /managed_category_ids/u);
   assert.match(issueRead, /canManageIssueCategory\(auth, category\)/u);
   assert.match(users, /if \(!rawQuery && !scoped\) return \{ truncated: false, users: \[\] \}/u);
   assert.match(users, /const rawQuery = asString\(payload\.query\)\.trim\(\)/u);
@@ -910,6 +918,10 @@ test('personal notification writes and pushes are scoped to the recipient', asyn
   assert.match(outboxWorker, /asString\(event\.payload\.issue_author_uid\)\s*\|\|\s*asString\(event\.payload\.author_uid\)/u);
   assert.match(outboxWorker, /asString\(event\.payload\.announcement_author_uid\)/u);
   assert.match(outboxWorker, /async function resolveNotification/u);
+  assert.match(outboxWorker, /source: "user", type: "issue_created"/u);
+  assert.match(outboxWorker, /source: "user", type: "facility_report_created"/u);
+  assert.match(outboxWorker, /user_issue_category_assignments/u);
+  assert.match(outboxWorker, /user_facility_category_assignments/u);
   assert.match(outboxWorker, /recipientUid === event\.actor_uid/u);
   assert.match(outboxWorker, /recipient_uid: recipientUid/u);
   assert.match(outboxWorker, /from\("supports"\)[\s\S]*select\("uid"\)\.eq\("issue_id", event\.target_id\)/u);
@@ -1396,6 +1408,8 @@ test('frontend localization follows the first-visit system language and remains 
   const main = await read('src/main.ts');
   const i18n = await read('src/i18n/index.ts');
   const settings = await read('src/components/SettingsPanelContent.vue');
+  const languageSelector = await read('src/components/LanguageSelector.vue');
+  const setup = await read('src/views/SetupView.vue');
   const documentTitle = await read('src/composables/useDocumentTitle.ts');
   const issueSearch = await read('src/composables/useIssueSearch.ts');
   const pushPermissionPrompt = await read('src/components/PushPermissionPromptDialog.vue');
@@ -1405,13 +1419,16 @@ test('frontend localization follows the first-visit system language and remains 
   assert.ok(main.indexOf('initializeI18n()') < main.indexOf('createApp(App)'));
   assert.match(i18n, /LOCALE_STORAGE_KEY = 'novae:locale'/u);
   assert.match(i18n, /storedLocale \?\? detectSystemLocale\(\)/u);
-  assert.match(i18n, /navigator\.languages/u);
+  assert.match(i18n, /navigator\.languages\?\.length[\s\S]*normalizeLocale\(languages\[0\]\)/u);
   assert.match(i18n, /document\.documentElement\.lang = locale/u);
   assert.doesNotMatch(i18n, /sourceKeyLookup|getSourceKeyLookup/u);
   assert.match(i18n, /Object\.hasOwn\(messages, source\)/u);
-  assert.match(settings, /function selectLanguage\(value: AppLocale, close: \(\) => void\) \{[\s\S]*setLocale\(value\);[\s\S]*close\(\);/u);
-  assert.match(settings, /value: 'zh-TW'/u);
-  assert.match(settings, /value: 'en'/u);
+  assert.match(settings, /<LanguageSelector/u);
+  assert.match(languageSelector, /function selectLanguage\(value: AppLocale, close: \(\) => void\) \{[\s\S]*setLocale\(value\);[\s\S]*close\(\);/u);
+  assert.match(languageSelector, /value: 'zh-TW'/u);
+  assert.match(languageSelector, /value: 'en'/u);
+  assert.ok(setup.indexOf('!languageConfirmed') < setup.indexOf('v-else-if="!isAdmin"'));
+  assert.ok(setup.indexOf('<LanguageSelector') < setup.indexOf('categoryAdmin.proposalCategories'));
   assert.match(documentTitle, /watch\(\[title, locale\]/u);
   assert.match(documentTitle, /t\(title\.value\)/u);
   assert.match(issueSearch, /return t\('issue\.search\.enterTheKeywordAndPressEnterToSearch'\)/u);
@@ -1429,6 +1446,24 @@ test('frontend localization follows the first-visit system language and remains 
   assert.match(i18nCheck, /key\.length > 55/u);
   assert.match(i18nCheck, /contains key outside its/u);
   assert.match(i18nCheck, /references an unknown API error code/u);
+});
+
+test('initial setup reuses the settings-style selected category editor', async () => {
+  const setup = await read('src/views/SetupView.vue');
+  const setupCategorySection = await read('src/components/categories/SetupCategorySection.vue');
+  const categoryEditor = await read('src/components/categories/CategoryEditorCard.vue');
+
+  assert.match(setup, /<PillSegmentedControl[\s\S]*<SetupCategorySection/u);
+  assert.doesNotMatch(setup, /categoryAdmin\.(?:managerAssignment|skippedForNow|managerSkipHelp)/u);
+  assert.doesNotMatch(setup, /v-for="\(category, index\) in (?:issue|facility)Categories"/u);
+  assert.match(setupCategorySection, /lg:grid-cols-\[15rem_minmax\(0,1fr\)\]/u);
+  assert.match(setupCategorySection, /<SurfacePanel variant="list"/u);
+  assert.match(setupCategorySection, /<CategoryEditorCard[\s\S]*flat/u);
+  assert.match(categoryEditor, /:is="flat \? 'article' : SurfacePanel"/u);
+  assert.doesNotMatch(setup, /router\.replace\(\{ name: 'issues' \}\)/u);
+  assert.match(setup, /router\.replace\(\{ name: 'issues', params: \{ filter: getDefaultIssueRouteFilter\(\) \} \}\)/u);
+  assert.match(setup, /if \(setupCompleted\.value\)[\s\S]*router\.replace/u);
+  assert.match(await read('supabase/functions/backendAction/categories.ts'), /setupState\?\.completed_at[\s\S]*alreadyCompleted: true/u);
 });
 
 test('public API errors use a generated code-only contract', async () => {
@@ -1485,8 +1520,9 @@ test('navigation and contextual creation share the same responsive information a
 
   assert.match(appShell, /label: t\('issue\.proposal'\)/u);
   assert.match(appShell, /:category-filter="mobileCategoryFilter"/u);
-  assert.match(mobileHeader, /IssueCategorySelector/u);
-  assert.match(boardControls, /IssueCategorySelector/u);
+  assert.match(mobileHeader, /BoardCategorySelector/u);
+  assert.match(boardControls, /BoardCategorySelector/u);
+  assert.match(facilitiesView, /v-model:active-filter="category"/u);
   assert.doesNotMatch(mobileNav, /CreateActionMenu|新增/u);
   assert.doesNotMatch(desktopSidebar, /CreateActionMenu|新增/u);
   assert.ok(mobileNav.indexOf('v-for="item in items"') < mobileNav.indexOf('to="/notifications"'));
@@ -1624,6 +1660,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const boardControls = await read('src/components/BoardControls.vue');
   const loginPanel = await read('src/components/LoginPanel.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
+  const languageSelector = await read('src/components/LanguageSelector.vue');
   const commentComposer = await read('src/components/CommentComposer.vue');
   const contentCardSkeleton = await read('src/components/ui/organisms/ContentCardSkeleton.vue');
   const segmentedControl = await read('src/components/ui/molecules/PillSegmentedControl.vue');
@@ -1706,8 +1743,8 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.doesNotMatch(issueMenu, /useDropdownPosition|useClickOutside/u);
   assert.match(boardControls, /<DropdownPanel/u);
   assert.match(settingsPanel, /<LabeledListSection[\s\S]*<IconListRow/u);
-  assert.match(settingsPanel, /<LabeledListSection :label="t\('settings\.language'\)">[\s\S]*<DropdownMenu/u);
-  assert.match(settingsPanel, /role="listbox"[\s\S]*v-for="option in languageOptions"/u);
+  assert.match(settingsPanel, /<LabeledListSection :label="t\('settings\.language'\)">[\s\S]*<LanguageSelector/u);
+  assert.match(languageSelector, /<DropdownMenu[\s\S]*role="listbox"[\s\S]*v-for="option in languageOptions"/u);
   assert.doesNotMatch(contentStyles, /\.settings-row \{[\s\S]{0,100}\bpx-0\b/u);
   assert.match(settingsPanel, /<SwitchIndicator[\s\S]*:checked=/u);
   assert.match(settingsPanel, /<ListSurfaceRow[\s\S]*interactive/u);
@@ -1761,6 +1798,22 @@ test('pull requests and backend deployments retain the local integration gate', 
   );
   assert.doesNotMatch(deployBackend, /NOVAE_DENO_BIN|\/home\/runner\/\.deno/u);
   assert.match(agents, /新增 backend action 必須在 `tests\/integration\/`/u);
+});
+
+test('the Windows test environment passes emulator settings out of WSL', async () => {
+  const integrationScript = await read('scripts/verify-integration-local.sh');
+  const authProbe = await read('scripts/check-local-auth-emulator.mjs');
+
+  assert.match(integrationScript, /VITE_FIREBASE_AUTH_EMULATOR_URL=http:\/\/127\.0\.0\.1:9099/u);
+  assert.match(integrationScript, /VITE_FIREBASE_AUTH_EMULATOR_URL\/w/u);
+  assert.doesNotMatch(integrationScript, /VITE_[A-Z_]+\/u/u);
+  assert.match(integrationScript, /--port 5173 --strictPort/u);
+  assert.match(integrationScript, /netstat\.exe -ano/u);
+  assert.match(integrationScript, /taskkill\.exe \/PID "\$VITE_WINDOWS_PID" \/T \/F/u);
+  assert.match(integrationScript, /scripts\/check-local-auth-emulator\.mjs/u);
+  assert.match(authProbe, /claims\.role|\.role, 'authenticated'/u);
+  assert.match(authProbe, /getCurrentUserRole/u);
+  assert.match(authProbe, /setupCompleted, false/u);
 });
 
 test('GitHub workflows use the current Node 24 action generations', async () => {

@@ -2,12 +2,14 @@
   <div class="board-controls relative z-20 space-y-3">
     <div class="flex flex-row items-center justify-between gap-3 md:mt-0">
       <div class="hidden min-w-0 flex-row items-center gap-3 sm:gap-4 md:flex md:gap-6">
-        <IssueCategorySelector
-          v-if="mode !== 'facility' && activeFilter !== 'my-proposals'"
-          :active-filter="issueCategoryFilter"
+        <BoardCategorySelector
+          v-if="activeFilter !== 'my-proposals'"
+          :model-value="selectedCategory"
           :label="activeCategoryLabel"
+          :options="categorySelectorOptions"
+          :selector-label="t(mode === 'facility' ? 'facility.chooseCategory' : 'issue.chooseProposalCategory')"
           variant="desktop-heading"
-          @select="handleCategoryChange"
+          @update:model-value="handleCategoryChange"
         />
         <h2 v-else class="shrink-0 text-xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:text-2xl">
           {{ activeFilter === 'my-proposals' ? t('issue.myProposal') : boardTitle }}
@@ -129,12 +131,12 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import IssueCategorySelector from '@/components/IssueCategorySelector.vue';
+import BoardCategorySelector from '@/components/BoardCategorySelector.vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
 import DropdownPanel from '@/components/ui/molecules/DropdownPanel.vue';
 import PillSegmentedControl from '@/components/ui/molecules/PillSegmentedControl.vue';
-import { getDefaultIssueRouteFilter, isIssueCategory } from '@/constants/categories';
+import { getDefaultIssueRouteFilter, getIssueFilterOptions, isIssueCategory } from '@/constants/categories';
 import { useClickOutside } from '@/composables/useClickOutside';
 import type { FacilitySortOption, IssueFilter, IssueSortOption } from '@/types';
 import { useI18n } from '@/i18n';
@@ -148,6 +150,7 @@ const props = defineProps<{
   searchHint: string;
   activeFilter: string;
   activeCategoryLabel: string;
+  categoryOptions?: ReadonlyArray<{ label: string; value: string }>;
   createLabel?: string;
   sortOption: BoardSortOption;
 }>();
@@ -156,6 +159,7 @@ const emit = defineEmits<{
   'update:statusTab': [value: 'active' | 'closed'];
   'update:searchQuery': [value: string];
   'update:sortOption': [value: BoardSortOption];
+  'update:activeFilter': [value: string];
   'submitSearch': [];
   'clearSearch': [];
   create: [];
@@ -185,6 +189,10 @@ const searchPlaceholder = computed(() => t(props.mode === 'facility' ? 'common.s
 const issueCategoryFilter = computed<IssueFilter>(() =>
   isIssueCategory(props.activeFilter) ? props.activeFilter : getDefaultIssueRouteFilter()
 );
+const selectedCategory = computed(() => props.mode === 'facility' ? props.activeFilter : issueCategoryFilter.value);
+const categorySelectorOptions = computed(() => props.mode === 'facility'
+  ? props.categoryOptions ?? []
+  : getIssueFilterOptions());
 const statusOptions = computed(() => [
   { value: 'active' as const, label: t(props.mode === 'facility' ? 'facility.processing' : 'issue.inProgress'), icon: 'list' as const, title: t('common.showStatusInBoard', { status: t(props.mode === 'facility' ? 'facility.processing' : 'issue.inProgress'), board: boardTitle.value }) },
   { value: 'closed' as const, label: t('facility.caseClosed'), icon: 'inbox' as const, title: t('common.showStatusInBoard', { status: t('facility.caseClosed'), board: boardTitle.value }) },
@@ -223,11 +231,15 @@ const statusTabModel = computed({
   set: (value: 'active' | 'closed') => emit('update:statusTab', value),
 });
 
-async function handleCategoryChange(value: IssueFilter) {
+async function handleCategoryChange(value: string) {
   if (value === props.activeFilter) return;
+  if (props.mode === 'facility') {
+    emit('update:activeFilter', value);
+    return;
+  }
   await router.push({
     name: 'issues',
-    params: { filter: value },
+    params: { filter: value as IssueFilter },
     query: route.query,
   });
 }

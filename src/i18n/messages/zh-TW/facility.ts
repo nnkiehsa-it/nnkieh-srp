@@ -1,5 +1,6 @@
 const messages = {
   'facility.category': '報修分類',
+  'facility.chooseCategory': '選擇設備報修分類',
   'facility.selectCategory': '請選擇報修分類。',
   'facility.admin.changeStatus': '變更設備狀態',
   'facility.admin.delete': '刪除設備',

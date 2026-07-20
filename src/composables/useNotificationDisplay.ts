@@ -23,6 +23,7 @@ export function useNotificationDisplay() {
     if (notification.type === 'announcement_created') return t('notification.announcementCreated');
     if (notification.type === 'facility_status_changed') return t('notification.facilityStatusChanged');
     if (notification.type === 'facility_report_created') return t('notification.facilityReportCreated');
+    if (notification.type === 'issue_created') return t('notification.issueCreated');
     if (notification.type === 'support_goal_met') return t('notification.supportGoalMet');
     if (notification.type === 'issue_deleted') return t('notification.issueDeleted');
     if (
@@ -66,6 +67,7 @@ export function useNotificationDisplay() {
     if (notification.type === 'announcement_created') return 'megaphone';
     if (notification.type === 'facility_status_changed' || notification.type === 'facility_report_created') return 'wrench';
     if (notification.type === 'support_goal_met') return 'check-circle';
+    if (notification.type === 'issue_created') return 'comment';
     if (notification.type === 'issue_deleted') return 'trash';
     return 'switch-horizontal';
   }

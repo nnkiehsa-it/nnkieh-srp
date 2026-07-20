@@ -269,7 +269,11 @@ export async function handleCategoryAction(
   }
   if (action === "completeInitialSetup") {
     if (!auth.isAdmin) throw new Error("permission-denied");
-    if (auth.setupCompleted) throw new Error("setup-already-completed");
+    if (auth.setupCompleted) return { success: true, setupCompleted: true, alreadyCompleted: true };
+    const { data: setupState, error: setupStateError } = await supabase.schema("app_private")
+      .from("system_setup").select("completed_at").eq("singleton", true).maybeSingle();
+    if (setupStateError) throw setupStateError;
+    if (setupState?.completed_at) return { success: true, setupCompleted: true, alreadyCompleted: true };
     const rawIssueCategories = Array.isArray(payload.issueCategories) ? payload.issueCategories : [];
     const rawFacilityCategories = Array.isArray(payload.facilityCategories) ? payload.facilityCategories : [];
     const issueCategories = rawIssueCategories.map((value, index) => issueCategoryInput(value, index));

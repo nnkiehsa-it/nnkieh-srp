@@ -155,6 +155,7 @@ function normalizeNotificationType(value: unknown): NotificationType {
     || value === 'announcement_comment_created'
     || value === 'facility_status_changed'
     || value === 'facility_report_created'
+    || value === 'issue_created'
     || value === 'issue_comment_created'
     || value === 'issue_status_changed'
     || value === 'support_goal_met'

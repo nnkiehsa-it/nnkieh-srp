@@ -229,6 +229,13 @@ integrationTest("runtime category setup and management enforce platform permissi
     requestId: requestId("complete-setup"),
   }, admin.auth));
   assert.equal(setup.success, true);
+  const repeatedSetup = asRecord(await callAction("completeInitialSetup", {
+    issueCategories: [],
+    facilityCategories: [],
+    requestId: requestId("complete-setup-repeat"),
+  }, admin.auth));
+  assert.equal(repeatedSetup.success, true);
+  assert.equal(repeatedSetup.setupCompleted, true);
 
   const management = asRecord(await callAction("getCategoryManagement", {}, admin.auth));
   const publicCategory = asRecord((management.issueCategories as unknown[])

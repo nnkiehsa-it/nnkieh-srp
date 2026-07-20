@@ -73,7 +73,7 @@ export function requireIssueCategoryPermission(auth: AuthContext, categoryId: st
 }
 
 export function canManageFacilityCategory(auth: AuthContext, categoryId: string) {
-  return auth.isAdmin || hasPermission(auth, "facility.manage") || auth.managedFacilityCategoryIds.includes(categoryId);
+  return auth.isAdmin || auth.managedFacilityCategoryIds.includes(categoryId);
 }
 
 export function requireFacilityCategoryPermission(auth: AuthContext, categoryId: string) {

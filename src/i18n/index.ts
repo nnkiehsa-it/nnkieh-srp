@@ -23,11 +23,8 @@ function normalizeLocale(value: string | null | undefined): AppLocale | null {
 
 function detectSystemLocale(): AppLocale {
   if (typeof navigator === 'undefined') return 'zh-TW';
-  for (const language of navigator.languages ?? [navigator.language]) {
-    const normalized = normalizeLocale(language);
-    if (normalized === 'en') return 'en';
-  }
-  return 'zh-TW';
+  const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
+  return normalizeLocale(languages[0]) ?? 'zh-TW';
 }
 
 function applyDocumentLocale(locale: AppLocale) {

@@ -26,22 +26,29 @@ async function createFacility(
   return asRecord(result.facility);
 }
 
-integrationTest("facility ownership and facility.manage permissions", async () => {
+integrationTest("facility ownership and category-scoped management permissions", async () => {
   const owner = await seedActor("facility-owner");
   const user = await seedActor("facility-user");
-  const manager = await seedActor("facility-manager", { roles: ["general-affairs"] });
-  assert.deepEqual(manager.auth.permissions, ["facility.manage"]);
 
   const facility = await createFacility(owner, "status");
   const facilityId = String(facility.id);
+  const facilityCategoryId = String(facility.category_id);
+  const manager = await seedActor("facility-manager", {
+    facilityCategoryIds: [facilityCategoryId],
+    roles: ["general-affairs"],
+  });
+  const wrongCategoryManager = await seedActor("wrong-facility-manager", { roles: ["general-affairs"] });
+  assert.deepEqual(manager.auth.permissions, ["facility.manage"]);
   const read = asRecord(await callAction("getFacility", { facilityId }, user.auth));
   assert.equal(asRecord(read.facility).id, facilityId);
   const list = asRecord(await callAction("listFacilities", {
     bucket: "active",
+    categoryId: facilityCategoryId,
     pageSize: 20,
     sort: "latest",
   }, user.auth));
   assert.ok((list.facilities as Array<Record<string, unknown>>).some((row) => row.id === facilityId));
+  assert.ok((list.facilities as Array<Record<string, unknown>>).every((row) => row.category_id === facilityCategoryId));
 
   const affected = asRecord(await callAction("toggleFacilityAffected", {
     facilityId,
@@ -56,6 +63,14 @@ integrationTest("facility ownership and facility.manage permissions", async () =
       requestId: requestId("facility-status-denied"),
       status: "processing",
     }, owner.auth),
+  );
+  await expectActionError(
+    "permission-denied",
+    () => callAction("updateFacilityStatus", {
+      facilityId,
+      requestId: requestId("facility-status-wrong-category"),
+      status: "processing",
+    }, wrongCategoryManager.auth),
   );
   const processing = asRecord(await callAction("updateFacilityStatus", {
     facilityId,

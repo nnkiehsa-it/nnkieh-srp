@@ -3,6 +3,7 @@ const messages = {
   'notification.commentTitle': 'Comment from {name}',
   'notification.facilityStatusChanged': 'Facility status changed',
   'notification.facilityReportCreated': 'New facility report received',
+  'notification.issueCreated': 'New proposal received',
   'notification.issueDeleted': 'Proposal deleted',
   'notification.issueReviewApproved': 'Proposal approved',
   'notification.issueReviewApprovedBody': '{title} was approved and is now open for support.',

@@ -322,7 +322,7 @@ export function useSession() {
     managedFacilityCategoryIds: computed(() => state.managedFacilityCategoryIds),
     setupCompleted: computed(() => state.setupCompleted),
     canManageIssueCategory: (categoryId: string) => state.roles.includes('platform-admin') || state.managedIssueCategoryIds.includes(categoryId),
-    canManageFacilityCategory: (categoryId: string) => state.roles.includes('platform-admin') || state.permissions.includes('facility.manage') || state.managedFacilityCategoryIds.includes(categoryId),
+    canManageFacilityCategory: (categoryId: string) => state.roles.includes('platform-admin') || state.managedFacilityCategoryIds.includes(categoryId),
     can: (permission: import('@/services/session-role').PermissionCode) => permissions.value.includes(permission),
     isAdmin: computed(() => state.roles.includes('platform-admin')),
     loading: computed(() => state.loading),

@@ -13,10 +13,13 @@ const browserGlobals = {
 };
 
 const nodeGlobals = {
+  Buffer: 'readonly',
+  fetch: 'readonly',
   module: 'readonly',
   __dirname: 'readonly',
   process: 'readonly',
   console: 'readonly',
+  URLSearchParams: 'readonly',
 };
 
 export default [
@@ -24,6 +27,7 @@ export default [
     ignores: [
       'dist/**',
       'node_modules/**',
+      '**/.wrangler/**',
       '*.d.ts',
       'vite.config.js',
     ],

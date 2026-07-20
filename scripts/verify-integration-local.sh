@@ -85,8 +85,10 @@ if [[ "$SERVE" == "true" ]]; then
     exit 2
   fi
   VITE_NPM=(npm)
+  VITE_IS_WINDOWS="false"
   if [[ "$ROOT" == /mnt/* ]] && command -v cmd.exe >/dev/null 2>&1; then
     VITE_NPM=(cmd.exe /d /s /c npm)
+    VITE_IS_WINDOWS="true"
   fi
 fi
 
@@ -102,6 +104,7 @@ UPSTASH_PID=""
 WORKER_LOG="$(mktemp)"
 WORKER_PID=""
 VITE_PID=""
+VITE_WINDOWS_PID=""
 
 cleanup() {
   if [[ -n "$FUNCTION_PID" ]] && kill -0 "$FUNCTION_PID" >/dev/null 2>&1; then
@@ -119,6 +122,9 @@ cleanup() {
   if [[ -n "$VITE_PID" ]] && kill -0 "$VITE_PID" >/dev/null 2>&1; then
     kill "$VITE_PID" >/dev/null 2>&1 || true
     wait "$VITE_PID" >/dev/null 2>&1 || true
+  fi
+  if [[ -n "$VITE_WINDOWS_PID" ]]; then
+    taskkill.exe /PID "$VITE_WINDOWS_PID" /T /F >/dev/null 2>&1 || true
   fi
   if [[ -n "$FIREBASE_PID" ]] && kill -0 "$FIREBASE_PID" >/dev/null 2>&1; then
     kill "$FIREBASE_PID" >/dev/null 2>&1 || true
@@ -315,9 +321,32 @@ export VITE_FIREBASE_PROJECT_ID=integration-project
 export VITE_FIREBASE_APP_CHECK_ENABLED=false
 export VITE_SUPABASE_URL="$API_URL"
 export VITE_SUPABASE_PUBLISHABLE_KEY="$ANON_KEY"
-export WSLENV="${WSLENV:-}:VITE_ALLOWED_DOMAIN/u:VITE_API_BASE_URL/u:VITE_FIREBASE_API_KEY/u:VITE_FIREBASE_APP_ID/u:VITE_FIREBASE_AUTH_DOMAIN/u:VITE_FIREBASE_AUTH_EMULATOR_URL/u:VITE_FIREBASE_MESSAGING_SENDER_ID/u:VITE_FIREBASE_PROJECT_ID/u:VITE_FIREBASE_APP_CHECK_ENABLED/u:VITE_SUPABASE_URL/u:VITE_SUPABASE_PUBLISHABLE_KEY/u"
-"${VITE_NPM[@]}" run dev -- --host 0.0.0.0 &
+export WSLENV="${WSLENV:-}:VITE_ALLOWED_DOMAIN/w:VITE_API_BASE_URL/w:VITE_FIREBASE_API_KEY/w:VITE_FIREBASE_APP_ID/w:VITE_FIREBASE_AUTH_DOMAIN/w:VITE_FIREBASE_AUTH_EMULATOR_URL/w:VITE_FIREBASE_MESSAGING_SENDER_ID/w:VITE_FIREBASE_PROJECT_ID/w:VITE_FIREBASE_APP_CHECK_ENABLED/w:VITE_SUPABASE_URL/w:VITE_SUPABASE_PUBLISHABLE_KEY/w"
+"${VITE_NPM[@]}" run dev -- --host 0.0.0.0 --port 5173 --strictPort &
 VITE_PID="$!"
+
+for _ in $(seq 1 60); do
+  if [[ "$VITE_IS_WINDOWS" == "true" ]]; then
+    VITE_WINDOWS_PID="$(netstat.exe -ano | tr -d '\r' | awk '$2 ~ /:5173$/ && $4 == "LISTENING" { print $5; exit }')"
+    [[ "$VITE_WINDOWS_PID" =~ ^[0-9]+$ ]] && break
+  else
+    vite_status="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5173/ || true)"
+    [[ "$vite_status" == "200" ]] && break
+  fi
+  if ! kill -0 "$VITE_PID" >/dev/null 2>&1; then wait "$VITE_PID"; exit 1; fi
+  sleep 1
+done
+if [[ "$VITE_IS_WINDOWS" == "true" ]]; then
+  if ! [[ "$VITE_WINDOWS_PID" =~ ^[0-9]+$ ]]; then
+    echo "Could not resolve the Windows Vite process." >&2
+    exit 1
+  fi
+elif [[ "$vite_status" != "200" ]]; then
+  echo "Vite did not become ready on port 5173." >&2
+  exit 1
+fi
+
+"${TEST_NODE[@]}" scripts/check-local-auth-emulator.mjs
 
 echo ""
 echo "[environment] Ready"

@@ -1,5 +1,10 @@
 <template>
-  <SurfacePanel as="article" padding="lg" class="space-y-5">
+  <component
+    :is="flat ? 'article' : SurfacePanel"
+    :as="flat ? undefined : 'article'"
+    :padding="flat ? undefined : 'lg'"
+    class="space-y-5"
+  >
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-500">{{ kindLabel }}</p>
@@ -115,7 +120,7 @@
         />
       </template>
     </div>
-  </SurfacePanel>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -134,12 +139,13 @@ import type { FacilityCategoryDraft, IssueCategoryDraft, IssueReadAccess } from 
 
 const props = withDefaults(defineProps<{
   fieldId: string;
+  flat?: boolean;
   idLocked?: boolean;
   kind: 'facility' | 'issue';
   modelValue: FacilityCategoryDraft | IssueCategoryDraft;
   privacyLocked?: boolean;
   removable?: boolean;
-}>(), { idLocked: false, privacyLocked: false, removable: true });
+}>(), { flat: false, idLocked: false, privacyLocked: false, removable: true });
 
 const emit = defineEmits<{
   remove: [];

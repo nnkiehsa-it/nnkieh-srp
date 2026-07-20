@@ -1,6 +1,6 @@
 import { createDatabaseClient } from "../_shared/database-client.ts";
 import { requireEnv } from "../_shared/env.ts";
-import { requireEligibleFirebaseUser } from "../_shared/firebase-auth.ts";
+import { firebaseAuthEmulatorHost, requireEligibleFirebaseUser } from "../_shared/firebase-auth.ts";
 import { getGoogleAccessToken } from "../_shared/google-oauth.ts";
 import { errorMessage, errorStatus, handleCorsPreflight, jsonResponse, publicErrorBody, requireMethod } from "../_shared/http.ts";
 import { requireOriginSecret } from "../_shared/origin.ts";
@@ -25,6 +25,43 @@ function adminEmails() {
   return [...new Set(emails)];
 }
 
+async function setAuthenticatedClaim(
+  projectId: string,
+  user: Awaited<ReturnType<typeof requireEligibleFirebaseUser>>,
+) {
+  const emulatorHost = firebaseAuthEmulatorHost();
+  let authorization = "Bearer owner";
+  let updateUrl = `http://${emulatorHost}/identitytoolkit.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/accounts:update`;
+
+  if (!emulatorHost) {
+    const accessToken = await getGoogleAccessToken([
+      "https://www.googleapis.com/auth/identitytoolkit",
+      "https://www.googleapis.com/auth/firebase",
+    ]);
+    authorization = `Bearer ${accessToken}`;
+    updateUrl = `https://identitytoolkit.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/accounts:update`;
+  }
+
+  const updateResponse = await fetch(updateUrl, {
+    method: "POST",
+    headers: {
+      Authorization: authorization,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      localId: user.uid,
+      customAttributes: JSON.stringify({
+        ...parseCustomAttributes(user.customAttributes),
+        role: "authenticated",
+      }),
+    }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!updateResponse.ok) {
+    throw new Error(`Firebase custom claim update failed: ${await updateResponse.text()}`);
+  }
+}
+
 Deno.serve(async (request) => {
   const originFailure = requireOriginSecret(request);
   if (originFailure) return originFailure;
@@ -39,33 +76,7 @@ Deno.serve(async (request) => {
     const user = await requireEligibleFirebaseUser(request);
     await claimFixedWindowRateLimit(user.uid, "auth.sync", utcHourWindow(), RATE_LIMITS.loginSyncHourly);
 
-    if (Deno.env.get("LOCAL_TEST_MODE") !== "true") {
-      const accessToken = await getGoogleAccessToken([
-        "https://www.googleapis.com/auth/identitytoolkit",
-        "https://www.googleapis.com/auth/firebase",
-      ]);
-      const updateResponse = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:update`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            localId: user.uid,
-            customAttributes: JSON.stringify({
-              ...parseCustomAttributes(user.customAttributes),
-              role: "authenticated",
-            }),
-          }),
-          signal: AbortSignal.timeout(10_000),
-        },
-      );
-      if (!updateResponse.ok) {
-        throw new Error(`Firebase custom claim update failed: ${await updateResponse.text()}`);
-      }
-    }
+    await setAuthenticatedClaim(projectId, user);
 
     const supabase = createDatabaseClient();
 

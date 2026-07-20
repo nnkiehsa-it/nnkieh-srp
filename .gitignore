@@ -20,3 +20,7 @@ supabase/.temp/
 scripts/benchmark-db-*.mjs
 scripts/benchmark-db-*.sh
 scripts/benchmark-db-*.sql
+
+# Local emulator and test logs
+firebase-debug.log
+firebase-debug.*.log
