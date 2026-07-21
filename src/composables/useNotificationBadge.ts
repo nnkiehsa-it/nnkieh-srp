@@ -7,7 +7,7 @@ const hasUnread = ref(false);
 let initialized = false;
 let unsubscribe: (() => void) | null = null;
 let version = 0;
-let refreshCurrentUnread = () => undefined;
+let refreshCurrentUnread: () => void = () => undefined;
 
 export function setNotificationBadgeUnread(value: boolean) {
   hasUnread.value = value;
@@ -39,6 +39,7 @@ export function useNotificationBadge() {
           admin,
           () => { hasUnread.value = true; },
           refresh,
+          undefined,
           refresh,
         );
       },

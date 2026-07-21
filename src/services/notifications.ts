@@ -421,6 +421,7 @@ export function subscribeNotificationBadge(
   onNotification: () => void,
   onStateChanged: () => void,
   onError?: (error: Error) => void,
+  onResync?: () => void,
 ) {
   const topics = [
     'notifications:broadcast',
@@ -433,7 +434,7 @@ export function subscribeNotificationBadge(
     topic.startsWith('notification-state:') ? 'notification_state_changed' : 'notification_insert',
     topic.startsWith('notification-state:') ? onStateChanged : onNotification,
     onError,
-    onError,
+    onResync ?? onStateChanged,
   ));
   return () => { unsubscribers.forEach((unsubscribe) => unsubscribe()); };
 }

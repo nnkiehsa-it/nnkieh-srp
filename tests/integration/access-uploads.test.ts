@@ -362,6 +362,63 @@ integrationTest("runtime category setup and management enforce platform permissi
   assert.deepEqual(enabledFeatures, { facilitiesEnabled: true, issuesEnabled: true, success: true });
   const updatedCatalog = asRecord(await callAction("getCategoryCatalog", {}, user.auth));
   assert.deepEqual(asRecord(updatedCatalog.features), { facilitiesEnabled: true, issuesEnabled: true });
+
+  const managed = asRecord(await callAction("getCategoryManagement", {}, admin.auth));
+  const managedIssues = (managed.issueCategories as unknown[]).map((value, index) => {
+    const category = asRecord(value);
+    return {
+      ...category,
+      label: category.id === "public-issues" ? "公共議題-原子" : category.label,
+      sortOrder: index,
+    };
+  });
+  const managedFacilities = (managed.facilityCategories as unknown[]).map((value, index) => {
+    const category = asRecord(value);
+    return {
+      ...category,
+      label: category.id === "general" ? "一般設備-原子" : category.label,
+      sortOrder: index,
+    };
+  });
+  await expectActionError("permission-denied", () => callAction("saveCategoryManagement", {
+    facilitiesEnabled: true,
+    facilityCategories: managedFacilities,
+    issueCategories: managedIssues,
+    issuesEnabled: true,
+    requestId: requestId("save-management-denied"),
+  }, user.auth));
+  await expectActionError("validation-required", () => callAction("saveCategoryManagement", {
+    facilitiesEnabled: true,
+    facilityCategories: [],
+    issueCategories: managedIssues,
+    issuesEnabled: true,
+    requestId: requestId("save-management-empty"),
+  }, admin.auth));
+  const atomicSave = asRecord(await callAction("saveCategoryManagement", {
+    facilitiesEnabled: true,
+    facilityCategories: managedFacilities,
+    issueCategories: managedIssues,
+    issuesEnabled: true,
+    requestId: requestId("save-management-ok"),
+  }, admin.auth));
+  assert.equal(atomicSave.success, true);
+  assert.deepEqual(asRecord(atomicSave.features), { facilitiesEnabled: true, issuesEnabled: true });
+  assert.equal(
+    asRecord((atomicSave.issueCategories as unknown[])
+      .find((value) => asRecord(value).id === "public-issues")).label,
+    "公共議題-原子",
+  );
+  assert.equal(
+    asRecord((atomicSave.facilityCategories as unknown[])
+      .find((value) => asRecord(value).id === "general")).label,
+    "一般設備-原子",
+  );
+  const catalogAfterAtomic = asRecord(await callAction("getCategoryCatalog", {}, user.auth));
+  assert.equal(
+    asRecord((catalogAfterAtomic.issueCategories as unknown[])
+      .find((value) => asRecord(value).id === "public-issues")).label,
+    "公共議題-原子",
+  );
 });
 
 integrationTest("category deletion removes category and all associated resources, queueing cloudinary deletion and outbox events", async () => {
