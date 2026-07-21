@@ -6,6 +6,7 @@ import { handleAnnouncementAction } from "./announcements.ts";
 import { handleNotificationAction } from "./notifications.ts";
 import { handleFacilityAction, listFacilities } from "./facilities.ts";
 import { handleCategoryAction } from "./categories.ts";
+import { getSessionBootstrap } from "./session-bootstrap.ts";
 import type { AuthContext, BackendSupabase, JsonRecord, PermissionCode } from "./types.ts";
 
 export type BackendActionRateLimitGroup =
@@ -84,6 +85,10 @@ export const backendActionDefinitions = [
   action("saveIssueCategory", "category", "admin-write", handleCategoryAction, {
     idempotent: true, requiredPermission: "category.manage", requiresRequestId: true,
   }),
+  action("saveCategoryManagement", "category", "admin-write", handleCategoryAction, {
+    audit: { eventType: "category.management_saved", targetType: "category" },
+    idempotent: true, requiredPermission: "category.manage", requiresRequestId: true,
+  }),
   action("saveFacilityCategory", "category", "admin-write", handleCategoryAction, {
     idempotent: true, requiredPermission: "category.manage", requiresRequestId: true,
   }),
@@ -116,6 +121,9 @@ export const backendActionDefinitions = [
     return { revisions };
   }),
 
+  action("getSessionBootstrap", "user", "read", async (_action, payload, auth, supabase) => {
+    return await getSessionBootstrap(payload, auth, supabase);
+  }),
   action("getCurrentUserRole", "user", "read", userHandler),
   action("listRoleAssignments", "user", "read", userHandler, { requiredPermission: "role.manage" }),
   action("setUserRoles", "user", "admin-write", userHandler, {

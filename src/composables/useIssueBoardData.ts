@@ -286,6 +286,8 @@ export function useIssueBoardData() {
             return;
           }
           if (event.eventType !== 'issue_changed') return;
+          // Invalidate outstanding fetches before mutating so a slower in-flight
+          // page load cannot reinsert a just-closed issue into the active tab.
           invalidateIssueBuckets();
           if (event.op === 'delete') {
             handleIssueDeleted(event.targetId);
@@ -293,9 +295,10 @@ export function useIssueBoardData() {
           }
           if (activeFilter.value !== 'my-proposals' && event.category !== activeFilter.value) {
             removeIssueFromBuckets(event.targetId);
-            invalidateIssueBuckets();
             return;
           }
+          // Optimistic removal while the latest record is fetched prevents dual-tab ghosts.
+          removeIssueFromBuckets(event.targetId);
           void fetchIssueRecordById(event.targetId, {
             cacheScope: `realtime:${userUid.value}`,
             forceRefresh: true,
@@ -307,6 +310,7 @@ export function useIssueBoardData() {
           markContentRealtimeUnreliable();
           void refreshCurrentData();
         },
+        () => { void refreshCurrentData(); },
       );
     },
     { immediate: true },

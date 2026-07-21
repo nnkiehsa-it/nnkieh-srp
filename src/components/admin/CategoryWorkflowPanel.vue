@@ -12,14 +12,14 @@
           label="categoryAdmin.proposalFeature"
           description="categoryAdmin.proposalFeatureHelp"
           :enabled="issuesEnabled"
-          :disabled="loading || savingFeatures"
+          :disabled="loading || saving"
           @toggle="toggleFeature('issue')"
         />
         <PlatformFeatureToggle
           label="categoryAdmin.facilityFeature"
           description="categoryAdmin.facilityFeatureHelp"
           :enabled="facilitiesEnabled"
-          :disabled="loading || savingFeatures"
+          :disabled="loading || saving"
           @toggle="toggleFeature('facility')"
         />
       </div>
@@ -51,7 +51,6 @@
         kind="issue"
         :title="t('categoryAdmin.proposalCategories')"
         :description="t('categoryAdmin.proposalManagementHelp')"
-        :on-save="saveIssue"
         :on-delete="deleteIssue"
         @add="addIssue"
       />
@@ -61,11 +60,17 @@
         kind="facility"
         :title="t('categoryAdmin.facilityCategories')"
         :description="t('categoryAdmin.facilityManagementHelp')"
-        :on-save="saveFacility"
         :on-delete="deleteFacility"
         @add="addFacility"
       />
     </template>
+
+    <div v-if="!loading" class="flex flex-col items-stretch gap-3 border-t border-ink-100 pt-4 dark:border-ink-800 sm:flex-row sm:items-center sm:justify-end">
+      <InlineMessage v-if="saveError" class="min-w-0 flex-1">{{ saveError }}</InlineMessage>
+      <AppButton variant="primary" :disabled="saving" @click="saveAll">
+        <BusyButtonContent :busy="saving" :label="t('categoryAdmin.saveAllChanges')" :busy-label="t('common.saving')" />
+      </AppButton>
+    </div>
   </section>
 </template>
 
@@ -74,6 +79,8 @@ import { computed, onMounted, ref } from 'vue';
 import CategoryManagementSection from '@/components/categories/CategoryManagementSection.vue';
 import PlatformFeatureToggle from '@/components/categories/PlatformFeatureToggle.vue';
 import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
+import AppButton from '@/components/ui/atoms/AppButton.vue';
+import BusyButtonContent from '@/components/ui/atoms/BusyButtonContent.vue';
 import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
 import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
 import SelectionOptionButton from '@/components/ui/molecules/SelectionOptionButton.vue';
@@ -83,9 +90,7 @@ import { useI18n } from '@/i18n';
 import {
   deleteCategory,
   getCategoryManagement,
-  saveFacilityCategory,
-  saveIssueCategory,
-  savePlatformFeatures,
+  saveCategoryManagement,
 } from '@/services/categories';
 import type { FacilityCategoryConfig, IssueCategoryConfig } from '@/types/categories';
 
@@ -98,8 +103,9 @@ const facilityCategories = ref<FacilityCategoryConfig[]>([]);
 const activeCategoryKind = ref<'issue' | 'facility'>('issue');
 const issuesEnabled = ref(true);
 const facilitiesEnabled = ref(true);
-const savingFeatures = ref(false);
 const featureError = ref('');
+const saving = ref(false);
+const saveError = ref('');
 
 const kindOptions = computed(() => [
   { value: 'issue' as const, label: t('categoryAdmin.proposalCategories'), description: t('categoryAdmin.proposalManagementHelp') },
@@ -141,34 +147,34 @@ async function load() {
   }
 }
 
-async function toggleFeature(kind: 'facility' | 'issue') {
-  if (loading.value || savingFeatures.value) return;
-  savingFeatures.value = true;
+function toggleFeature(kind: 'facility' | 'issue') {
+  if (loading.value || saving.value) return;
   featureError.value = '';
+  if (kind === 'facility') facilitiesEnabled.value = !facilitiesEnabled.value;
+  else issuesEnabled.value = !issuesEnabled.value;
+}
+
+async function saveAll() {
+  if (saving.value) return;
+  saving.value = true;
+  saveError.value = '';
   try {
-    const next = {
-      facilitiesEnabled: kind === 'facility' ? !facilitiesEnabled.value : facilitiesEnabled.value,
-      issuesEnabled: kind === 'issue' ? !issuesEnabled.value : issuesEnabled.value,
-    };
-    const result = await savePlatformFeatures(next);
-    facilitiesEnabled.value = result.facilitiesEnabled;
-    issuesEnabled.value = result.issuesEnabled;
+    const result = await saveCategoryManagement({
+      facilitiesEnabled: facilitiesEnabled.value,
+      facilityCategories: facilityCategories.value.map((category, sortOrder) => ({ ...category, sortOrder })),
+      issueCategories: issueCategories.value.map((category, sortOrder) => ({ ...category, sortOrder })),
+      issuesEnabled: issuesEnabled.value,
+    });
+    facilityCategories.value = result.facilityCategories;
+    issueCategories.value = result.issueCategories;
+    facilitiesEnabled.value = result.features.facilitiesEnabled;
+    issuesEnabled.value = result.features.issuesEnabled;
     await refresh();
   } catch (caught) {
-    featureError.value = t(caught instanceof Error ? caught.message : 'common.saveFailed');
+    saveError.value = t(caught instanceof Error ? caught.message : 'common.saveFailed');
   } finally {
-    savingFeatures.value = false;
+    saving.value = false;
   }
-}
-
-async function saveIssue(index: number) {
-  issueCategories.value[index] = await saveIssueCategory({ ...issueCategories.value[index], sortOrder: index });
-  await refresh();
-}
-
-async function saveFacility(index: number) {
-  facilityCategories.value[index] = await saveFacilityCategory({ ...facilityCategories.value[index], sortOrder: index });
-  await refresh();
 }
 
 async function deleteIssue(index: number) {

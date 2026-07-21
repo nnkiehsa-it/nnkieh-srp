@@ -36,58 +36,105 @@ type NotificationBroadcastMessage = { payload: Record<string, unknown> };
 interface NotificationBroadcastListener {
   callback: (message: NotificationBroadcastMessage) => void;
   onError?: (error: Error) => void;
+  onResync?: () => void;
 }
 interface NotificationBroadcastTopic {
-  channel: ReturnType<ReturnType<typeof getSupabaseClient>['channel']>;
+  channel: ReturnType<ReturnType<typeof getSupabaseClient>['channel']> | null;
+  event: NotificationBroadcastEvent;
   listeners: Map<number, NotificationBroadcastListener>;
+  needsResync: boolean;
+  reconnectAttempt: number;
+  reconnectTimer: number;
+  topic: string;
 }
+
+type NotificationBroadcastEvent = 'notification_insert' | 'notification_state_changed';
 
 const notificationBroadcastTopics = new Map<string, NotificationBroadcastTopic>();
 let notificationBroadcastListenerId = 0;
 
-function subscribeNotificationBroadcast(
-  topic: string,
-  event: 'notification_insert' | 'notification_state_changed',
-  callback: NotificationBroadcastListener['callback'],
-  onError?: (error: Error) => void,
-) {
-  const listenerId = notificationBroadcastListenerId += 1;
-  let subscription = notificationBroadcastTopics.get(topic);
-  if (!subscription) {
-    const listeners = new Map<number, NotificationBroadcastListener>();
-    const client = getSupabaseClient();
-    const channel = client.channel(topic, { config: { private: true } })
-      .on<Record<string, unknown>>('broadcast', { event }, (message) => {
-        if (event === 'notification_insert') {
+function connectNotificationBroadcast(subscription: NotificationBroadcastTopic) {
+  if (subscription.channel || subscription.listeners.size === 0) return;
+  const client = getSupabaseClient();
+  const channel = client.channel(subscription.topic, { config: { private: true } })
+    .on<Record<string, unknown>>('broadcast', { event: subscription.event }, (message) => {
+      if (subscription.event === 'notification_insert') {
+        markContentCachePrefixStale(NOTIFICATION_PAGES_CACHE_PREFIX);
+        markContentCachePrefixStale(NOTIFICATION_UNREAD_CACHE_KEY);
+        if (message.payload.type === 'facility_status_changed' || message.payload.type === 'facility_report_created') {
+          markContentCachePrefixStale('facility-list-page|');
+          markContentCachePrefixStale('facility-detail|');
+        }
+      } else {
+        markContentCachePrefixStale(NOTIFICATION_STATE_CACHE_KEY);
+        markContentCachePrefixStale(NOTIFICATION_UNREAD_CACHE_KEY);
+      }
+      subscription.listeners.forEach((listener) => listener.callback({ payload: message.payload }));
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        subscription.reconnectAttempt = 0;
+        if (subscription.needsResync) {
+          subscription.needsResync = false;
+          // Drop short-lived unread/read caches so resync cannot re-serve pre-disconnect state.
           markContentCachePrefixStale(NOTIFICATION_PAGES_CACHE_PREFIX);
-          markContentCachePrefixStale(NOTIFICATION_UNREAD_CACHE_KEY);
-          if (message.payload.type === 'facility_status_changed' || message.payload.type === 'facility_report_created') {
-            markContentCachePrefixStale('facility-list-page|');
-            markContentCachePrefixStale('facility-detail|');
-          }
-        } else {
           markContentCachePrefixStale(NOTIFICATION_STATE_CACHE_KEY);
           markContentCachePrefixStale(NOTIFICATION_UNREAD_CACHE_KEY);
+          subscription.listeners.forEach((listener) => listener.onResync?.());
         }
-        listeners.forEach((listener) => listener.callback({ payload: message.payload }));
-      })
-      .subscribe((status) => {
-        if (status !== 'CHANNEL_ERROR' && status !== 'TIMED_OUT') return;
-        const error = new Error('notification-realtime-unavailable');
-        listeners.forEach((listener) => listener.onError?.(error));
-      });
-    subscription = { channel, listeners };
-    notificationBroadcastTopics.set(topic, subscription);
+        return;
+      }
+      if (status !== 'CHANNEL_ERROR' && status !== 'TIMED_OUT' && status !== 'CLOSED') return;
+      if (subscription.channel !== channel) return;
+      subscription.channel = null;
+      subscription.needsResync = true;
+      const error = new Error('notification-realtime-unavailable');
+      subscription.listeners.forEach((listener) => listener.onError?.(error));
+      void client.removeChannel(channel);
+      if (subscription.reconnectTimer || subscription.listeners.size === 0) return;
+      const delay = Math.min(30_000, 1_000 * 2 ** subscription.reconnectAttempt);
+      subscription.reconnectAttempt += 1;
+      subscription.reconnectTimer = window.setTimeout(() => {
+        subscription.reconnectTimer = 0;
+        connectNotificationBroadcast(subscription);
+      }, delay);
+    });
+  subscription.channel = channel;
+}
+
+function subscribeNotificationBroadcast(
+  topic: string,
+  event: NotificationBroadcastEvent,
+  callback: NotificationBroadcastListener['callback'],
+  onError?: (error: Error) => void,
+  onResync?: () => void,
+) {
+  const listenerId = notificationBroadcastListenerId += 1;
+  const subscriptionKey = `${topic}|${event}`;
+  let subscription = notificationBroadcastTopics.get(subscriptionKey);
+  if (!subscription) {
+    subscription = {
+      channel: null,
+      event,
+      listeners: new Map(),
+      needsResync: false,
+      reconnectAttempt: 0,
+      reconnectTimer: 0,
+      topic,
+    };
+    notificationBroadcastTopics.set(subscriptionKey, subscription);
   }
-  subscription.listeners.set(listenerId, { callback, onError });
+  subscription.listeners.set(listenerId, { callback, onError, onResync });
+  connectNotificationBroadcast(subscription);
 
   return () => {
-    const current = notificationBroadcastTopics.get(topic);
+    const current = notificationBroadcastTopics.get(subscriptionKey);
     if (!current) return;
     current.listeners.delete(listenerId);
     if (current.listeners.size > 0) return;
-    notificationBroadcastTopics.delete(topic);
-    void getSupabaseClient().removeChannel(current.channel);
+    notificationBroadcastTopics.delete(subscriptionKey);
+    window.clearTimeout(current.reconnectTimer);
+    if (current.channel) void getSupabaseClient().removeChannel(current.channel);
   };
 }
 
@@ -215,6 +262,7 @@ export function subscribeNotificationSource(
   uid: string,
   onInsert: (notification: NotificationRecord) => void,
   onError?: (error: Error) => void,
+  onResync?: () => void,
 ) {
   const channelName = source === 'user' ? `notifications:user:${uid}` : `notifications:${source}`;
   return subscribeNotificationBroadcast(
@@ -227,6 +275,7 @@ export function subscribeNotificationSource(
       onInsert(normalizeNotificationRecord(source, data));
     },
     onError,
+    onResync,
   );
 }
 
@@ -281,6 +330,7 @@ export function subscribeNotificationReadState(
   callback: (state: NotificationReadState) => void,
   onError?: (error: Error) => void,
   loadInitial = true,
+  onResync?: () => void,
 ) {
   const channelName = `notification-state:${uid}`;
   const loadInitialState = () => {
@@ -295,6 +345,7 @@ export function subscribeNotificationReadState(
       callback(normalizeNotificationReadState(message.payload as Record<string, unknown>));
     },
     onError,
+    onResync,
   );
   if (loadInitial) loadInitialState();
   return unsubscribe;
@@ -344,6 +395,11 @@ export async function fetchNotificationSnapshot(
   };
 }
 
+export function seedNotificationUnreadHint(hasUnread: boolean) {
+  setCachedContent(NOTIFICATION_UNREAD_CACHE_KEY, { value: hasUnread === true });
+  return hasUnread === true;
+}
+
 export async function fetchNotificationUnreadHint() {
   const cached = await getCachedContentPersistent<{ value: boolean }>(
     NOTIFICATION_UNREAD_CACHE_KEY,
@@ -361,16 +417,22 @@ export async function fetchNotificationUnreadHint() {
 
 export function subscribeNotificationBadge(
   uid: string,
-  _isAdmin: boolean,
+  isAdmin: boolean,
   onNotification: () => void,
   onStateChanged: () => void,
   onError?: (error: Error) => void,
 ) {
-  const topics = ['notifications:broadcast', `notifications:user:${uid}`, `notification-state:${uid}`];
+  const topics = [
+    'notifications:broadcast',
+    `notifications:user:${uid}`,
+    ...(isAdmin ? ['notifications:admin'] as const : []),
+    `notification-state:${uid}`,
+  ];
   const unsubscribers = topics.map((topic) => subscribeNotificationBroadcast(
     topic,
     topic.startsWith('notification-state:') ? 'notification_state_changed' : 'notification_insert',
     topic.startsWith('notification-state:') ? onStateChanged : onNotification,
+    onError,
     onError,
   ));
   return () => { unsubscribers.forEach((unsubscribe) => unsubscribe()); };

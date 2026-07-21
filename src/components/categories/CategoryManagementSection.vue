@@ -49,7 +49,7 @@
                   {{ t('categoryAdmin.cannotDeleteDefaultCategoryHelp') }}
                 </span>
                 <span v-else>
-                  {{ t('adminCenter.saveCategoryHelp') }}
+                  {{ t('categoryAdmin.saveAllChangesHelp') }}
                 </span>
               </p>
               <div class="flex items-center gap-2 shrink-0">
@@ -60,9 +60,6 @@
                   @click="confirmDelete(selectedIndex)"
                 >
                   <BusyButtonContent :busy="deletingIndex === selectedIndex" :label="t('categoryAdmin.deleteCategory')" :busy-label="t('common.deleting')" />
-                </AppButton>
-                <AppButton variant="primary" :disabled="savingIndex === selectedIndex" @click="save(selectedIndex)">
-                  <BusyButtonContent :busy="savingIndex === selectedIndex" :label="t('common.save')" :busy-label="t('common.saving')" />
                 </AppButton>
               </div>
             </div>
@@ -115,7 +112,6 @@ import type { FacilityCategoryConfig, IssueCategoryConfig } from '@/types/catego
 const props = defineProps<{
   description: string;
   kind: 'facility' | 'issue';
-  onSave: (index: number) => Promise<void>;
   onDelete?: (index: number) => Promise<void>;
   title: string;
 }>();
@@ -124,7 +120,6 @@ const emit = defineEmits<{ add: [] }>();
 const { t } = useI18n();
 const originalIds = new Set(model.value.map((category) => category.id).filter(Boolean));
 const selectedIndex = ref(0);
-const savingIndex = ref<number | null>(null);
 const errors = ref<Record<number, string>>({});
 const selectedCategory = computed(() => model.value[selectedIndex.value] ?? null);
 const isWizardOpen = ref(false);
@@ -169,16 +164,4 @@ async function handleDelete(index: number) {
   }
 }
 
-async function save(index: number) {
-  savingIndex.value = index;
-  errors.value[index] = '';
-  try {
-    await props.onSave(index);
-    originalIds.add(model.value[index].id);
-  } catch (caught) {
-    errors.value[index] = t(caught instanceof Error ? caught.message : 'common.saveFailed');
-  } finally {
-    savingIndex.value = null;
-  }
-}
 </script>

@@ -1,5 +1,5 @@
 const messages = {
-  'media.loadFailed': 'Loading failed',
+  'media.loadFailed': 'Unable to load',
   'media.zoom': 'Enlarge image: {alt}',
 } as const;
 

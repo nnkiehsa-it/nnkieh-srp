@@ -22,7 +22,8 @@
         <div class="flex min-w-0 items-start justify-between gap-2">
           <div class="min-w-0">
             <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <p class="max-w-full truncate text-[13px] font-bold leading-5 text-ink-900 dark:text-ink-100">
+              <SkeletonBlock v-if="authorProfile.loading" class="h-4 w-24 rounded" />
+              <p v-else class="max-w-full truncate text-[13px] font-bold leading-5 text-ink-900 dark:text-ink-100">
                 {{ authorName }}
               </p>
               <p class="text-xs leading-5 text-ink-500/80 dark:text-ink-400/80">
@@ -107,6 +108,7 @@ import CompactActionMenu from '@/components/CompactActionMenu.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
+import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
 import { formatDate } from '@/lib/format';
 import { useI18n } from '@/i18n';
 import type { DiscussionCommentRecord } from '@/types';
@@ -125,7 +127,11 @@ const props = defineProps<{
 }>();
 const { t } = useI18n();
 const authorProfile = useAuthorProfile(() => props.comment.author_uid);
-const authorName = computed(() => authorProfile.value?.displayName || t('navigation.user'));
+const authorName = computed(() => (
+  authorProfile.value.loading
+    ? ''
+    : authorProfile.value.profile?.displayName || t('navigation.user')
+));
 
 const emit = defineEmits<{
   delete: [];

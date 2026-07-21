@@ -13,14 +13,18 @@ import {
   clearActiveSessionData,
   customPhotoUrl,
   initActiveSessionData,
+  markPlatformVisitRecorded,
   mySupportedIssueIds,
-  recordPlatformVisitOnLogin,
+  shouldRecordPlatformVisit,
 } from '@/composables/sessionEffects';
 import { validateBasicUser, validateUserAgainstToken } from '@/composables/sessionValidation';
 import { withRequestTimeout } from '@/lib/request';
 import { ensureSupabaseAuthenticatedRole } from '@/services/supabase-auth';
-import { fetchCurrentUserRole } from '@/services/session-role';
-import { ensureContentRevisionsFresh } from '@/services/content-revisions';
+import { fetchCurrentUserRole, seedSessionAccess } from '@/services/session-role';
+import { applyContentRevisionsSnapshot, ensureContentRevisionsFresh } from '@/services/content-revisions';
+import { fetchSessionBootstrap } from '@/services/session-bootstrap';
+import { seedCategoryCatalog } from '@/composables/useCategories';
+import { seedNotificationUnreadHint } from '@/services/notifications';
 
 const state = reactive<SessionState>({
   initialized: false,
@@ -188,7 +192,6 @@ function acceptCurrentUser(user: NonNullable<SessionState['user']>) {
   if (user.photoURL) {
     void cacheUserAvatarOnLogin(user.photoURL);
   }
-  void recordPlatformVisitOnLogin();
 }
 
 function isCurrentVerification(user: NonNullable<SessionState['user']>, verificationId: number) {
@@ -208,22 +211,41 @@ async function refreshVerifiedSession(user: NonNullable<SessionState['user']>, v
     try {
       await ensureSupabaseAuthenticatedRole(user);
       if (!isCurrentVerification(user, verificationId)) return;
-      await ensureContentRevisionsFresh().catch(() => undefined);
-      if (!isCurrentVerification(user, verificationId)) return;
     } catch (error) {
       debugLog('background supabase auth initialization failed', error);
       await rejectCurrentUser('auth.initializationFailed');
       return;
     }
 
-    const access = await fetchCurrentUserRole();
-    if (!isCurrentVerification(user, verificationId)) return;
-    state.userRole = access.role;
-    state.roles = access.roles;
-    state.permissions = access.permissions;
-    state.managedIssueCategoryIds = access.managedIssueCategoryIds;
-    state.managedFacilityCategoryIds = access.managedFacilityCategoryIds;
-    state.setupCompleted = access.setupCompleted;
+    try {
+      const bootstrap = await fetchSessionBootstrap({
+        recordVisit: shouldRecordPlatformVisit(),
+      });
+      if (!isCurrentVerification(user, verificationId)) return;
+      const access = seedSessionAccess(bootstrap.access);
+      state.userRole = access.role;
+      state.roles = access.roles;
+      state.permissions = access.permissions;
+      state.managedIssueCategoryIds = access.managedIssueCategoryIds;
+      state.managedFacilityCategoryIds = access.managedFacilityCategoryIds;
+      state.setupCompleted = access.setupCompleted;
+      seedCategoryCatalog(bootstrap.catalog);
+      applyContentRevisionsSnapshot(bootstrap.revisions);
+      seedNotificationUnreadHint(bootstrap.notificationUnread.hasUnread);
+      if (bootstrap.visitRecorded) markPlatformVisitRecorded();
+    } catch (bootstrapError) {
+      debugLog('session bootstrap failed; falling back to granular reads', bootstrapError);
+      await ensureContentRevisionsFresh().catch(() => undefined);
+      if (!isCurrentVerification(user, verificationId)) return;
+      const access = await fetchCurrentUserRole(false, { useBootstrap: false });
+      if (!isCurrentVerification(user, verificationId)) return;
+      state.userRole = access.role;
+      state.roles = access.roles;
+      state.permissions = access.permissions;
+      state.managedIssueCategoryIds = access.managedIssueCategoryIds;
+      state.managedFacilityCategoryIds = access.managedFacilityCategoryIds;
+      state.setupCompleted = access.setupCompleted;
+    }
   } catch (error) {
     if (!isCurrentVerification(user, verificationId)) return;
     debugLog('background session verification failed', error);

@@ -5,10 +5,13 @@
    * vertical composition; feature components must not add page-side padding.
    */
   .viewport-frame {
+    --viewport-shadow-bleed: 0.625rem;
     align-self: stretch;
     box-sizing: border-box;
-    margin-left: max(var(--app-viewport-gutter), env(safe-area-inset-left));
-    margin-right: max(var(--app-viewport-gutter), env(safe-area-inset-right));
+    margin-left: calc(max(var(--app-viewport-gutter), env(safe-area-inset-left)) - var(--viewport-shadow-bleed));
+    margin-right: calc(max(var(--app-viewport-gutter), env(safe-area-inset-right)) - var(--viewport-shadow-bleed));
+    padding-left: var(--viewport-shadow-bleed);
+    padding-right: var(--viewport-shadow-bleed);
     width: auto;
   }
 
@@ -83,6 +86,9 @@
     border: 0;
     border-radius: var(--radius-inner);
     box-shadow: var(--shadow-control);
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .surface-card {
@@ -90,6 +96,9 @@
     border: 0;
     border-radius: var(--radius-outer);
     box-shadow: var(--shadow-card);
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .surface-card--interactive {

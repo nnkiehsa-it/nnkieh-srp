@@ -79,6 +79,9 @@ export const BACKEND_ACTION_POLICIES = {
   "getCurrentUserRole": {
     "group": "read"
   },
+  "getSessionBootstrap": {
+    "group": "read"
+  },
   "getFacility": {
     "group": "read"
   },
@@ -156,6 +159,10 @@ export const BACKEND_ACTION_POLICIES = {
     "extraLimit": "roleWriteHourly"
   },
   "saveIssueCategory": {
+    "group": "admin-write",
+    "extraLimit": "roleWriteHourly"
+  },
+  "saveCategoryManagement": {
     "group": "admin-write",
     "extraLimit": "roleWriteHourly"
   },

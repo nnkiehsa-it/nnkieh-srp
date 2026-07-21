@@ -72,6 +72,15 @@ function facilityCategoryInput(value: unknown, sortOrder: number) {
   return { ...categoryIdentity(asRecord(value)), sortOrder };
 }
 
+function assertCategoryCollection(categories: Array<{ id: string; isDefault: boolean }>) {
+  if (new Set(categories.map((category) => category.id)).size !== categories.length) {
+    throw new Error("validation-required");
+  }
+  if (categories.length > 0 && categories.filter((category) => category.isDefault).length !== 1) {
+    throw new Error("validation-required");
+  }
+}
+
 function issueCategoryResponse(row: Record<string, unknown>): RuntimeIssueCategory {
   return {
     authorVisible: row.author_visible === true,
@@ -137,7 +146,7 @@ export async function issueCategoryPolicyLists(supabase: BackendSupabase) {
   };
 }
 
-async function catalog(supabase: BackendSupabase, includeInactive: boolean) {
+export async function loadCategoryCatalog(supabase: BackendSupabase, includeInactive: boolean) {
   const [issueCategories, facilityCategories, setupResult] = await Promise.all([
     getIssueCategories(supabase, includeInactive),
     getFacilityCategories(supabase, includeInactive),
@@ -249,14 +258,51 @@ export async function handleCategoryAction(
   supabase: BackendSupabase,
 ) {
   if (action === "getCategoryCatalog") {
-    return { ...await catalog(supabase, true), setupCompleted: auth.setupCompleted };
+    return { ...await loadCategoryCatalog(supabase, true), setupCompleted: auth.setupCompleted };
   }
   if (action === "getCategoryManagement") {
     requirePermission(auth, "category.manage");
-    return { ...await catalog(supabase, true), setupCompleted: auth.setupCompleted };
+    return { ...await loadCategoryCatalog(supabase, true), setupCompleted: auth.setupCompleted };
   }
   if (action === "saveIssueCategory") return await saveIssueCategory(payload, auth, supabase);
   if (action === "saveFacilityCategory") return await saveFacilityCategory(payload, auth, supabase);
+  if (action === "saveCategoryManagement") {
+    requirePermission(auth, "category.manage");
+    const rawIssueCategories = Array.isArray(payload.issueCategories) ? payload.issueCategories : [];
+    const rawFacilityCategories = Array.isArray(payload.facilityCategories) ? payload.facilityCategories : [];
+    const issuesEnabled = asBoolean(payload.issuesEnabled, true);
+    const facilitiesEnabled = asBoolean(payload.facilitiesEnabled, true);
+    const issueCategories = rawIssueCategories.map((value, index) => {
+      const requested = asRecord(value);
+      return {
+        ...issueCategoryInput(requested, index),
+        isActive: asBoolean(requested.isActive, true),
+        isDefault: asBoolean(requested.isDefault),
+      };
+    });
+    const facilityCategories = rawFacilityCategories.map((value, index) => {
+      const requested = asRecord(value);
+      return {
+        ...facilityCategoryInput(requested, index),
+        isActive: asBoolean(requested.isActive, true),
+        isDefault: asBoolean(requested.isDefault),
+      };
+    });
+    if ((issuesEnabled && issueCategories.length === 0) || (facilitiesEnabled && facilityCategories.length === 0)) {
+      throw new Error("validation-required");
+    }
+    assertCategoryCollection(issueCategories);
+    assertCategoryCollection(facilityCategories);
+    const { error: saveError } = await supabase.schema("app_api").rpc("backend_save_category_management", {
+      actor_uid: auth.uid,
+      facilities_enabled: facilitiesEnabled,
+      facility_categories: facilityCategories,
+      issue_categories: issueCategories,
+      issues_enabled: issuesEnabled,
+    });
+    if (saveError) throw saveError;
+    return { ...await loadCategoryCatalog(supabase, true), success: true };
+  }
   if (action === "savePlatformFeatures") {
     requirePermission(auth, "category.manage");
     const { data, error } = await supabase.schema("app_api").rpc("backend_update_platform_features", {

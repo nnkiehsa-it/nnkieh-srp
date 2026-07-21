@@ -28,8 +28,9 @@
   - `index.ts` — origin 驗證、CORS、Firebase 驗證與分派；公開限流由 Cloudflare Worker 先處理
   - `execution.ts` — 正式入口與本地整合驗證共用的權限、request ID、冪等執行核心
   - `action-registry.ts` / `response.ts` / `rate-limit.ts`（Upstash 精確業務配額）/ `types.ts` / `utils.ts` / `validation.ts` / `auth.ts`
-  - domains：`users`（session access／角色與分類指派）、`categories`（動態 catalog／初始設定／管理）、`uploads`、`issues`（read/create/moderation/support/delete/comments）、`facilities`（分類式 read/create/affected/status/delete）、`announcements`（read/write/comments）、`notifications`、`dashboard`
+  - domains：`users`（session access／角色與分類指派）、`session-bootstrap`（冷啟動合併 role／catalog／revisions／unread／optional visit，降低 Edge invocation）、`categories`（動態 catalog／初始設定／管理）、`uploads`、`issues`（read/create/moderation/support/delete/comments）、`facilities`（分類式 read/create/affected/status/delete）、`announcements`（read/write/comments）、`notifications`、`dashboard`
   - shared helpers：`issue-shared.ts`、`announcement-shared.ts`
+  - 省 Edge Function 次數靠合併讀取與前端快取，不把 domain 業務搬進 Cloudflare Worker
 - 獨立 Functions：`syncUser`、`cloudinaryWebhook`、`outboxWorker`、`processDeletionJobs`、`maintenanceCleanup`
 - `_shared/` — `env`、`http`、`api-errors`（公開錯誤契約 codegen）、`origin`（Worker／內部 origin secret 與動態 Function URL）、`firebase-auth`、`cloudinary`、`database`、`database-client`（Edge 專用精簡 PostgREST client）、`google-oauth`、`fcm`、`notion`、`rate-limits`、`upstash-rate-limit`、`webhook`
 
@@ -69,7 +70,7 @@
 - `views/SettingsView.vue` — 設定頁（手機）
 - `views/DashboardView.vue` — 管理員統計
 - `views/AdministrationView.vue` — 單一系統設定中心，以大型選項卡切換分類／流程與人員／權限兩個操作階段；舊 `/admin/access`、`/admin/categories` 會導向對應區段
-- `components/admin/CategoryWorkflowPanel.vue` / `MemberAccessPanel.vue` / `CategoryWizardDialog.vue` — 動態分類規則編輯、引導式新增分類精靈，以及「先分類／功能、只顯示明確指派的現有負責人、再搜尋成員」的責任指派；平台總管理員只由 `ADMIN_EMAILS` 同步，不混入分類負責人名單，也不提供 UI 或一般權限 API 修改入口
+- `components/admin/CategoryWorkflowPanel.vue` / `MemberAccessPanel.vue` / `CategoryWizardDialog.vue` — 動態分類規則以整頁草稿編輯並由單一按鈕原子儲存兩類分類與功能開關、引導式新增分類精靈，以及「先分類／功能、只顯示明確指派的現有負責人、再搜尋成員」的責任指派；平台總管理員只由 `ADMIN_EMAILS` 同步，不混入分類負責人名單，也不提供 UI 或一般權限 API 修改入口
 - `components/categories/CategoryManagementSection.vue` / `SetupCategorySection.vue` / `CategorySelectorList.vue` / `CategoryEditorCard.vue` / `PlatformFeatureToggle.vue` — 初始設定與後續管理共用分類選擇清單，一次選取並編輯一個分類的規則表單，以及共用的提案與設備功能開關
 - `views/SetupView.vue` / `components/LanguageSelector.vue` / `components/categories/SetupCategorySection.vue` — ADMIN_EMAILS 首次設定依序確認系統語言、啟用功能與其分類；只驗證啟用功能的必填資料，未完成時停用送出，相同語言選擇器亦供設定頁覆用
 
@@ -132,7 +133,7 @@
 
 ## services
 
-- `backend-action.ts` / `backend-action-contract.ts` / `supabase-auth.ts` / `session-role.ts`（roles／permissions）/ `access.ts`（角色與分類指派）/ `categories.ts`（動態 catalog／setup／管理）/ `content-read-cache.ts` / `content-revisions.ts`（三領域批次版本檢查與精準失效）/ `realtime-events.ts`
+- `backend-action.ts` / `backend-action-contract.ts` / `supabase-auth.ts` / `session-role.ts`（roles／permissions）/ `session-bootstrap.ts`（冷啟動合併 session 讀取）/ `access.ts`（角色與分類指派）/ `categories.ts`（動態 catalog／setup／整體原子管理）/ `content-read-cache.ts` / `content-revisions.ts`（三領域批次版本檢查與精準失效）/ `realtime-events.ts`（依 UID／角色重建、斷線重連與成功後 resync）
 - 提案：`issues.ts` barrel + `issues-core` / `constants` / `errors` / `utils` / `normalize` / `read*` / `write` / `comment-cursor`
 - 其他：`facilities.ts`（設備分類摘要分頁／詳情／寫入）、`announcements.ts`、`notifications.ts`（公告廣播與提案／設備分類負責人的個人通知讀取）、`dashboard.ts`、`uploads.ts`、`users-read.ts`、`users-write.ts`
 

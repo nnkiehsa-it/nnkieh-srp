@@ -35,6 +35,19 @@ export async function savePlatformFeatures(features: PlatformFeatures) {
   return await action({ ...features, requestId: createRequestId() });
 }
 
+export async function saveCategoryManagement(input: {
+  facilitiesEnabled: boolean;
+  facilityCategories: FacilityCategoryConfig[];
+  issueCategories: IssueCategoryConfig[];
+  issuesEnabled: boolean;
+}) {
+  const action = invokeBackendAction<
+    typeof input & { requestId: string },
+    CategoryCatalog & { success: boolean }
+  >('saveCategoryManagement');
+  return await action({ ...input, requestId: createRequestId() });
+}
+
 export async function saveIssueCategory(category: IssueCategoryConfig | IssueCategoryDraft) {
   const action = invokeBackendAction<
     { category: IssueCategoryConfig | IssueCategoryDraft; requestId: string },

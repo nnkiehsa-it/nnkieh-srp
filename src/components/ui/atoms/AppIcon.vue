@@ -27,6 +27,7 @@ import {
   Download,
   Eye,
   FileClock,
+  Globe2,
   Heading1,
   Heading2,
   Heart,
@@ -66,7 +67,7 @@ export type AppIconName =
   | 'bell' | 'chart' | 'changelog' | 'check' | 'check-circle' | 'chevron-down'
   | 'chevron-left' | 'chevron-right' | 'circle-alert' | 'circle-help' | 'close'
   | 'comment' | 'edit' | 'heart' | 'image' | 'inbox' | 'info' | 'download' | 'preview'
-  | 'hand' | 'wrench'
+  | 'globe' | 'hand' | 'wrench'
   | 'link' | 'lock' | 'megaphone' | 'more-horizontal' | 'refresh' | 'restart'
   | 'reply' | 'search' | 'send' | 'settings' | 'share' | 'shield-check' | 'sort'
   | 'switch-horizontal' | 'thumbs-up' | 'trash' | 'user' | 'warning'
@@ -106,6 +107,7 @@ const iconComponents: Record<AppIconName, Component> = {
   inbox: Inbox,
   info: Info,
   download: Download,
+  globe: Globe2,
   preview: Eye,
   link: Link,
   lock: Lock,

@@ -184,6 +184,7 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
 
   for (const action of [
     'getCurrentUserRole',
+    'getSessionBootstrap',
     'createImageUploadSessions',
     'finalizeImageUploads',
     'deleteUploadedImages',
@@ -206,7 +207,8 @@ test('backendAction covers frontend actions and Cloudinary direct upload', async
   assert.match(uploads, /deleteUploadedImages/u);
   assert.doesNotMatch(uploads, /'createImageUploadSession'|'finalizeImageUpload'|'deleteUploadedImage'/u);
   assert.doesNotMatch(uploads, /firebase\/storage|uploadBytes/u);
-  assert.match(session, /fetchCurrentUserRole/u);
+  assert.match(session, /fetchSessionBootstrap/u);
+  assert.match(session, /seedCategoryCatalog|seedSessionAccess/u);
   assert.match(backendAction, /requireVerifiedFirebaseUser/u);
   assert.doesNotMatch(backendAction, /requireEligibleFirebaseUser/u);
   assert.match(backendAction, /healthcheck/u);
@@ -1141,6 +1143,10 @@ test('cost-sensitive hot paths use aggregation, patching, and lazy startup', asy
   const fcm = await read('supabase/functions/_shared/fcm.ts');
   const uploads = await read('supabase/functions/backendAction/uploads.ts');
   const vite = await read('vite.config.ts');
+  const sessionBootstrap = await read('src/services/session-bootstrap.ts');
+  const edgeBootstrap = await read('supabase/functions/backendAction/session-bootstrap.ts');
+  const actionRegistry = await read('supabase/functions/backendAction/action-registry.ts');
+  const session = await read('src/composables/useSession.ts');
 
   assert.match(supportMigration, /locked_until/u);
   assert.match(supportMigration, /claimed_updated_at/u);
@@ -1161,6 +1167,13 @@ test('cost-sensitive hot paths use aggregation, patching, and lazy startup', asy
   assert.doesNotMatch(dashboardMigration, /from app_private\.issues group by category\) grouped/u);
   assert.match(cleanupMigration, /support\.created/u);
   assert.match(cleanupMigration, /drop column if exists secure_url/u);
+  assert.match(actionRegistry, /action\("getSessionBootstrap", "user", "read"/u);
+  assert.match(edgeBootstrap, /loadCategoryCatalog/u);
+  assert.match(edgeBootstrap, /backend_get_notification_unread_hint/u);
+  assert.match(edgeBootstrap, /recordVisitIfRequested|recordVisit/u);
+  assert.match(sessionBootstrap, /getSessionBootstrap/u);
+  assert.match(session, /fetchSessionBootstrap/u);
+  assert.doesNotMatch(session, /recordPlatformVisitOnLogin/u);
 });
 
 test('content reads persist by account and invalidate after writes or realtime events', async () => {
@@ -1525,6 +1538,7 @@ test('initial setup reuses the settings-style selected category editor', async (
 
 test('platform feature switches persist atomically and remain configurable after setup', async () => {
   const migration = await read('supabase/migrations/202607200005_platform_feature_switches.sql');
+  const atomicManagementMigration = await read('supabase/migrations/202607210002_atomic_category_management.sql');
   const categoryAction = await read('supabase/functions/backendAction/categories.ts');
   const categoryManagement = await read('src/components/admin/CategoryWorkflowPanel.vue');
   const categoryState = await read('src/composables/useCategories.ts');
@@ -1535,7 +1549,8 @@ test('platform feature switches persist atomically and remain configurable after
   assert.match(migration, /if issues_enabled then[\s\S]*if facilities_enabled then/u);
   assert.match(categoryAction, /action === "savePlatformFeatures"[\s\S]*requirePermission\(auth, "category\.manage"\)/u);
   assert.match(categoryAction, /features:[\s\S]*facilitiesEnabled:[\s\S]*issuesEnabled:/u);
-  assert.match(categoryManagement, /<PlatformFeatureToggle[\s\S]*savePlatformFeatures/u);
+  assert.match(categoryManagement, /<PlatformFeatureToggle[\s\S]*saveCategoryManagement[\s\S]*saveAll/u);
+  assert.match(atomicManagementMigration, /backend_save_category_management[\s\S]*for update[\s\S]*backend_update_platform_features/u);
   assert.match(categoryState, /const loaded = ref\(false\)[\s\S]*if \(!force && loaded\.value\) return/u);
 });
 
@@ -1655,8 +1670,8 @@ test('authenticated route pages share one content width and AppShell owns horizo
   const baseStyles = await read('src/styles/base.css');
   assert.match(baseStyles, /--app-content-max-width: 80rem;/u);
   assert.match(baseStyles, /--app-viewport-gutter: 1\.5rem;/u);
-  assert.match(primitives, /\.viewport-frame \{[\s\S]*align-self: stretch;[\s\S]*margin-left: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\);[\s\S]*margin-right: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-right\)\);[\s\S]*width: auto;/u);
-  assert.doesNotMatch(primitives, /\.viewport-frame \{[\s\S]{0,280}padding-(?:left|right):/u);
+  assert.match(primitives, /\.viewport-frame \{[\s\S]*--viewport-shadow-bleed:[\s\S]*margin-left: calc\(max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\) - var\(--viewport-shadow-bleed\)\);[\s\S]*padding-left: var\(--viewport-shadow-bleed\);[\s\S]*width: auto;/u);
+  assert.match(contentStyles, /\.scroll-shadow-bleed--compact \{[\s\S]*margin-inline:[\s\S]*padding-inline:/u);
   assert.match(primitives, /\.viewport-floating-inline \{[\s\S]*left: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\);[\s\S]*right: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-right\)\);/u);
   assert.match(primitives, /\.route-page-frame \{[\s\S]*max-width: var\(--app-content-max-width\);[\s\S]*min-width: 0;[\s\S]*width: 100%;/u);
   assert.match(primitives, /\.route-page-frame--fill \{[\s\S]*flex: 1 1 0%;[\s\S]*height: 100%;[\s\S]*min-height: 0;/u);
@@ -1837,7 +1852,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(settingsPanel, /<LabeledListSection[\s\S]*<IconListRow/u);
   assert.match(settingsPanel, /<LabeledListSection :label="t\('settings\.language'\)">[\s\S]*<LanguageSelector/u);
   assert.match(languageSelector, /<DropdownMenu[\s\S]*role="listbox"[\s\S]*v-for="option in languageOptions"/u);
-  assert.match(languageSelector, /<IconListRow[\s\S]*icon="switch-horizontal"[\s\S]*#trailing/u);
+  assert.match(languageSelector, /<IconListRow[\s\S]*icon="globe"[\s\S]*#trailing/u);
   assert.doesNotMatch(contentStyles, /\.settings-row \{[\s\S]{0,100}\bpx-0\b/u);
   assert.match(settingsPanel, /<SwitchIndicator[\s\S]*:checked=/u);
   assert.match(settingsPanel, /<ListSurfaceRow[\s\S]*interactive/u);

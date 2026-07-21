@@ -1,10 +1,10 @@
 const messages = {
   'apiError.invalidFacilityCategory': '這個設備報修分類不存在或已封存。',
-  'apiError.commentsDisabled': '這筆提案已關閉新留言；既有留言仍會保留。',
+  'apiError.commentsDisabled': '這筆提案已關閉新留言；既有留言仍可查看。',
   'apiError.immutableCategoryPolicy': '分類建立後不能修改閱讀範圍或作者顯示規則。',
   'apiError.setupAlreadyCompleted': '初始設定已完成，請改用分類管理頁調整。',
   'apiError.internal': '服務暫時無法處理請求，請稍後再試。',
-  'apiError.upstreamUnavailable': '上游服務暫時無法使用，請稍後再試。',
+  'apiError.upstreamUnavailable': '連線服務暫時無法使用，請稍後再試。',
   'apiError.unauthenticated': '請先登入後再操作。',
   'apiError.permissionDenied': '沒有執行此操作的權限。',
   'apiError.originDenied': '不允許的請求來源。',
@@ -26,7 +26,7 @@ const messages = {
   'apiError.rateLimitProviderUnavailable': '限流服務暫時無法使用，請稍後再試。',
   'apiError.invalidSignature': '請求簽章無效。',
   'apiError.uploadValidationFailed': '圖片驗證失敗，請重新上傳。',
-  'apiError.upstreamInvalidResponse': '上游服務回傳了無效資料，請稍後再試。',
+  'apiError.upstreamInvalidResponse': '連線服務回傳了無效資料，請稍後再試。',
 } as const;
 
 export default messages;

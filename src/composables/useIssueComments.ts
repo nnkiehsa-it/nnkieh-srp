@@ -1,10 +1,15 @@
-import { type Ref } from 'vue';
+import { type MaybeRefOrGetter, type Ref, toValue } from 'vue';
 import { useDiscussionComments } from '@/composables/useDiscussionComments';
 import { useSession } from '@/composables/useSession';
 import { createComment, deleteComment, fetchComments } from '@/services/issues';
 import type { CommentRecord } from '@/types';
 
-export function useIssueComments(issueId: Ref<string>, categoryId: Ref<string>, onContentUnavailable?: (issueId: string) => void) {
+export function useIssueComments(
+  issueId: Ref<string>,
+  categoryId: Ref<string>,
+  onContentUnavailable?: (issueId: string) => void,
+  accessible: MaybeRefOrGetter<boolean> = true,
+) {
   const { canManageIssueCategory } = useSession();
   const core = useDiscussionComments<CommentRecord>(
     {
@@ -17,6 +22,7 @@ export function useIssueComments(issueId: Ref<string>, categoryId: Ref<string>, 
       managerPermission: 'proposal.manage',
       canManage: () => canManageIssueCategory(categoryId.value),
       getTargetId: () => issueId.value,
+      isAccessible: () => toValue(accessible) !== false,
       fetchPage: (targetId, cursor, options) => fetchComments(targetId, cursor, options),
       create: async (targetId, content, parentCommentId) => {
         const comment = await createComment(targetId, { content }, parentCommentId);

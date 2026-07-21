@@ -1,12 +1,12 @@
 const messages = {
   'navigation.user': 'User',
-  'navigation.notify': 'Notify',
+  'navigation.notify': 'Notifications',
   'navigation.home': 'Novae home',
   'navigation.expandSidebar': 'Expand sidebar',
   'navigation.primaryNavigation': 'Primary navigation',
   'navigation.collapseSidebar': 'Collapse sidebar',
-  'navigation.returnMy': 'Return my',
-  'navigation.theSchoolHasNotBeenSet': 'The school has not been set',
+  'navigation.returnMy': 'Back to Mine',
+  'navigation.theSchoolHasNotBeenSet': 'School not set',
   'navigation.desktopMainNavigation': 'Desktop main navigation',
 } as const;
 

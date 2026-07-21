@@ -64,6 +64,7 @@ let lastSubscriptionStartedAt = 0;
 let subscriptionVersion = 0;
 let unsubscribes: Unsubscribe[] = [];
 let requestController: AbortController | null = null;
+let realtimeResyncTimer = 0;
 
 const activeSources = computed<NotificationSource[]>(() =>
   isAdmin.value ? notificationSources : ['broadcast', 'user'],
@@ -100,6 +101,14 @@ const hasMore = computed(() =>
   allLoadedNotifications.value.length > visibleLimit.value
   || activeSources.value.some((source) => sourceHasMore.value[source])
 );
+
+function scheduleRealtimeResync() {
+  window.clearTimeout(realtimeResyncTimer);
+  realtimeResyncTimer = window.setTimeout(() => {
+    realtimeResyncTimer = 0;
+    startSubscriptions();
+  }, 0);
+}
 
 function clearLoadingTimer() {
   if (loadingTimer !== null) window.clearTimeout(loadingTimer);
@@ -204,6 +213,7 @@ function startSubscriptions() {
         if (currentVersion !== subscriptionVersion) return;
         finishSourceLoad(source, true);
       },
+      scheduleRealtimeResync,
     ));
   });
 
@@ -219,7 +229,7 @@ function startSubscriptions() {
       ) {
         error.value = 'notification.statusLoadFailed';
       }
-    }, false,
+    }, false, scheduleRealtimeResync,
   ));
 
 }

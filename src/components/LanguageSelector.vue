@@ -7,7 +7,7 @@
   >
     <template #trigger="{ open, toggle }">
       <IconListRow
-        icon="switch-horizontal"
+        icon="globe"
         :label="t(currentLanguage.label)"
         :description="t('settings.changeTheInterfaceLanguage')"
         aria-haspopup="listbox"

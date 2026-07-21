@@ -63,6 +63,22 @@ function notifyChangedDomains(domains: ContentRevisionDomain[]) {
   });
 }
 
+export function applyContentRevisionsSnapshot(
+  revisions: ContentRevisions,
+  options: { notify?: boolean } = {},
+) {
+  const uid = auth?.currentUser?.uid ?? '';
+  if (!uid) return [] as ContentRevisionDomain[];
+  const previous = readStoredRevisions(uid);
+  const domains = (Object.keys(revisions) as ContentRevisionDomain[]).filter((domain) =>
+    !previous || previous.revisions[domain] !== revisions[domain]
+  );
+  domains.forEach(invalidateDomain);
+  writeStoredRevisions(uid, { checkedAt: Date.now(), revisions });
+  if (options.notify) notifyChangedDomains(domains);
+  return domains;
+}
+
 export async function ensureContentRevisionsFresh(options: { notify?: boolean } = {}) {
   const uid = auth?.currentUser?.uid ?? '';
   if (!uid || (typeof navigator !== 'undefined' && !navigator.onLine)) return [];
@@ -78,15 +94,9 @@ export async function ensureContentRevisionsFresh(options: { notify?: boolean } 
     const fn = invokeBackendAction<Record<string, never>, { revisions: ContentRevisions }>('getContentRevisions');
     const result = await fn({});
     if (auth?.currentUser?.uid !== uid) return [];
-
-    const previous = readStoredRevisions(uid);
-    const domains = (Object.keys(result.revisions) as ContentRevisionDomain[]).filter((domain) =>
-      !previous || previous.revisions[domain] !== result.revisions[domain]
-    );
-    domains.forEach(invalidateDomain);
-    writeStoredRevisions(uid, { checkedAt: Date.now(), revisions: result.revisions });
-    if (pendingNotifications.has(uid)) notifyChangedDomains(domains);
-    return domains;
+    return applyContentRevisionsSnapshot(result.revisions, {
+      notify: pendingNotifications.has(uid),
+    });
   })().finally(() => {
     pendingChecks.delete(uid);
     pendingNotifications.delete(uid);

@@ -23,6 +23,18 @@ integrationTest("access, role, idempotency, avatar, and upload actions", async (
     "issues",
   ]);
 
+  const bootstrap = asRecord(await callAction("getSessionBootstrap", { recordVisit: true }, user.auth));
+  assert.equal(asRecord(bootstrap.access).role, "user");
+  assert.deepEqual(Object.keys(asRecord(bootstrap.revisions)).sort(), [
+    "announcements",
+    "facilities",
+    "issues",
+  ]);
+  assert.ok(Array.isArray(asRecord(bootstrap.catalog).issueCategories));
+  assert.equal(typeof asRecord(bootstrap.notificationUnread).hasUnread, "boolean");
+  assert.equal(bootstrap.visitRecorded, true);
+  assert.ok((await tableRow("user_profiles", "uid", user.auth.uid))?.last_seen_at);
+
   await callAction("recordPlatformVisit", {}, user.auth);
   assert.ok((await tableRow("user_profiles", "uid", user.auth.uid))?.last_seen_at);
 

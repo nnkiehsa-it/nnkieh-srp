@@ -5,8 +5,10 @@ import {
   getCachedContentPersistent,
   markContentCachePrefixStale,
   runCoalescedContentRequest,
+  setCachedContent,
   setCachedContentFromRead,
 } from '@/services/content-read-cache';
+import { fetchSessionBootstrap, markSessionBootstrapStale } from '@/services/session-bootstrap';
 
 export type SessionRole = 'admin' | 'user';
 export type RoleCode = 'platform-admin' | 'proposal-manager' | 'announcement-manager' | 'general-affairs';
@@ -26,8 +28,35 @@ export function getCachedSessionRole() {
   return cachedSessionRole;
 }
 
-export async function fetchCurrentUserRole(force = false): Promise<SessionAccess> {
-  if (force) markContentCachePrefixStale(SESSION_ACCESS_CACHE_KEY);
+export function seedSessionAccess(access: SessionAccess) {
+  cachedSessionRole = access.role === 'admin' ? 'admin' : 'user';
+  setCachedContent(SESSION_ACCESS_CACHE_KEY, {
+    role: cachedSessionRole,
+    roles: access.roles,
+    permissions: access.permissions,
+    managedIssueCategoryIds: access.managedIssueCategoryIds,
+    managedFacilityCategoryIds: access.managedFacilityCategoryIds,
+    setupCompleted: access.setupCompleted === true,
+  });
+  return {
+    role: cachedSessionRole,
+    roles: access.roles,
+    permissions: access.permissions,
+    managedIssueCategoryIds: access.managedIssueCategoryIds,
+    managedFacilityCategoryIds: access.managedFacilityCategoryIds,
+    setupCompleted: access.setupCompleted === true,
+  } satisfies SessionAccess;
+}
+
+export async function fetchCurrentUserRole(
+  force = false,
+  options: { useBootstrap?: boolean } = {},
+): Promise<SessionAccess> {
+  const useBootstrap = options.useBootstrap !== false;
+  if (force) {
+    markContentCachePrefixStale(SESSION_ACCESS_CACHE_KEY);
+    markSessionBootstrapStale();
+  }
   const cached = force ? null : await getCachedContentPersistent<SessionAccess>(
     SESSION_ACCESS_CACHE_KEY,
     CONTENT_SHORT_CACHE_TTL_MS,
@@ -40,18 +69,28 @@ export async function fetchCurrentUserRole(force = false): Promise<SessionAccess
     return cached;
   }
 
+  // Prefer the combined bootstrap so cold starts share one Edge invocation with
+  // catalog / revisions / unread (see session-bootstrap).
+  if (!force && useBootstrap) {
+    try {
+      const bootstrap = await fetchSessionBootstrap();
+      return seedSessionAccess(bootstrap.access);
+    } catch {
+      // Fall through to the granular role action.
+    }
+  }
+
   return runCoalescedContentRequest(SESSION_ACCESS_CACHE_KEY, async (cacheGuard) => {
     try {
       const result = await invokeBackendAction<Record<string, never>, SessionAccess>('getCurrentUserRole')({});
-      cachedSessionRole = result.role === 'admin' ? 'admin' : 'user';
-      const access = {
-        role: cachedSessionRole,
+      const access = seedSessionAccess({
+        role: result.role === 'admin' ? 'admin' : 'user',
         roles: Array.isArray(result.roles) ? result.roles : [],
         permissions: Array.isArray(result.permissions) ? result.permissions : [],
         managedIssueCategoryIds: Array.isArray(result.managedIssueCategoryIds) ? result.managedIssueCategoryIds : [],
         managedFacilityCategoryIds: Array.isArray(result.managedFacilityCategoryIds) ? result.managedFacilityCategoryIds : [],
         setupCompleted: result.setupCompleted === true,
-      };
+      });
       setCachedContentFromRead(cacheGuard, access);
       return access;
     } catch (error) {

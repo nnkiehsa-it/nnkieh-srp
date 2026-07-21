@@ -279,6 +279,9 @@ for (const file of sourceFiles) {
     if (localeKeys.some(isLocaleKey) && !/\bt\(/u.test(interpolation[0])) {
       errors.push(`${relativePath} renders a locale key without t(...)`);
     }
+    if (/\b[A-Za-z_$][\w$]*Key\b/u.test(interpolation[0]) && !/\bt\(/u.test(interpolation[0])) {
+      errors.push(`${relativePath} renders a *Key value without t(...)`);
+    }
   }
 }
 

@@ -230,7 +230,7 @@ export function useAnnouncementManagement() {
       }, () => {
         markContentRealtimeUnreliable();
         void refreshAnnouncementList({ force: true });
-      });
+      }, () => { void refreshAnnouncementList({ force: true }); });
     },
     { immediate: true },
   );

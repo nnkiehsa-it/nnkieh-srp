@@ -36,7 +36,8 @@
           <h3 class="line-clamp-2 text-[15px] font-semibold leading-6 tracking-[0.01em] text-ink-950 dark:text-ink-50 sm:text-base">
             <SearchHighlight :text="title" :query="highlightQuery" />
           </h3>
-          <p v-if="showAuthor && authorUid" class="mt-0.5 truncate text-xs text-ink-500 dark:text-ink-400">
+          <SkeletonBlock v-if="showAuthor && authorUid && authorProfile.loading" class="mt-1 block h-3 w-20 rounded" />
+          <p v-else-if="showAuthor && authorUid" class="mt-0.5 truncate text-xs text-ink-500 dark:text-ink-400">
             {{ authorName }}
           </p>
         </div>
@@ -57,6 +58,7 @@
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
 import TagBadge from '@/components/ui/atoms/TagBadge.vue';
 import SearchHighlight from '@/components/ui/molecules/SearchHighlight.vue';
+import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
 import { useI18n } from '@/i18n';
 import { computed } from 'vue';
 import { useAuthorProfile } from '@/composables/useAuthorProfile';
@@ -79,7 +81,11 @@ const props = withDefaults(defineProps<{
 });
 
 const authorProfile = useAuthorProfile(() => props.authorUid);
-const authorName = computed(() => authorProfile.value?.displayName || t('navigation.user'));
+const authorName = computed(() => (
+  authorProfile.value.loading
+    ? ''
+    : authorProfile.value.profile?.displayName || t('navigation.user')
+));
 
 const emit = defineEmits<{
   open: [];

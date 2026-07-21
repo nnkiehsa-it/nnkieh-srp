@@ -31,6 +31,8 @@ export interface DiscussionCommentsAdapters<TComment extends DiscussionCommentRe
   abortMessage: string;
   loadErrorMessage: string;
   getTargetId: () => string;
+  /** When false, skip network load/subscribe and treat comments as intentionally unavailable. */
+  isAccessible?: () => boolean;
   fetchPage: (
     targetId: string,
     cursor: { id: string; createdAtMs: number } | null,
@@ -103,6 +105,10 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
 
   function targetId() {
     return adapters.getTargetId();
+  }
+
+  function isAccessible() {
+    return adapters.isAccessible?.() !== false;
   }
 
   function cacheKey(id = targetId()) {
@@ -225,12 +231,13 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
     loadMoreController?.abort(new RequestFailure(adapters.abortMessage, 'aborted'));
     loadMoreController = null;
     loadingMore.value = false;
-    if (!id) {
+    if (!id || !isAccessible()) {
       requestVersion += 1;
       requestController?.abort(new RequestFailure(adapters.abortMessage, 'aborted'));
       clearCommentState();
       loading.value = false;
       error.value = '';
+      loaded.value = !isAccessible();
       return;
     }
 
@@ -313,7 +320,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
     window.clearTimeout(realtimeRefreshTimer);
 
     const id = targetId();
-    if (!id) return;
+    if (!id || !isAccessible()) return;
 
     realtimeUnsubscribe = subscribeContentRealtimeEvents(`${adapters.channelPrefix}:${id}`, (event) => {
       if (event.eventType !== adapters.realtimeEventType) return;
@@ -322,7 +329,7 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
       scheduleRealtimeRefresh();
     }, () => {
       markContentRealtimeUnreliable();
-    });
+    }, () => { void loadComments({ force: true }); });
   }
 
   async function loadMoreComments() {
@@ -482,28 +489,40 @@ export function useDiscussionComments<TComment extends DiscussionCommentRecord>(
   });
 
   if (autoTarget !== undefined) {
-    watch(() => toValue(autoTarget), (id) => {
-      clearCommentState();
-      void loadComments({ id: id || undefined });
-    }, { immediate: true });
+    watch(
+      () => [toValue(autoTarget), isAccessible()] as const,
+      ([id]) => {
+        clearCommentState();
+        void loadComments({ id: id || undefined });
+      },
+      { immediate: true },
+    );
 
-    watch([() => toValue(autoTarget), roleLoading], ([id, waitingForRole]) => {
-      realtimeUnsubscribe?.();
-      realtimeUnsubscribe = null;
-      window.clearTimeout(realtimeRefreshTimer);
-      if (!id || waitingForRole) return;
-      subscribeCurrentComments();
-    }, { immediate: true });
-  } else {
-    watch(roleLoading, (waitingForRole) => {
-      if (waitingForRole) {
+    watch(
+      () => [toValue(autoTarget), roleLoading.value, isAccessible()] as const,
+      ([id, waitingForRole, accessible]) => {
         realtimeUnsubscribe?.();
         realtimeUnsubscribe = null;
         window.clearTimeout(realtimeRefreshTimer);
-        return;
-      }
-      subscribeCurrentComments();
-    });
+        if (!id || waitingForRole || !accessible) return;
+        subscribeCurrentComments();
+      },
+      { immediate: true },
+    );
+  } else {
+    watch(
+      () => [roleLoading.value, isAccessible()] as const,
+      ([waitingForRole, accessible]) => {
+        if (waitingForRole || !accessible) {
+          realtimeUnsubscribe?.();
+          realtimeUnsubscribe = null;
+          window.clearTimeout(realtimeRefreshTimer);
+          return;
+        }
+        subscribeCurrentComments();
+      },
+      { immediate: true },
+    );
   }
 
   onScopeDispose(() => {

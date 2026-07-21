@@ -1,5 +1,6 @@
 import { computed, readonly, ref } from 'vue';
 import { getCategoryCatalog } from '@/services/categories';
+import { fetchSessionBootstrap } from '@/services/session-bootstrap';
 import type { FacilityCategoryConfig, IssueCategoryConfig, PlatformFeatures } from '@/types/categories';
 
 const issueCategories = ref<IssueCategoryConfig[]>([]);
@@ -21,6 +22,14 @@ function replaceCatalog(next: {
   loaded.value = true;
 }
 
+export function seedCategoryCatalog(next: {
+  features: PlatformFeatures;
+  issueCategories: IssueCategoryConfig[];
+  facilityCategories: FacilityCategoryConfig[];
+}) {
+  replaceCatalog(next);
+}
+
 export async function ensureCategoryCatalog(force = false) {
   if (!force && loaded.value) return;
   if (!force && loadPromise) return await loadPromise;
@@ -28,6 +37,15 @@ export async function ensureCategoryCatalog(force = false) {
   error.value = '';
   loadPromise = (async () => {
     try {
+      if (!force) {
+        try {
+          const bootstrap = await fetchSessionBootstrap();
+          replaceCatalog(bootstrap.catalog);
+          return;
+        } catch {
+          // Fall through to the dedicated catalog action.
+        }
+      }
       replaceCatalog(await getCategoryCatalog());
     } catch (caught) {
       error.value = caught instanceof Error ? caught.message : 'common.loadFailed';

@@ -239,7 +239,7 @@ export function useAnnouncementDetail(canLoad: Ref<boolean>) {
         if (event.eventType === 'announcement_changed' && event.targetId === announcementId) {
           scheduleRealtimeRefresh();
         }
-      }, markContentRealtimeUnreliable);
+      }, markContentRealtimeUnreliable, scheduleRealtimeRefresh);
     },
     { immediate: true },
   );

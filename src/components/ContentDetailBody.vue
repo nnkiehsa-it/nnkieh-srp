@@ -19,7 +19,8 @@
           :alt-text="t('notification.nameAvatar', { name: authorName })"
         />
         <div class="min-w-0">
-          <p class="truncate text-sm font-semibold text-ink-900 dark:text-ink-100">{{ authorName }}</p>
+          <SkeletonBlock v-if="authorProfile.loading" class="block h-4 w-24 rounded" />
+          <p v-else class="truncate text-sm font-semibold text-ink-900 dark:text-ink-100">{{ authorName }}</p>
           <p v-if="authorSecondary" class="mt-0.5 truncate text-xs text-ink-500 dark:text-ink-400">
             {{ authorSecondary }}
           </p>
@@ -54,6 +55,7 @@
 <script setup lang="ts">
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
+import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
 import { useI18n } from '@/i18n';
 import { computed } from 'vue';
 import { useAuthorProfile } from '@/composables/useAuthorProfile';
@@ -87,5 +89,9 @@ const props = withDefaults(defineProps<{
 });
 
 const authorProfile = useAuthorProfile(() => props.authorUid);
-const authorName = computed(() => authorProfile.value?.displayName || t('navigation.user'));
+const authorName = computed(() => (
+  authorProfile.value.loading
+    ? ''
+    : authorProfile.value.profile?.displayName || t('navigation.user')
+));
 </script>

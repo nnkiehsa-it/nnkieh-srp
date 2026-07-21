@@ -6,7 +6,7 @@ const messages = {
   'navigation.primaryNavigation': '主要導覽',
   'navigation.collapseSidebar': '收合側邊欄',
   'navigation.returnMy': '返回我的',
-  'navigation.theSchoolHasNotBeenSet': '學校未設定',
+  'navigation.theSchoolHasNotBeenSet': '尚未設定學校',
   'navigation.desktopMainNavigation': '桌面主要導覽',
 } as const;
 

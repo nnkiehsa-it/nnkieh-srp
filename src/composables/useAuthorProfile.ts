@@ -10,6 +10,12 @@ interface CachedProfile {
   profile: UserPublicProfile | null;
 }
 
+export interface AuthorProfileState {
+  loading: boolean;
+  profile: UserPublicProfile | null;
+  resolved: boolean;
+}
+
 const profileCache = shallowRef<Record<string, CachedProfile>>({});
 const pendingUids = new Set<string>();
 const inFlightUids = new Set<string>();
@@ -47,6 +53,12 @@ async function flushProfileRefreshes() {
           profile: profiles[uid] ?? null,
         }])),
       };
+    } catch {
+      const fetchedAt = Date.now();
+      profileCache.value = {
+        ...profileCache.value,
+        ...Object.fromEntries(uids.map((uid) => [uid, { fetchedAt, profile: null }])),
+      };
     } finally {
       uids.forEach((uid) => inFlightUids.delete(uid));
     }
@@ -60,11 +72,16 @@ export function useAuthorProfile(uid: MaybeRefOrGetter<string | null | undefined
     { immediate: true },
   );
 
-  return computed(() => {
+  return computed<AuthorProfileState>(() => {
     const currentUid = toValue(uid) ?? '';
-    if (!currentUid) return null;
+    if (!currentUid) return { loading: false, profile: null, resolved: true };
     queueProfileRefresh(currentUid);
-    return profileCache.value[currentUid]?.profile ?? null;
+    const cached = profileCache.value[currentUid];
+    return {
+      loading: !cached,
+      profile: cached?.profile ?? null,
+      resolved: Boolean(cached),
+    };
   });
 }
 

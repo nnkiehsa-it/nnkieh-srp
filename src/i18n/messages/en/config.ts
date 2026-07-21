@@ -1,5 +1,5 @@
 const messages = {
-  'config.firebaseMissing': 'Firebase setting is missing: {keys}. Please complete it in the local .env or deployment environment variables.',
+  'config.firebaseMissing': 'Required settings are missing: {keys}. Complete them in the local environment or deployment configuration.',
 } as const;
 
 export default messages;

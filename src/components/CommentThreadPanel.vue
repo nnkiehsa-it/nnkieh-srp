@@ -19,7 +19,7 @@
 
     <div
       ref="scrollContainerRef"
-      class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 pr-1 overscroll-contain"
+      class="scroll-shadow-bleed--compact min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 overscroll-contain"
     >
       <SkeletonCommentList v-if="visibleLoading" />
 
@@ -37,7 +37,7 @@
       <EmptyStatePanel
         v-else-if="loaded && comments.length === 0"
         class="!px-3 !py-7"
-        title="comments.noCommentsYet"
+        :title="canCompose ? 'comments.noCommentsYet' : disabledComposerLabelKey"
         icon="comment"
       />
 
@@ -88,7 +88,7 @@
         v-else
         class="rounded-[var(--radius-inner)] bg-ink-50 px-4 py-3 text-center text-sm font-semibold text-ink-400 shadow-control dark:bg-ink-900/60 dark:text-ink-500"
       >
-        {{ disabledComposerLabel }}
+        {{ t(disabledComposerLabelKey) }}
       </div>
     </div>
 
@@ -117,7 +117,7 @@ import SkeletonCommentList from '@/components/ui/organisms/SkeletonCommentList.v
 import { useMinimumLoading } from '@/composables/useMinimumLoading';
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll';
 import type { DiscussionCommentRecord } from '@/types';
-import { useI18n } from '@/i18n';
+import { useI18n, type MessageKey } from '@/i18n';
 
 const props = withDefaults(defineProps<{
   canDeleteComment: (comment: DiscussionCommentRecord) => boolean;
@@ -139,11 +139,11 @@ const props = withDefaults(defineProps<{
   onLoadMore?: () => Promise<void>;
   onRetry: () => Promise<void>;
   onSubmitComment: (payload: { content: string; parentCommentId: string | null }) => Promise<boolean>;
-  disabledComposerLabel?: string;
+  disabledComposerLabelKey?: MessageKey;
 }>(), {
   canCompose: true,
   compactHeader: false,
-  disabledComposerLabel: 'comments.commentsAreCurrentlyDisabled',
+  disabledComposerLabelKey: 'comments.commentsAreCurrentlyDisabled',
   focusCommentId: '',
   hasMore: false,
   loadingMore: false,

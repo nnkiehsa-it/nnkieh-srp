@@ -216,11 +216,20 @@ export function useIssueBuckets(deps: BucketDeps) {
 
   function invalidateIssueBuckets() {
     globalBucketCache.forEach((bucket) => {
+      bumpBucketVersion(bucket);
+      bucket.loading = false;
+      bucket.loadingMore = false;
+      bucket.refreshing = false;
       bucket.updatedAt = 0;
     });
+    activeController?.abort();
+    activeController = null;
+    activeBucket = null;
   }
 
   function upsertIssueAcrossBuckets(issue: IssueRecord) {
+    // Drop the issue from every cached bucket first so a status move never leaves
+    // the same card in both active and closed while the target bucket refreshes.
     removeIssueFromBuckets(issue.id);
     invalidateIssueBuckets();
     addIssueToBucket(issue);

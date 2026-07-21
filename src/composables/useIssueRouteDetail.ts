@@ -238,7 +238,7 @@ export function useIssueRouteDetail(
         scheduleRealtimeRefresh();
       }, () => {
         markContentRealtimeUnreliable();
-      });
+      }, scheduleRealtimeRefresh);
     },
     { immediate: true },
   );

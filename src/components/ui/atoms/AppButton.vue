@@ -1,7 +1,7 @@
 <template>
   <button
     :type="type"
-    :class="[variantClass, sizeClass, { 'button-toolbar--active': active && variant === 'toolbar', 'w-full': block }]"
+    :class="['max-w-full', variantClass, sizeClass, { 'button-toolbar--active': active && variant === 'toolbar', 'w-full': block }]"
     :disabled="disabled"
   >
     <slot />

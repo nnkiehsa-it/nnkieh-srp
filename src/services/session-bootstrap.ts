@@ -1,0 +1,100 @@
+import { invokeBackendAction } from '@/services/backend-action';
+import type { CategoryCatalog } from '@/types/categories';
+import type { SessionAccess } from '@/services/session-role';
+import {
+  CONTENT_SHORT_CACHE_TTL_MS,
+  getCachedContentPersistent,
+  markContentCachePrefixStale,
+  runCoalescedContentRequest,
+  setCachedContent,
+  setCachedContentFromRead,
+} from '@/services/content-read-cache';
+
+export type ContentRevisionDomain = 'announcements' | 'facilities' | 'issues';
+export type ContentRevisions = Record<ContentRevisionDomain, number>;
+
+export interface SessionBootstrapResult {
+  access: SessionAccess;
+  catalog: CategoryCatalog;
+  notificationUnread: { hasUnread: boolean };
+  revisions: ContentRevisions;
+  visitRecorded: boolean;
+}
+
+const SESSION_BOOTSTRAP_CACHE_KEY = 'session-bootstrap-v1';
+let pendingRecordVisit = false;
+
+export function markSessionBootstrapStale() {
+  markContentCachePrefixStale(SESSION_BOOTSTRAP_CACHE_KEY);
+}
+
+export async function fetchSessionBootstrap(options: {
+  force?: boolean;
+  recordVisit?: boolean;
+} = {}): Promise<SessionBootstrapResult> {
+  const force = options.force === true;
+  const recordVisit = options.recordVisit === true;
+  if (force) markSessionBootstrapStale();
+  if (recordVisit) pendingRecordVisit = true;
+
+  // Visit recording is a side effect; never serve a cached response when a visit
+  // must be written. Concurrent cold-start callers still share one in-flight request.
+  if (!force && !pendingRecordVisit) {
+    const cached = await getCachedContentPersistent<SessionBootstrapResult>(
+      SESSION_BOOTSTRAP_CACHE_KEY,
+      CONTENT_SHORT_CACHE_TTL_MS,
+    );
+    if (cached?.access?.setupCompleted) return cached;
+  }
+
+  return runCoalescedContentRequest(SESSION_BOOTSTRAP_CACHE_KEY, async (cacheGuard) => {
+    const shouldRecordVisit = pendingRecordVisit;
+    pendingRecordVisit = false;
+    const result = await invokeBackendAction<
+      { recordVisit?: boolean },
+      SessionBootstrapResult
+    >('getSessionBootstrap')({
+      ...(shouldRecordVisit ? { recordVisit: true } : {}),
+    });
+    const normalized: SessionBootstrapResult = {
+      access: {
+        role: result.access?.role === 'admin' ? 'admin' : 'user',
+        roles: Array.isArray(result.access?.roles) ? result.access.roles : [],
+        permissions: Array.isArray(result.access?.permissions) ? result.access.permissions : [],
+        managedIssueCategoryIds: Array.isArray(result.access?.managedIssueCategoryIds)
+          ? result.access.managedIssueCategoryIds
+          : [],
+        managedFacilityCategoryIds: Array.isArray(result.access?.managedFacilityCategoryIds)
+          ? result.access.managedFacilityCategoryIds
+          : [],
+        setupCompleted: result.access?.setupCompleted === true,
+      },
+      catalog: {
+        features: {
+          facilitiesEnabled: result.catalog?.features?.facilitiesEnabled !== false,
+          issuesEnabled: result.catalog?.features?.issuesEnabled !== false,
+        },
+        issueCategories: Array.isArray(result.catalog?.issueCategories)
+          ? result.catalog.issueCategories
+          : [],
+        facilityCategories: Array.isArray(result.catalog?.facilityCategories)
+          ? result.catalog.facilityCategories
+          : [],
+        setupCompleted: result.catalog?.setupCompleted === true
+          || result.access?.setupCompleted === true,
+      },
+      notificationUnread: {
+        hasUnread: result.notificationUnread?.hasUnread === true,
+      },
+      revisions: {
+        announcements: Number(result.revisions?.announcements ?? 0),
+        facilities: Number(result.revisions?.facilities ?? 0),
+        issues: Number(result.revisions?.issues ?? 0),
+      },
+      visitRecorded: result.visitRecorded === true,
+    };
+    if (!shouldRecordVisit) setCachedContentFromRead(cacheGuard, { ...normalized, visitRecorded: false });
+    else setCachedContent(SESSION_BOOTSTRAP_CACHE_KEY, { ...normalized, visitRecorded: false });
+    return normalized;
+  });
+}

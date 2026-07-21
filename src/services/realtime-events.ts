@@ -10,14 +10,17 @@ type RealtimeChannel = ReturnType<SupabaseAppClient['channel']>;
 interface RealtimeSubscriber {
   callback: (event: ContentRealtimeEvent) => void;
   onError?: (error: Error) => void;
+  onResync?: () => void;
 }
 
 const realtimeSubscribers = new Map<number, RealtimeSubscriber>();
 let realtimeSubscriberSerial = 0;
 let realtimeChannelSerial = 0;
 let sharedRealtimeChannels: RealtimeChannel[] = [];
+let sharedRealtimeKey = '';
 let reconnectAttempt = 0;
 let reconnectTimer = 0;
+let resyncAfterReconnect = false;
 
 function clearReconnectTimer() {
   window.clearTimeout(reconnectTimer);
@@ -108,13 +111,22 @@ function normalizeRealtimeEvent(data: Record<string, unknown>): ContentRealtimeE
 }
 
 function ensureSharedRealtimeChannel() {
-  if (sharedRealtimeChannels.length > 0 || realtimeSubscribers.size === 0) return;
-  clearReconnectTimer();
-  const client = getSupabaseClient();
   const uid = auth?.currentUser?.uid;
-  if (!uid) return;
+  if (!uid || realtimeSubscribers.size === 0) return;
   const topics = ['content:school'];
   topics.push(getCachedSessionRole() === 'admin' ? 'content:admin' : `content:user:${uid}`);
+  const realtimeKey = topics.join('|');
+  const client = getSupabaseClient();
+  if (sharedRealtimeChannels.length > 0) {
+    if (sharedRealtimeKey === realtimeKey) return;
+    const staleChannels = sharedRealtimeChannels;
+    sharedRealtimeChannels = [];
+    sharedRealtimeKey = '';
+    realtimeChannelSerial += 1;
+    staleChannels.forEach((channel) => void client.removeChannel(channel));
+    resyncAfterReconnect = true;
+  }
+  clearReconnectTimer();
   const generation = realtimeChannelSerial += 1;
   let subscribedCount = 0;
   const channels = topics.map((topic) => {
@@ -129,13 +141,21 @@ function ensureSharedRealtimeChannel() {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           subscribedCount += 1;
-          if (subscribedCount === topics.length) reconnectAttempt = 0;
+          if (subscribedCount === topics.length) {
+            reconnectAttempt = 0;
+            if (resyncAfterReconnect) {
+              resyncAfterReconnect = false;
+              realtimeSubscribers.forEach((subscriber) => subscriber.onResync?.());
+            }
+          }
           return;
         }
         if (status !== 'CHANNEL_ERROR' && status !== 'TIMED_OUT' && status !== 'CLOSED') return;
         if (generation !== realtimeChannelSerial || sharedRealtimeChannels.length === 0) return;
         const failedChannels = sharedRealtimeChannels;
         sharedRealtimeChannels = [];
+        sharedRealtimeKey = '';
+        resyncAfterReconnect = true;
         const error = new Error('content-realtime-unavailable');
         realtimeSubscribers.forEach((subscriber) => subscriber.onError?.(error));
         failedChannels.forEach((failedChannel) => void client.removeChannel(failedChannel));
@@ -144,6 +164,7 @@ function ensureSharedRealtimeChannel() {
     return channel;
   });
   sharedRealtimeChannels = channels;
+  sharedRealtimeKey = realtimeKey;
 }
 
 function invalidateRealtimeContent(event: ContentRealtimeEvent) {
@@ -168,10 +189,11 @@ export function subscribeContentRealtimeEvents(
   channelScope: string,
   callback: (event: ContentRealtimeEvent) => void,
   onError?: (error: Error) => void,
+  onResync?: () => void,
 ) {
   void channelScope;
   const subscriberId = realtimeSubscriberSerial += 1;
-  realtimeSubscribers.set(subscriberId, { callback, onError });
+  realtimeSubscribers.set(subscriberId, { callback, onError, onResync });
   ensureSharedRealtimeChannel();
 
   return () => {
@@ -183,6 +205,8 @@ export function subscribeContentRealtimeEvents(
     const client = getSupabaseClient();
     const channels = sharedRealtimeChannels;
     sharedRealtimeChannels = [];
+    sharedRealtimeKey = '';
+    resyncAfterReconnect = false;
     realtimeChannelSerial += 1;
     channels.forEach((channel) => void client.removeChannel(channel));
   };

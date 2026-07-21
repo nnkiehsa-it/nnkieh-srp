@@ -2,16 +2,16 @@
   <CommentThreadPanel
     :can-delete-comment="canDeleteThreadComment"
     :can-compose="canCompose"
-    :comments="comments"
+    :comments="accessible ? comments : []"
     :compact-header="compactHeader"
     :deleting-id="deletingId"
-    :error="error"
-    :loaded="loaded"
-    :loading="loading"
+    :error="accessible ? error : ''"
+    :loaded="accessible ? loaded : true"
+    :loading="accessible && loading"
     :focus-comment-id="focusCommentId"
-    :has-more="hasMore"
-    :loading-more="loadingMore"
-    :load-more-error="loadMoreError"
+    :has-more="accessible && hasMore"
+    :loading-more="accessible && loadingMore"
+    :load-more-error="accessible ? loadMoreError : ''"
     :on-load-more="loadMoreComments"
     :on-retry="loadComments"
     :on-delete-comment="deleteCommentById"
@@ -30,6 +30,7 @@ import type { DiscussionCommentRecord, IssueCategory } from '@/types';
 
 const props = withDefaults(
   defineProps<{
+    accessible?: boolean;
     canCompose?: boolean;
     focusCommentId?: string;
     issueId: string;
@@ -37,6 +38,7 @@ const props = withDefaults(
     compactHeader?: boolean;
   }>(),
   {
+    accessible: true,
     canCompose: true,
     compactHeader: false,
     focusCommentId: '',
@@ -64,10 +66,15 @@ const {
   loadingMore,
   submitComment,
   submitError,
-} = useIssueComments(toRef(props, 'issueId'), toRef(props, 'category'), (issueId) => emit('contentUnavailable', issueId));
+} = useIssueComments(
+  toRef(props, 'issueId'),
+  toRef(props, 'category'),
+  (issueId) => emit('contentUnavailable', issueId),
+  toRef(props, 'accessible'),
+);
 
 watch(
-  () => comments.value.length,
+  () => props.accessible ? comments.value.length : 0,
   (commentCount) => emit('commentCountChanged', commentCount),
   { immediate: true },
 );
