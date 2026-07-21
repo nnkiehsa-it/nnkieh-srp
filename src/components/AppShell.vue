@@ -2,7 +2,7 @@
   <div
     class="app-root relative flex flex-col bg-[rgb(var(--color-page-background))]"
     :data-bottom-nav="showMobileBottomNavigation ? 'true' : 'false'"
-    :data-sidebar="isAllowedUser ? 'true' : 'false'"
+    :data-sidebar="showAuthenticatedChrome ? 'true' : 'false'"
     :data-sidebar-expanded="isSidebarExpanded ? 'true' : 'false'"
     :style="rootStyle"
     @focusin.capture="handleNavigationIntent"
@@ -24,7 +24,7 @@
     />
 
     <AppDesktopSidebar
-      v-if="isAllowedUser"
+      v-if="showAuthenticatedChrome"
       :expanded="isSidebarExpanded"
       :has-unread="hasUnread"
       :home-route="homeRoute"
@@ -40,7 +40,7 @@
     />
 
     <button
-      v-if="isAllowedUser"
+      v-if="showAuthenticatedChrome"
       type="button"
       class="app-sidebar__scrim"
       :aria-label="t('navigation.collapseSidebar')"
@@ -75,7 +75,7 @@ import AppMobileBottomNav from '@/components/app-shell/AppMobileBottomNav.vue';
 import AppMobileHeader from '@/components/app-shell/AppMobileHeader.vue';
 import ViewportFrame from '@/components/ui/organisms/ViewportFrame.vue';
 import { SCHOOL_NAME } from '@/constants/app';
-import { getDefaultIssueRouteFilter, getIssueCategoryLabel, isIssueCategory } from '@/constants/categories';
+import { getIssueCategoryLabel, isIssueCategory } from '@/constants/categories';
 import { refreshFromActiveNavigation } from '@/composables/useActiveNavigationRefresh';
 import { useCategories } from '@/composables/useCategories';
 import { useIssueRouteFilter } from '@/composables/useIssueRouteFilter';
@@ -91,7 +91,7 @@ const SIDEBAR_EXPANDED_STORAGE_KEY = 'novae:desktop-sidebar-expanded';
 const MOBILE_NAV_HEIGHT = 60;
 const SCROLL_POSITION_LIMIT = 30;
 
-const { customPhotoUrl, isAllowedUser, user } = useSession();
+const { customPhotoUrl, isAllowedUser, roleLoading, user } = useSession();
 const { facilitiesEnabled, issuesEnabled } = useCategories();
 const { activeFilter } = useIssueRouteFilter();
 const { hasUnread } = useNotificationBadge();
@@ -103,6 +103,8 @@ const hasSafeIndicator = ref(false);
 const isSidebarExpanded = ref(false);
 const mainScrollPositions = new Map<string, number>();
 
+// Wait for role/bootstrap so login does not flash nav chrome with an unseeded home route.
+const showAuthenticatedChrome = computed(() => isAllowedUser.value && !roleLoading.value);
 const isIssueRouteActive = computed(() => route.name === 'issues' || route.name === 'issue-detail');
 const isAnnouncementRouteActive = computed(() => route.name === 'announcements' || route.name === 'announcement-detail');
 const isFacilityRouteActive = computed(() => route.name === 'facilities' || route.name === 'facility-detail');
@@ -142,7 +144,7 @@ const mobileCategoryLabel = computed(() => mobileCategoryFilter.value
   ? getIssueCategoryLabel(mobileCategoryFilter.value)
   : undefined);
 const bottomGap = computed(() => hasSafeIndicator.value ? 25 : 15);
-const showMobileBottomNavigation = computed(() => isAllowedUser.value);
+const showMobileBottomNavigation = computed(() => showAuthenticatedChrome.value);
 const rootStyle = computed(() => ({
   '--app-bottom-nav-height': showMobileBottomNavigation.value
     ? `${bottomGap.value + MOBILE_NAV_HEIGHT + 6}px`

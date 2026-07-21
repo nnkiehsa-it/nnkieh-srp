@@ -1079,16 +1079,20 @@ test('Google redirect recovery runs only after an explicit redirect fallback', a
   assert.match(firebase, /popupRedirectResolver: browserPopupRedirectResolver/u);
   assert.match(authActions, /await signInWithPopup\(firebaseAuth/u);
   assert.match(authActions, /error\.code === 'auth\/argument-error'/u);
-  assert.match(loginPanel, /<GoogleLoginButton :loading="loading" @login="login"/u);
+  assert.match(loginPanel, /<GoogleLoginButton :loading="loginBusy" @login="login"/u);
   assert.match(loginButton, /@click="emit\('login'\)"/u);
+  assert.match(loginButton, /:busy="Boolean\(loading\)"[\s\S]*busy-label="[^"]*auth\.signingIn/u);
   assert.match(authActions, /GOOGLE_REDIRECT_PENDING_KEY = 'novae:google-redirect-pending'/u);
   assert.match(authActions, /markGoogleRedirectPending\(\);[\s\S]*await signInWithRedirect/u);
   assert.match(authActions, /if \(!hasPendingGoogleRedirect\(\)\) return;/u);
-  assert.match(authActions, /finally \{[\s\S]*clearGoogleRedirectPending\(\);/u);
+  assert.match(authActions, /state\.redirectRecovering = true;[\s\S]*state\.loading = true;/u);
+  assert.match(authActions, /finally \{[\s\S]*clearGoogleRedirectPending\(\);[\s\S]*state\.redirectRecovering = false;/u);
   assert.match(authActions, /await firebaseAuth\.authStateReady\(\)/u);
   assert.match(authActions, /if \(!firebaseAuth\.currentUser && !state\.user\)/u);
   assert.match(authActions, /auth\.loginReplyTimedOut/u);
+  assert.match(session, /isGoogleRedirectPending\(\)/u);
   assert.match(session, /recoverPendingGoogleRedirect\(state, firebaseAuth\)/u);
+  assert.match(session, /loginBusy: computed\(\(\) =>[\s\S]*redirectRecovering[\s\S]*roleLoading/u);
   assert.doesNotMatch(session, /getRedirectResult/u);
 });
 
@@ -1336,7 +1340,7 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.match(app, /class="route-stage[^"\n]*h-full[\s\S]*<Transition name="route-swap" mode="out-in"/u);
   assert.match(app, /class="route-content-frame[^"\n]*flex h-full[^"\n]*flex-col/u);
   assert.match(appShell, /:data-bottom-nav="showMobileBottomNavigation/u);
-  assert.match(appShell, /:data-sidebar="isAllowedUser/u);
+  assert.match(appShell, /:data-sidebar="showAuthenticatedChrome/u);
   assert.match(appShell, /<Transition name="mobile-nav">[\s\S]*v-if="showMobileBottomNavigation"/u);
   assert.match(appShell, /issuesEnabled\.value \? \{[\s\S]*facilitiesEnabled\.value \? \{/u);
   assert.match(mobileBottomNav, /gridTemplateColumns: `repeat\(\$\{items\.length \+ 2\}/u);
@@ -1344,7 +1348,10 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.match(defaultRoute, /features\.issuesEnabled[\s\S]*features\.facilitiesEnabled[\s\S]*name: 'announcements'/u);
   assert.match(router, /isFeatureRouteEnabled\(to\.name\)[\s\S]*getDefaultAuthenticatedRoute/u);
   assert.doesNotMatch(appShell, /getRouteNavigationDepth|data-navigation-depth/u);
-  assert.match(appShell, /showMobileBottomNavigation = computed\(\(\) => isAllowedUser\.value\)/u);
+  assert.match(appShell, /showAuthenticatedChrome = computed\(\(\) => isAllowedUser\.value && !roleLoading\.value\)/u);
+  assert.match(appShell, /showMobileBottomNavigation = computed\(\(\) => showAuthenticatedChrome\.value\)/u);
+  assert.match(app, /roleLoading[\s\S]*publicOnly[\s\S]*ensureCategoryCatalog|publicOnly[\s\S]*roleLoading[\s\S]*ensureCategoryCatalog/u);
+  assert.match(router, /publicOnly && user\.value[\s\S]*waitForRoleReady[\s\S]*setupCompleted/u);
   assert.match(baseStyles, /\.route-content-frame \{[\s\S]*background-color: rgb\(var\(--color-page-background\)\)/u);
   assert.match(baseStyles, /\.route-stage \{[\s\S]*isolation: isolate/u);
   assert.doesNotMatch(baseStyles, /\.route-stage \{[\s\S]{0,120}(?:contain: paint|overflow: hidden)/u);

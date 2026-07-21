@@ -50,19 +50,41 @@ function normalizeRedirectPath(value: unknown) {
   return path;
 }
 
+async function resolveAuthenticatedDestination(
+  to: { name?: unknown; fullPath: string; query: Record<string, unknown>; meta: { setupAllowed?: boolean } },
+  session: ReturnType<typeof useSession>,
+) {
+  const roleReady = await waitForRoleReady();
+  // Role bootstrap is still in flight; cancel this pass and let the app-level
+  // watcher retry once roleLoading settles (avoids cancelling login→home forever).
+  if (!roleReady) return false;
+
+  if (!session.setupCompleted.value && !to.meta.setupAllowed) {
+    return { name: 'setup' as const };
+  }
+
+  if (session.setupCompleted.value) {
+    await ensureCategoryCatalog();
+    if (to.name === 'setup' || !isFeatureRouteEnabled(to.name)) {
+      return getDefaultAuthenticatedRoute();
+    }
+  }
+
+  return true;
+}
+
 router.beforeEach(async (to) => {
   resetRouteRequestScope();
   await waitForSessionReady();
 
-  const { can, isAdmin, setupCompleted, user } = useSession();
+  const session = useSession();
+  const { can, isAdmin, user } = session;
 
   if (to.meta.publicOnly && user.value) {
     const roleReady = await waitForRoleReady();
     if (!roleReady) return false;
-    if (setupCompleted.value) {
-      await ensureCategoryCatalog();
-      if (!isFeatureRouteEnabled(to.name)) return getDefaultAuthenticatedRoute();
-    }
+    if (!session.setupCompleted.value) return { name: 'setup' };
+    await ensureCategoryCatalog();
     return normalizeRedirectPath(to.query.redirect) || getDefaultAuthenticatedRoute();
   }
 
@@ -73,6 +95,11 @@ router.beforeEach(async (to) => {
     };
   }
 
+  if (user.value) {
+    const destination = await resolveAuthenticatedDestination(to, session);
+    if (destination !== true) return destination;
+  }
+
   if (to.meta.requiresAdmin) {
     const roleReady = await waitForRoleReady();
     if (!roleReady || !isAdmin.value) {
@@ -80,19 +107,6 @@ router.beforeEach(async (to) => {
     }
   }
 
-  if (user.value) {
-    const roleReady = await waitForRoleReady();
-    if (!roleReady) return false;
-    if (!setupCompleted.value && !to.meta.setupAllowed) return { name: 'setup' };
-    if (setupCompleted.value && to.name === 'setup') {
-      await ensureCategoryCatalog();
-      return getDefaultAuthenticatedRoute();
-    }
-    if (setupCompleted.value) {
-      await ensureCategoryCatalog();
-      if (!isFeatureRouteEnabled(to.name)) return getDefaultAuthenticatedRoute();
-    }
-  }
   if (to.meta.requiredPermission) {
     const roleReady = await waitForRoleReady();
     if (!roleReady || !can(to.meta.requiredPermission)) return getDefaultAuthenticatedRoute();

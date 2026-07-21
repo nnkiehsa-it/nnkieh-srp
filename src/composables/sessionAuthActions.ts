@@ -97,6 +97,10 @@ function googleProvider(selectAccount = false) {
   return provider;
 }
 
+export function isGoogleRedirectPending() {
+  return hasPendingGoogleRedirect();
+}
+
 export async function loginWithGoogle(state: SessionState, options: { selectAccount?: boolean } = {}) {
   debugLog('login requested', {
     allowedDomain,
@@ -127,23 +131,31 @@ export async function loginWithGoogle(state: SessionState, options: { selectAcco
           email: firebaseAuth.currentUser.email ?? '',
         }
       : null);
+    // Explicit click loading ends here; loginBusy stays true via roleLoading
+    // while bootstrap finishes after onAuthStateChanged accepts the user.
+    state.loading = false;
   } catch (error) {
     if (shouldFallbackToRedirect(error)) {
       debugLog('popup unavailable, falling back to redirect', error);
       markGoogleRedirectPending();
+      state.redirectRecovering = true;
       try {
         await signInWithRedirect(firebaseAuth, googleProvider(Boolean(options.selectAccount)));
+        // Page navigates away; leave loading/redirectRecovering set so a partial
+        // paint cannot re-enable the button before unload.
+        return;
       } catch (redirectError) {
         clearGoogleRedirectPending();
+        state.redirectRecovering = false;
         debugLog('redirect login failed', redirectError);
         state.error = getLoginErrorMessage(redirectError);
+        state.loading = false;
+        return;
       }
-      return;
     }
 
     debugLog('login failed before completion', error);
     state.error = getLoginErrorMessage(error);
-  } finally {
     state.loading = false;
   }
 }
@@ -151,6 +163,8 @@ export async function loginWithGoogle(state: SessionState, options: { selectAcco
 export async function recoverPendingGoogleRedirect(state: SessionState, firebaseAuth: Auth) {
   if (!hasPendingGoogleRedirect()) return;
 
+  state.redirectRecovering = true;
+  state.loading = true;
   try {
     const result = await getPendingRedirectResult(firebaseAuth);
     debugLog('getRedirectResult resolved', result
@@ -172,6 +186,8 @@ export async function recoverPendingGoogleRedirect(state: SessionState, firebase
     }
   } finally {
     clearGoogleRedirectPending();
+    state.redirectRecovering = false;
+    state.loading = false;
   }
 }
 

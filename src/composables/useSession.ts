@@ -4,6 +4,7 @@ import { auth, allowedDomain } from '@/lib/firebase';
 import type { SessionState } from '@/composables/sessionTypes';
 import { debugLog } from '@/composables/sessionDebug';
 import {
+  isGoogleRedirectPending,
   loginWithGoogle,
   logoutFromFirebase,
   recoverPendingGoogleRedirect,
@@ -23,7 +24,7 @@ import { ensureSupabaseAuthenticatedRole } from '@/services/supabase-auth';
 import { fetchCurrentUserRole, seedSessionAccess } from '@/services/session-role';
 import { applyContentRevisionsSnapshot, ensureContentRevisionsFresh } from '@/services/content-revisions';
 import { fetchSessionBootstrap } from '@/services/session-bootstrap';
-import { seedCategoryCatalog } from '@/composables/useCategories';
+import { ensureCategoryCatalog, seedCategoryCatalog } from '@/composables/useCategories';
 import { seedNotificationUnreadHint } from '@/services/notifications';
 
 const state = reactive<SessionState>({
@@ -34,6 +35,7 @@ const state = reactive<SessionState>({
   appInitializing: true,
   appReady: false,
   roleLoading: false,
+  redirectRecovering: false,
   user: null,
   userRole: 'user',
   roles: [],
@@ -93,6 +95,10 @@ function resolveRoleReadyWaiters() {
 }
 
 function observeAuthState(firebaseAuth: NonNullable<typeof auth>) {
+  if (isGoogleRedirectPending()) {
+    state.redirectRecovering = true;
+    state.loading = true;
+  }
   void recoverPendingGoogleRedirect(state, firebaseAuth);
 
   onAuthStateChanged(firebaseAuth, async (user) => {
@@ -245,6 +251,13 @@ async function refreshVerifiedSession(user: NonNullable<SessionState['user']>, v
       state.managedIssueCategoryIds = access.managedIssueCategoryIds;
       state.managedFacilityCategoryIds = access.managedFacilityCategoryIds;
       state.setupCompleted = access.setupCompleted;
+      // Role fallback does not include catalog; seed it before clearing roleLoading
+      // so post-login navigation resolves the real default issue category.
+      try {
+        await ensureCategoryCatalog();
+      } catch (catalogError) {
+        debugLog('category catalog fallback failed after role read', catalogError);
+      }
     }
   } catch (error) {
     if (!isCurrentVerification(user, verificationId)) return;
@@ -354,6 +367,13 @@ export function useSession() {
     appInitializing: computed(() => state.appInitializing),
     appReady: computed(() => state.appReady),
     initialized: computed(() => state.initialized),
+    /** Login button busy: click, redirect recovery, auth check, or post-login bootstrap. */
+    loginBusy: computed(() =>
+      state.loading
+      || state.authChecking
+      || state.redirectRecovering
+      || (Boolean(state.user) && state.roleLoading)
+    ),
     error: computed(() => state.error),
     isAllowedUser: computed(() => Boolean(state.user)),
     mySupportedIssueIds,

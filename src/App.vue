@@ -87,6 +87,7 @@ import { usePushPermissionPrompt } from '@/composables/usePushPermissionPrompt';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { computed, onBeforeUnmount, watch } from 'vue';
+import { ensureCategoryCatalog } from '@/composables/useCategories';
 import { getDefaultAuthenticatedRoute } from '@/router/default-route';
 import { preloadPrimaryRouteComponents } from '@/router/route-components';
 import { useI18n } from '@/i18n';
@@ -103,7 +104,7 @@ const { canAutoReloadCurrentVersion, reloadApp, reloading, updateAvailable } = u
 const { open: startupGateOpen, stalled: startupGateStalled } = useAppStartupGate();
 const route = useRoute();
 const router = useRouter();
-const { appReady, isAdmin, user } = useSession();
+const { appReady, isAdmin, roleLoading, user } = useSession();
 const { t } = useI18n();
 let routePreloadIdleId: number | null = null;
 let routePreloadTimer = 0;
@@ -208,12 +209,23 @@ watch(
 );
 
 watch(
-  [appReady, () => user.value?.uid ?? '', () => route.fullPath],
-  ([ready, uid]) => {
+  [appReady, roleLoading, () => user.value?.uid ?? '', () => route.fullPath],
+  ([ready, rolesLoading, uid]) => {
     if (!ready) return;
 
+    // Stay on the public login view until role/bootstrap settles so the default
+    // authenticated destination uses a seeded category catalog (not my-proposals).
     if (route.meta.publicOnly && uid) {
-      void router.replace(normalizeRedirectPath(route.query.redirect) || getDefaultAuthenticatedRoute());
+      if (rolesLoading) return;
+      void (async () => {
+        try {
+          await ensureCategoryCatalog();
+        } catch {
+          // Prefer leaving login with feature defaults over remaining stuck.
+        }
+        if (!route.meta.publicOnly || !user.value?.uid) return;
+        await router.replace(normalizeRedirectPath(route.query.redirect) || getDefaultAuthenticatedRoute());
+      })();
       return;
     }
 

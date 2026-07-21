@@ -17,7 +17,7 @@
       </div>
 
       <div class="flex w-full flex-col items-center gap-3">
-        <GoogleLoginButton :loading="loading" @login="login" />
+        <GoogleLoginButton :loading="loginBusy" @login="login" />
 
         <InlineAlert v-if="error" as="p" tone="error" compact class="mt-2 max-w-sm">
           {{ t(error) }}
@@ -37,6 +37,6 @@ import InlineAlert from '@/components/ui/atoms/InlineAlert.vue';
 import { useSession } from '@/composables/useSession';
 import { useI18n } from '@/i18n';
 
-const { allowedDomain, error, loading, login } = useSession();
+const { allowedDomain, error, login, loginBusy } = useSession();
 const { t } = useI18n();
 </script>
