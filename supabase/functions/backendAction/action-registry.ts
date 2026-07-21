@@ -86,7 +86,6 @@ export const backendActionDefinitions = [
     idempotent: true, requiredPermission: "category.manage", requiresRequestId: true,
   }),
   action("saveCategoryManagement", "category", "admin-write", handleCategoryAction, {
-    audit: { eventType: "category.management_saved", targetType: "category" },
     idempotent: true, requiredPermission: "category.manage", requiresRequestId: true,
   }),
   action("saveFacilityCategory", "category", "admin-write", handleCategoryAction, {
