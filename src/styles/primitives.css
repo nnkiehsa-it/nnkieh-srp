@@ -493,9 +493,9 @@
   }
 
   /*
-   * Opacity-only enter for list/card skeletons (including load-more).
-   * Avoid transform: compositing with box-shadow can leave residual
-   * card shadows after unmount on some mobile browsers.
+   * Opacity-only enter for shadow-free skeleton contents. The class belongs
+   * inside SurfacePanel: animating the shadow-bearing surface promotes its
+   * box-shadow into a WebKit compositing layer that can survive unmount.
    */
   .skeleton-card,
   .skeleton-enter {

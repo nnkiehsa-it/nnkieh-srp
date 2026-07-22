@@ -41,7 +41,7 @@
       </RouterLink>
     </nav>
 
-    <div class="flex w-full flex-col gap-2 px-3">
+    <div class="app-sidebar__utilities flex w-full flex-col items-center gap-2">
       <button
         type="button"
         class="app-sidebar__item"

@@ -1398,6 +1398,8 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.doesNotMatch(baseStyles, /\.app-root\[data-bottom-nav='true'\] \.app-main-content \{[\s\S]{0,160}calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
   assert.match(baseStyles, /\.route-swap-enter-active,[\s\S]*opacity 180ms[\s\S]*transform 180ms/u);
   assert.match(baseStyles, /\.route-swap-enter-from \{[\s\S]*translate3d\(0, 6px, 0\)/u);
+  assert.match(baseStyles, /@supports \(-webkit-touch-callout: none\)[\s\S]*\.route-content-frame \{[\s\S]*backface-visibility: visible[\s\S]*transition-property: opacity[\s\S]*will-change: opacity/u);
+  assert.match(baseStyles, /@supports \(-webkit-touch-callout: none\)[\s\S]*\.route-swap-enter-from,[\s\S]*\.route-back-leave-to \{[\s\S]*transform: none/u);
   assert.doesNotMatch(baseStyles, /route-(?:push|pop)/u);
   assert.match(baseStyles, /\.app-root\[data-sidebar='false'\] \.app-main-content/u);
   assert.match(appShell, /<ViewportFrame as="main" class="flex min-h-0 flex-1 flex-col">/u);
@@ -1476,7 +1478,11 @@ test('proposals, announcements, and facilities share list cards and detail panel
   assert.match(cardShell, /issue-card[\s\S]*surface-card[\s\S]*list-row-trigger/u);
   assert.match(cardSkeleton, /count\?: number[\s\S]*count: 2/u);
   assert.match(cardSkeleton, /--skeleton-enter-index/u);
+  assert.match(cardSkeleton, /<SurfacePanel[\s\S]*class="issue-card"[\s\S]*<div[\s\S]*class="skeleton-card"/u);
+  assert.doesNotMatch(cardSkeleton, /<SurfacePanel(?:(?!>)[\s\S])*skeleton-card/u);
   assert.match(cardSkeleton, /<header[\s\S]*showAuthor[\s\S]*supplement[\s\S]*<footer/u);
+  assert.match(contentListState, /:data-panel-key="panelKey"/u);
+  assert.doesNotMatch(contentListState, /:key="panelKey"/u);
   assert.match(contentListState, /PageLoadFailure/u);
   assert.match(contentListState, /EmptyStatePanel/u);
   assert.match(contentListState, /FeedLoadMoreControl/u);
@@ -1664,7 +1670,7 @@ test('navigation and contextual creation share the same responsive information a
   assert.ok(mobileNav.indexOf('to="/notifications"') < mobileNav.indexOf('to="/settings"'));
   assert.ok(desktopSidebar.indexOf('v-for="item in items"') < desktopSidebar.indexOf("$emit('openNotifications')"));
   assert.ok(desktopSidebar.indexOf("$emit('openNotifications')") < desktopSidebar.indexOf("$emit('openProfile')"));
-  assert.match(appShell, /<DesktopUtilityDialog[\s\S]*@select="desktopUtilityPanel = \$event"/u);
+  assert.match(appShell, /<DesktopUtilityDialog[\s\S]*:active-panel="desktopUtilityPanel"[\s\S]*@close="closeDesktopUtility"/u);
   assert.match(boardControls, /v-if="createLabel"[\s\S]*name="plus"/u);
   assert.ok(boardControls.indexOf('name="search"') < boardControls.indexOf('v-if="createLabel"'));
   assert.match(boardControls, /<AppButton[\s\S]{0,120}variant="contextual"[\s\S]{0,120}class="tap-target shrink-0 p-0"[\s\S]*name="plus"/u);
@@ -1908,7 +1914,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(settingsPanel, /<ListSurfaceRow[\s\S]*interactive/u);
   assert.match(commentComposer, /control-frame/u);
   assert.match(commentComposer, /<EditorSurface[\s\S]*tone="muted"[\s\S]*<ImageRemoveButton/u);
-  assert.match(contentCardSkeleton, /<SurfacePanel[\s\S]*class="issue-card skeleton-card"/u);
+  assert.match(contentCardSkeleton, /<SurfacePanel[\s\S]*class="issue-card"[\s\S]*class="skeleton-card"/u);
   assert.match(primitives, /@keyframes skeleton-card-enter \{[\s\S]*from \{[\s\S]*opacity: 0;[\s\S]*\}/u);
   assert.doesNotMatch(primitives, /@keyframes skeleton-card-enter \{[\s\S]*transform:/u);
   assert.match(segmentedControl, /ACTIVE_SEGMENT_WIDTH_REM = 7/u);

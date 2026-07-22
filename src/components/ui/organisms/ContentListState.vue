@@ -1,5 +1,5 @@
 <template>
-  <div :key="panelKey" :class="spacingClass">
+  <div :data-panel-key="panelKey" :class="spacingClass">
     <PageLoadFailure
       v-if="loadingHasProblem"
       :title="problemTitle"

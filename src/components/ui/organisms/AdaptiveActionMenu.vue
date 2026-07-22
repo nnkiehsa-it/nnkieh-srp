@@ -4,14 +4,14 @@
     <DialogShell
       :open="sheetOpen"
       presentation="sheet"
-      :padded="false"
+      padded
       :padded-surface="false"
       :labelled-by="titleId"
-      surface-class="adaptive-action-sheet max-h-[min(72dvh,34rem)] overflow-hidden bg-surface px-3 pb-3"
+      surface-class="adaptive-action-sheet overflow-hidden bg-surface p-4"
       @close="closeSheet"
     >
       <h2 :id="titleId" class="sr-only">{{ title }}</h2>
-      <div class="scrollbar-subtle max-h-[calc(72dvh-3rem)] overflow-y-auto py-1">
+      <div class="scrollbar-subtle max-h-[min(60dvh,28rem)] overflow-y-auto">
         <slot :close="closeSheet" />
       </div>
     </DialogShell>

@@ -2,10 +2,11 @@
   <DialogShell
     :open="open"
     :busy="blocked"
-    :padded="false"
+    padded
     presentation="adaptive"
     labelled-by="entry-composer-title"
-    surface-class="entry-composer flex h-[min(92dvh,52rem)] w-full flex-col overflow-hidden border-none px-4 pb-4 md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none md:px-6 md:pb-6"
+    :padded-surface="false"
+    surface-class="entry-composer flex w-full flex-col overflow-hidden border-none p-4 md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none md:p-6"
     @close="requestClose"
   >
     <div class="flex shrink-0 items-center justify-between border-b border-ink-200 pb-4 dark:border-ink-800">

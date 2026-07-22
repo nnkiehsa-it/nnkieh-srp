@@ -71,13 +71,8 @@
 
     <DesktopUtilityDialog
       :active-panel="desktopUtilityPanel"
-      :has-unread="hasUnread"
       :open="desktopUtilityOpen"
-      :photo-url="displayPhotoUrl"
-      :school-label="schoolLabel"
-      :user-name="userName"
       @close="closeDesktopUtility"
-      @select="desktopUtilityPanel = $event"
     />
   </div>
 </template>

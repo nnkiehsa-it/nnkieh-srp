@@ -1,6 +1,6 @@
 <template>
   <RoutePageFrame
-    :class="embedded ? 'scrollbar-subtle flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6 md:px-8' : ''"
+    :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
   >
     <div v-if="loading" class="space-y-6 py-4">
       <!-- Account Skeleton -->
@@ -60,8 +60,9 @@
       :push-error="pushError"
       :push-loading="pushLoading"
       :push-status-description="pushStatusDescription"
+      :content-class="embedded ? 'h-full' : ''"
       :show-close="embedded"
-      :flat="true"
+      :flat="!embedded"
       @close="emit('close')"
       @logout="handleLogout"
       @restart-app="handleRestartApp"

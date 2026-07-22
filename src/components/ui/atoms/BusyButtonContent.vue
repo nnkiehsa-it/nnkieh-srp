@@ -1,7 +1,7 @@
 <template>
   <span class="busy-button-content relative inline-grid min-w-0 place-items-center" :class="{ 'is-busy': busy }">
     <span class="col-start-1 row-start-1 inline-flex items-center justify-center gap-2 transition-opacity" :class="busy ? 'opacity-0' : 'opacity-100'">
-      <slot>{{ label }}</slot>
+      <slot>{{ t(label) }}</slot>
     </span>
     <span v-if="busy" class="col-start-1 row-start-1 inline-flex items-center justify-center gap-2" role="status">
       <span class="busy-button-spinner grid place-items-center rounded-full" aria-hidden="true">
