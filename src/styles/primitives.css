@@ -226,8 +226,8 @@
     transform: translateX(1.25rem);
   }
 
-  .switch-indicator:active:not([aria-disabled="true"]) {
-    scale: 1.015;
+  .switch-indicator:is(:active, .is-pressing):not([aria-disabled="true"]) {
+    scale: 1.025;
     transition-duration: var(--motion-duration-press);
     transition-timing-function: var(--motion-ease-press);
   }
@@ -410,7 +410,7 @@
       color var(--motion-duration) var(--motion-ease),
       scale var(--motion-duration-release) var(--motion-ease-spring);
     scale: 1;
-    --press-scale: 1.008;
+    --press-scale: 1.014;
     width: 100%;
   }
 
@@ -424,7 +424,7 @@
     outline-offset: 2px;
   }
 
-  .dropdown-item:active:not(:disabled):not([aria-disabled="true"]) {
+  .dropdown-item:is(:active, .is-pressing):not(:disabled):not([aria-disabled="true"]) {
     scale: var(--press-scale);
     transition-duration: var(--motion-duration-press);
     transition-timing-function: var(--motion-ease-press);

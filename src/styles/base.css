@@ -54,9 +54,9 @@
     --motion-duration-fast: 0.14s;
     --motion-duration: 0.22s;
     --motion-duration-panel: 0.32s;
-    --motion-duration-press: 0.11s;
-    --motion-duration-release: 0.3s;
-    --press-scale: 1.018;
+    --motion-duration-press: 0.14s;
+    --motion-duration-release: 0.34s;
+    --press-scale: 1.04;
     --surface-gap: 0.375rem;
     --radius-inner: 1rem;
     --radius-outer: calc(var(--radius-inner) + var(--surface-gap));
@@ -542,11 +542,11 @@
     button:not(:disabled),
     a[href]:not([aria-disabled='true']),
     [role='button']:not([aria-disabled='true'])
-  ):active {
+  ):active,
+  .is-pressing {
     scale: var(--press-scale);
     translate: 0 0;
     opacity: 1;
-    filter: brightness(1.025) saturate(1.01);
     transition-duration: var(--motion-duration-press);
     transition-timing-function: var(--motion-ease-press);
   }

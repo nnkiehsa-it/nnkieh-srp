@@ -370,7 +370,8 @@
     transition-duration: 0.01ms !important;
   }
 
-  :where(button, a[href], [role='button']):active {
+  :where(button, a[href], [role='button'], [role='switch']):is(:active, .is-pressing),
+  .is-pressing {
     scale: 1 !important;
     translate: 0 0 !important;
     filter: none !important;
