@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
-import { loadAnnouncementDetailView, loadAnnouncementsView } from '@/router/route-components';
+import { loadAnnouncementComposerView, loadAnnouncementDetailView, loadAnnouncementsView } from '@/router/route-components';
 
 export const announcementRoutes: RouteRecordRaw[] = [
   {
@@ -7,6 +7,12 @@ export const announcementRoutes: RouteRecordRaw[] = [
     name: 'announcements',
     component: loadAnnouncementsView,
     meta: { navigationDepth: 0, requiresAuth: true },
+  },
+  {
+    path: '/announcements/new',
+    name: 'announcement-create',
+    component: loadAnnouncementComposerView,
+    meta: { navigationDepth: 1, requiredPermission: 'announcement.manage', requiresAuth: true },
   },
   {
     path: '/announcements/:announcementId',

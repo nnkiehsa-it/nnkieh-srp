@@ -15,9 +15,12 @@
       ref="buttonRefs"
       type="button"
       class="segmented-control__button relative z-10 flex h-full items-center justify-center rounded-full text-xs font-semibold select-none"
-      :class="modelValue === item.value
-        ? [activeClass, 'segmented-control__button--active']
-        : [inactiveClass, 'segmented-control__button--compact']"
+      :class="[
+        layout === 'equal' ? 'segmented-control__button--equal' : '',
+        modelValue === item.value
+          ? [activeClass, layout === 'equal' ? '' : 'segmented-control__button--active']
+          : [inactiveClass, layout === 'equal' ? '' : 'segmented-control__button--compact'],
+      ]"
       :title="item.title ?? item.label"
       :aria-label="item.ariaLabel ?? item.title ?? item.label"
       :aria-pressed="modelValue === item.value"
@@ -27,7 +30,7 @@
       <AppIcon :name="item.icon" :size="3.5" />
       <span
         class="inline-block overflow-hidden whitespace-nowrap transition-[opacity,transform,max-width,margin] duration-300 ease-[var(--motion-ease-enter)]"
-        :class="modelValue === item.value
+        :class="layout === 'equal' || modelValue === item.value
           ? 'ml-1.5 max-w-28 translate-x-0 opacity-100'
           : 'ml-0 max-w-0 -translate-x-1 opacity-0'"
       >
@@ -51,6 +54,7 @@ export interface PillSegmentedControlOption<TValue extends string> {
 }
 
 const props = defineProps<{
+  layout?: 'adaptive' | 'equal';
   modelValue: TValue;
   options: readonly PillSegmentedControlOption<TValue>[];
 }>();
@@ -71,6 +75,9 @@ const CONTROL_INLINE_PADDING_REM = 0.25;
 const activeClass = 'text-ink-950 dark:text-ink-50';
 const inactiveClass = 'text-ink-500 hover:text-ink-700 dark:text-ink-400 dark:hover:text-ink-200';
 const containerStyle = computed(() => {
+  if (props.layout === 'equal') {
+    return { maxWidth: '100%', width: `${Math.max(12, props.options.length * 8)}rem` };
+  }
   const compactSegmentCount = Math.max(0, props.options.length - 1);
   const gapCount = Math.max(0, props.options.length - 1);
   const width = ACTIVE_SEGMENT_WIDTH_REM

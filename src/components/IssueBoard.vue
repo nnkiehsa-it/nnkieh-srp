@@ -68,14 +68,6 @@
       </ContentListState>
     </div>
   </section>
-
-  <IssueComposer
-    :open="isFormOpen"
-    :category="composerCategory"
-    :category-label="composerCategoryLabel"
-    @close="emit('toggle-form')"
-    @submitted="handleIssueSubmitted"
-  />
 </template>
 
 <script setup lang="ts">
@@ -83,14 +75,13 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
 import IssueBoardTable from '@/components/IssueBoardTable.vue';
-import IssueComposer from '@/components/IssueComposer.vue';
 import ContentListState from '@/components/ui/organisms/ContentListState.vue';
 import { useIssueBoardData } from '@/composables/useIssueBoardData';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
-import { getDefaultIssueRouteFilter, getIssueCategoryLabel, isIssueCategory, issueIsPrivateToOwner, issueStoresAuthorPrivately } from '@/constants/categories';
-import type { IssueCategory, IssueRecord } from '@/types';
+import { isIssueCategory, issueIsPrivateToOwner, issueStoresAuthorPrivately } from '@/constants/categories';
+import type { IssueRecord } from '@/types';
 import { useI18n } from '@/i18n';
 
 type IssueDetailsOpenPayload = {
@@ -101,23 +92,13 @@ type IssueDetailsOpenPayload = {
 let savedIssueBoardScrollKey = '';
 let savedIssueBoardScrollTop = 0;
 
-const props = defineProps<{
-  isFormOpen?: boolean;
-}>();
-
-const emit = defineEmits<{
-  'toggle-form': [];
-}>();
-
 const { canManageIssueCategory } = useSession();
 const { show } = useActionFeedback();
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
-const composerCategory = ref<IssueCategory>(getDefaultIssueRouteFilter());
 const boardScrollRef = ref<HTMLElement | null>(null);
 const restoreBoardScrollPending = ref(false);
-const composerCategoryLabel = computed(() => getIssueCategoryLabel(composerCategory.value));
 
 const {
   activeFilter,
@@ -127,7 +108,6 @@ const {
   submitSearch,
   clearSearch,
   sortOption,
-  composerMessage,
   activeCategoryLabel,
   currentState,
   currentIssues,
@@ -140,7 +120,6 @@ const {
   hasMoreCurrentData,
   loadMoreCurrentData,
   handleSupportChanged,
-  handleIssueSubmitted,
   handleIssueUpdated,
   handleIssueDeleted,
   refreshCurrentData,
@@ -243,15 +222,9 @@ function handleIssueUpdatedFromList(issue: IssueRecord) {
   void handleIssueUpdated(issue);
 }
 
-function openComposerForCategory(category: IssueCategory) {
-  composerCategory.value = category;
-  if (!props.isFormOpen) {
-    emit('toggle-form');
-  }
-}
-
 function openComposerForActiveCategory() {
-  if (isIssueCategory(activeFilter.value)) openComposerForCategory(activeFilter.value);
+  if (!isIssueCategory(activeFilter.value)) return;
+  void router.push({ name: 'issue-create', params: { filter: activeFilter.value } });
 }
 
 watch(
@@ -286,9 +259,4 @@ watch(statusTab, (tab) => {
   void router.replace({ query });
 });
 
-watch(composerMessage, (message) => {
-  if (message) {
-    show(message, 'success');
-  }
-});
 </script>

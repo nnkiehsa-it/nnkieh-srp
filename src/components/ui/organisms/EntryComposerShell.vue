@@ -1,13 +1,9 @@
 <template>
-  <DialogShell
-    :open="open"
-    :busy="blocked"
-    padded
-    presentation="adaptive"
-    labelled-by="entry-composer-title"
-    :padded-surface="false"
-    surface-class="entry-composer flex w-full flex-col overflow-hidden border-none p-4 md:fixed md:inset-0 md:h-screen md:max-h-screen md:rounded-none md:border-none md:p-6"
-    @close="requestClose"
+  <SurfacePanel
+    as="article"
+    class="entry-composer-page__surface flex min-h-0 flex-1 flex-col overflow-hidden"
+    :aria-busy="blocked || undefined"
+    aria-labelledby="entry-composer-title"
   >
     <div class="flex shrink-0 items-center justify-between border-b border-ink-200 pb-4 dark:border-ink-800">
       <div class="min-w-0">
@@ -16,7 +12,7 @@
       </div>
       <AppButton
         variant="icon"
-        class="shrink-0"
+        class="hidden shrink-0 md:inline-flex"
         :disabled="blocked"
         :title="t('common.close')"
         :aria-label="t('common.close')"
@@ -38,7 +34,6 @@
         :max-length="titleMaxLength"
         :warning-length="titleWarningLength"
         :placeholder="titlePlaceholder"
-        autofocus
         :required="titleRequired"
         :disabled="busy"
       />
@@ -107,26 +102,27 @@
         </div>
       </div>
     </form>
-  </DialogShell>
+  </SurfacePanel>
   <ConfirmDialog
     :open="discardDialogOpen"
     :title="t('common.discardChanges')"
     :message="t('common.unsavedChangesWillBeLost')"
     :confirm-label="t('common.discard')"
-    @cancel="discardDialogOpen = false"
+    @cancel="cancelDiscard"
     @confirm="confirmClose"
   />
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { onBeforeRouteLeave, type NavigationGuardNext } from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import BusyButtonContent from '@/components/ui/atoms/BusyButtonContent.vue';
 import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
 import CountedTextField from '@/components/ui/molecules/CountedTextField.vue';
-import DialogShell from '@/components/ui/organisms/DialogShell.vue';
+import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import MarkdownImageEditor, { type MarkdownEditorImage } from '@/components/ui/organisms/MarkdownImageEditor.vue';
 import { INPUT_LIMITS } from '@/constants/input-limits';
 import { useI18n } from '@/i18n';
@@ -153,7 +149,6 @@ const props = withDefaults(defineProps<{
   locationWarningLength?: number;
   maxImages: number;
   maxImagesLabel: string;
-  open: boolean;
   submitDisabled?: boolean;
   submitLabel: string;
   title: string;
@@ -189,6 +184,8 @@ const emit = defineEmits<{
 
 const blocked = computed(() => props.busy || props.uploading);
 const discardDialogOpen = ref(false);
+let pendingNavigation: NavigationGuardNext | null = null;
+let allowNextLeave = false;
 const dirty = computed(() => Boolean(
   entryTitle.value.trim()
   || content.value.trim()
@@ -205,9 +202,36 @@ function requestClose() {
   emit('close');
 }
 
+function cancelDiscard() {
+  discardDialogOpen.value = false;
+  pendingNavigation?.(false);
+  pendingNavigation = null;
+}
+
 function confirmClose() {
   discardDialogOpen.value = false;
+  allowNextLeave = true;
+  if (pendingNavigation) {
+    const next = pendingNavigation;
+    pendingNavigation = null;
+    next();
+    return;
+  }
   emit('close');
 }
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (blocked.value) {
+    next(false);
+    return;
+  }
+  if (allowNextLeave || !dirty.value) {
+    allowNextLeave = false;
+    next();
+    return;
+  }
+  pendingNavigation = next;
+  discardDialogOpen.value = true;
+});
 
 </script>

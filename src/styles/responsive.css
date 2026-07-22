@@ -29,8 +29,19 @@
   min-height: 0;
 }
 
-.entry-composer {
-  --dialog-safe-padding: var(--panel-padding);
+.dialog-surface.surface-pad-lg {
+  padding-top: calc(var(--panel-padding) + 0.375rem);
+}
+
+.entry-composer-page {
+  height: 100%;
+  max-width: 60rem;
+  padding-block: 1.5rem;
+}
+
+.entry-composer-page__surface {
+  padding: 2rem;
+  padding-top: 2.375rem;
 }
 
 .entry-composer__footer {
@@ -97,6 +108,26 @@
 @media (max-width: 767px) {
   .board-controls {
     padding-top: 0.5rem;
+  }
+
+  .entry-composer-page {
+    height: calc(
+      var(--visual-viewport-height) - var(--app-header-height) - env(safe-area-inset-top) - 0.25rem
+    );
+    max-height: calc(
+      var(--visual-viewport-height) - var(--app-header-height) - env(safe-area-inset-top) - 0.25rem
+    );
+    padding-block: 0;
+  }
+
+  .entry-composer-page__surface {
+    background-color: rgb(var(--color-page-background));
+    border-radius: 0;
+    box-shadow: none;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-top: 1.5rem;
   }
 
   .entry-composer__scroll {
@@ -210,13 +241,6 @@
   width: 100%;
   border-radius: var(--radius-inner);
   padding-inline: 1rem;
-}
-
-@media (max-width: 767px) {
-  .dialog-overlay[data-presentation='sheet'] > .entry-composer {
-    height: min(88dvh, var(--visual-viewport-height));
-    max-height: min(88dvh, var(--visual-viewport-height));
-  }
 }
 
 @media (min-width: 768px), (pointer: fine) {

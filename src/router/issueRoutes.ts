@@ -1,8 +1,21 @@
 import type { RouteLocationGeneric, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
-import { getDefaultIssueRouteFilter, isIssueRouteFilter, isKnownIssueCategory, normalizeIssueRouteFilterParam } from '@/constants/categories';
+import {
+  getDefaultIssueRouteFilter,
+  isIssueCategory,
+  isIssueRouteFilter,
+  isKnownIssueCategory,
+  normalizeIssueRouteFilterParam,
+} from '@/constants/categories';
 import { ensureCategoryCatalog } from '@/composables/useCategories';
 import { normalizeRouteParam } from '@/lib/route';
-import { loadIssueBoardView, loadIssueDetailView } from '@/router/route-components';
+import { loadIssueBoardView, loadIssueComposerView, loadIssueDetailView } from '@/router/route-components';
+
+async function validateIssueCreateRoute(to: RouteLocationNormalized) {
+  await ensureCategoryCatalog();
+  const filter = Array.isArray(to.params.filter) ? to.params.filter[0] : to.params.filter;
+  if (isIssueCategory(filter)) return true;
+  return { name: 'issues', params: { filter: getDefaultIssueRouteFilter() } };
+}
 
 async function issueRouteRedirect(to: RouteLocationGeneric) {
   await ensureCategoryCatalog();
@@ -49,6 +62,13 @@ export const issueRoutes: RouteRecordRaw[] = [
     component: loadIssueBoardView,
     meta: { navigationDepth: 0, requiresAuth: true },
     beforeEnter: validateIssueRoute,
+  },
+  {
+    path: '/issues/:filter/new',
+    name: 'issue-create',
+    component: loadIssueComposerView,
+    meta: { navigationDepth: 1, requiresAuth: true },
+    beforeEnter: validateIssueCreateRoute,
   },
   {
     path: '/issues/:filter/:issueId',

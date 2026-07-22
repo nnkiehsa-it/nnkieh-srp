@@ -3,7 +3,6 @@
     v-model:entry-title="form.title"
     v-model:content="form.content"
     v-model:show-preview="showPreview"
-    :open="open"
     eyebrow="issue.startANewProposal"
     :title="t('issue.addToCategory', { category: t(categoryLabel) })"
     title-input-id="issue-title"
@@ -39,7 +38,6 @@ import type { IssueRecord, WritableIssueCategory } from '@/types';
 import { useI18n } from '@/i18n';
 
 const props = defineProps<{
-  open: boolean;
   category: WritableIssueCategory;
   categoryLabel: string;
 }>();
@@ -62,7 +60,7 @@ const {
   error,
   handleClose,
   submit,
-} = useIssueComposerForm(toRef(props, 'open'), {
+} = useIssueComposerForm({
   category: toRef(props, 'category'),
   onClose: () => emit('close'),
   onSubmitted: (issue) => emit('submitted', issue),

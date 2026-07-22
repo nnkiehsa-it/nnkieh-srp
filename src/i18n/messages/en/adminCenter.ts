@@ -20,6 +20,7 @@ const messages = {
   'adminCenter.acceptNewRecordsHelp': 'Turning this off archives the category while keeping existing records available.',
   'adminCenter.defaultCategoryHelp': 'Preselect this category for new records. Each record type can have only one default.',
   'adminCenter.saveCategoryHelp': 'Feature switches and category settings are applied together after you save.',
+  'adminCenter.featureDisabledDraftHelp': 'This feature is set to off. Category settings are temporarily locked and will not affect the app until you save all changes.',
   'adminCenter.memberSectionTitle': 'People and permissions',
   'adminCenter.memberSectionDescription': 'Choose a category or tool first, review current assignees, then look up a signed-in member by full email or UID.',
   'adminCenter.chooseResponsibilityStep': 'Choose a category or tool first',

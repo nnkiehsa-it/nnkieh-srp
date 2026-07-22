@@ -68,14 +68,6 @@
       </template>
     </ContentListState>
 
-    <AnnouncementComposerDialog
-      :error="composerError"
-      :open="composerOpen"
-      :submitting="saving"
-      @close="closeComposer"
-      @save="publishAnnouncement"
-    />
-
     <ConfirmDialog
       :open="Boolean(deletePendingAnnouncement)"
       title="announcement.areYouSureYouWantToDeleteThisAnnouncement"
@@ -91,7 +83,7 @@
 <script setup lang="ts">
 import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed } from 'vue';
-import AnnouncementComposerDialog from '@/components/AnnouncementComposerDialog.vue';
+import { useRouter } from 'vue-router';
 import AnnouncementTable from '@/components/AnnouncementTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
@@ -109,19 +101,13 @@ const {
   hasMore,
   loadMoreAnnouncements,
   refreshAnnouncements,
-  composerError,
-  composerOpen,
   likingAnnouncementId,
-  saving,
   deleting,
   deletePendingAnnouncement,
   sessionLoading,
   isAdmin,
   isAllowedUser,
   openAnnouncementDetails,
-  openComposer,
-  closeComposer,
-  publishAnnouncement,
   handleListDelete,
   closeDeleteDialog,
   confirmDelete,
@@ -129,6 +115,7 @@ const {
 } = useAnnouncementManagement();
 
 const { t } = useI18n();
+const router = useRouter();
 const rawAnnouncementLoading = computed(() => sessionLoading.value || loading.value);
 const announcementPanelKey = 'announcements';
 const {
@@ -153,4 +140,8 @@ const {
     success: 'announcement.announcementHasBeenUpdated',
   },
 });
+
+function openComposer() {
+  void router.push({ name: 'announcement-create' });
+}
 </script>

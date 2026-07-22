@@ -5,7 +5,7 @@
   >
     <div
       v-if="!flat"
-      class="flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 dark:border-ink-700"
+      class="settings-panel__header flex items-start justify-between gap-3 border-b border-ink-100 px-4 py-3 dark:border-ink-700"
     >
       <div>
         <p id="desktop-utility-title" class="text-base font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50">{{ t('settings.mine') }}</p>

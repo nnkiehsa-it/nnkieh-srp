@@ -20,6 +20,7 @@ const messages = {
   'adminCenter.acceptNewRecordsHelp': '關閉後會封存分類；既有案件仍可查看與處理。',
   'adminCenter.defaultCategoryHelp': '新增案件時優先選取此分類。每種案件類型僅能有一個預設分類。',
   'adminCenter.saveCategoryHelp': '功能開關與分類設定會在儲存後一併套用。',
+  'adminCenter.featureDisabledDraftHelp': '此功能目前設為關閉；分類設定已暫時鎖定，儲存所有變更後才會套用到前台。',
   'adminCenter.memberSectionTitle': '人員與管理權限',
   'adminCenter.memberSectionDescription': '先選擇要管理的分類或功能，再查看現有負責人，並以完整 Email 或 UID 指派成員。',
   'adminCenter.chooseResponsibilityStep': '先選擇要授權的分類或功能',

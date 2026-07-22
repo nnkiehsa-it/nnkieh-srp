@@ -2,72 +2,46 @@
   <section class="space-y-3">
     <SectionHeader :title="title" :description="description">
       <template #trailing>
-        <AppButton variant="secondary" @click="addCategory">{{ t('categoryAdmin.addCategory') }}</AppButton>
+        <div class="flex shrink-0 flex-wrap items-center justify-end gap-3">
+          <slot name="header-actions" />
+          <AppButton variant="secondary" :disabled="disabled" @click="addCategory">{{ t('categoryAdmin.addCategory') }}</AppButton>
+        </div>
       </template>
     </SectionHeader>
 
-    <div class="grid items-start gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <CategorySelectorList
-        v-model:selected-index="selectedIndex"
-        :categories="model"
-        show-status
-      />
+    <InlineMessage v-if="disabled">{{ t('adminCenter.featureDisabledDraftHelp') }}</InlineMessage>
 
-      <div v-if="selectedCategory" class="min-w-0 space-y-2">
-        <CategoryEditorCard
-          v-model="model[selectedIndex]"
-          :field-id="`manage-${kind}-${selectedIndex}`"
-          :kind="kind"
-          :id-locked="Boolean(selectedCategory.id && originalIds.has(selectedCategory.id))"
-          :privacy-locked="kind === 'issue' && Boolean(selectedCategory.id && originalIds.has(selectedCategory.id))"
-          :removable="false"
+    <fieldset
+      class="min-w-0 border-0 p-0 transition-opacity"
+      :class="disabled ? 'opacity-45' : ''"
+      :disabled="disabled"
+      :aria-disabled="disabled || undefined"
+    >
+      <div class="grid items-start gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <CategorySelectorList
+          v-model:selected-index="selectedIndex"
+          :categories="model"
+          show-status
         />
 
-        <SurfacePanel variant="control" padding="sm" class="space-y-2">
-          <ListSurfaceRow
-            interactive
-            role="switch"
-            :aria-checked="selectedCategory.isActive"
-            @click="selectedCategory.isActive = !selectedCategory.isActive"
-          >
-            <span class="min-w-0 flex-1">
-              <span class="block text-sm font-semibold text-ink-900 dark:text-ink-100">{{ t('adminCenter.acceptNewRecords') }}</span>
-              <span class="mt-0.5 block text-xs leading-5 text-ink-500">{{ t('adminCenter.acceptNewRecordsHelp') }}</span>
-            </span>
-            <SwitchIndicator :checked="selectedCategory.isActive" />
-          </ListSurfaceRow>
-          <SelectionOptionButton
-            label="categoryAdmin.defaultCategory"
-            description="adminCenter.defaultCategoryHelp"
-            :selected="selectedCategory.isDefault"
-            @select="makeDefault(selectedIndex)"
+        <div v-if="selectedCategory" class="min-w-0 space-y-2">
+          <CategoryEditorCard
+            v-model="model[selectedIndex]"
+            :field-id="`manage-${kind}-${selectedIndex}`"
+            :kind="kind"
+            :id-locked="Boolean(selectedCategory.id && originalIds.has(selectedCategory.id))"
+            :privacy-locked="kind === 'issue' && Boolean(selectedCategory.id && originalIds.has(selectedCategory.id))"
+            :removable="false"
+            management-controls
+            :deletable="Boolean(onDelete)"
+            :deleting="deletingIndex === selectedIndex"
+            @delete="confirmDelete(selectedIndex)"
+            @make-default="makeDefault(selectedIndex)"
           />
-          <div class="flex flex-col gap-2 border-t border-ink-100 pt-3 dark:border-ink-800">
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-xs leading-5 text-ink-500">
-                <span v-if="selectedCategory.isDefault" class="text-error font-semibold">
-                  {{ t('categoryAdmin.cannotDeleteDefaultCategoryHelp') }}
-                </span>
-                <span v-else>
-                  {{ t('categoryAdmin.saveAllChangesHelp') }}
-                </span>
-              </p>
-              <div class="flex items-center gap-2 shrink-0">
-                <AppButton
-                  v-if="onDelete"
-                  variant="danger"
-                  :disabled="selectedCategory.isDefault || deletingIndex === selectedIndex"
-                  @click="confirmDelete(selectedIndex)"
-                >
-                  <BusyButtonContent :busy="deletingIndex === selectedIndex" :label="t('categoryAdmin.deleteCategory')" :busy-label="t('common.deleting')" />
-                </AppButton>
-              </div>
-            </div>
-          </div>
-        </SurfacePanel>
-        <InlineMessage v-if="errors[selectedIndex]">{{ errors[selectedIndex] }}</InlineMessage>
+          <InlineMessage v-if="errors[selectedIndex]">{{ errors[selectedIndex] }}</InlineMessage>
+        </div>
       </div>
-    </div>
+    </fieldset>
 
     <!-- Step-by-step creation wizard -->
     <CategoryWizardDialog
@@ -99,18 +73,14 @@ import CategorySelectorList from '@/components/categories/CategorySelectorList.v
 import CategoryWizardDialog from '@/components/admin/CategoryWizardDialog.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
-import BusyButtonContent from '@/components/ui/atoms/BusyButtonContent.vue';
 import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
-import SwitchIndicator from '@/components/ui/atoms/SwitchIndicator.vue';
-import ListSurfaceRow from '@/components/ui/molecules/ListSurfaceRow.vue';
 import SectionHeader from '@/components/ui/molecules/SectionHeader.vue';
-import SelectionOptionButton from '@/components/ui/molecules/SelectionOptionButton.vue';
-import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useI18n } from '@/i18n';
 import type { FacilityCategoryConfig, IssueCategoryConfig } from '@/types/categories';
 
 const props = defineProps<{
   description: string;
+  disabled?: boolean;
   kind: 'facility' | 'issue';
   onDelete?: (index: number) => Promise<void>;
   title: string;

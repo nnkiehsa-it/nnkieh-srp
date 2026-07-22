@@ -204,6 +204,19 @@
     box-shadow: var(--shadow-floating);
   }
 
+  .desktop-utility-content {
+    --desktop-utility-padding: clamp(2.5rem, 3vw, 3rem);
+    padding: var(--desktop-utility-padding);
+  }
+
+  .desktop-utility-content .settings-panel__header {
+    padding: 0 0 1.5rem;
+  }
+
+  .desktop-utility-content .settings-scroll {
+    padding: 1.5rem 0 0;
+  }
+
 
   .app-sidebar__profile-copy {
     @apply min-w-0 flex-1;

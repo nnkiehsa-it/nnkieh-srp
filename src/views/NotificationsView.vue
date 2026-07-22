@@ -1,7 +1,7 @@
 <template>
   <RoutePageFrame
     :padding="embedded ? undefined : 'compact'"
-    :class="embedded ? 'scrollbar-subtle flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6 md:px-8' : ''"
+    :class="embedded ? 'scrollbar-subtle flex min-h-0 flex-1 flex-col overflow-y-auto' : ''"
   >
     <div v-if="embedded" class="mb-5 flex items-start justify-between gap-3">
       <div>

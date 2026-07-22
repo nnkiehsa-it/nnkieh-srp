@@ -2,11 +2,14 @@ type RouteComponentLoader = () => Promise<unknown>;
 
 export const loadLoginView = () => import('@/views/LoginView.vue');
 export const loadIssueBoardView = () => import('@/views/IssueBoardView.vue');
+export const loadIssueComposerView = () => import('@/views/IssueComposerView.vue');
 export const loadIssueDetailView = () => import('@/views/IssueDetailView.vue');
 export const loadFacilitiesView = () => import('@/views/FacilitiesView.vue');
+export const loadFacilityComposerView = () => import('@/views/FacilityComposerView.vue');
 export const loadFacilityDetailView = () => import('@/views/FacilityDetailView.vue');
 export const loadAdministrationView = () => import('@/views/AdministrationView.vue');
 export const loadAnnouncementsView = () => import('@/views/AnnouncementsView.vue');
+export const loadAnnouncementComposerView = () => import('@/views/AnnouncementComposerView.vue');
 export const loadAnnouncementDetailView = () => import('@/views/AnnouncementDetailView.vue');
 export const loadNotificationsView = () => import('@/views/NotificationsView.vue');
 export const loadSettingsView = () => import('@/views/SettingsView.vue');
@@ -16,11 +19,14 @@ export const loadSetupView = () => import('@/views/SetupView.vue');
 const loaders = new Map<string, RouteComponentLoader>([
   ['login', loadLoginView],
   ['issues', loadIssueBoardView],
+  ['issue-create', loadIssueComposerView],
   ['issue-detail', loadIssueDetailView],
   ['facilities', loadFacilitiesView],
+  ['facility-create', loadFacilityComposerView],
   ['facility-detail', loadFacilityDetailView],
   ['administration', loadAdministrationView],
   ['announcements', loadAnnouncementsView],
+  ['announcement-create', loadAnnouncementComposerView],
   ['announcement-detail', loadAnnouncementDetailView],
   ['notifications', loadNotificationsView],
   ['settings', loadSettingsView],
@@ -48,10 +54,13 @@ export function preloadRoutePath(pathname: string) {
     return preloadRouteComponent('administration');
   }
   if (pathname === '/setup') return preloadRouteComponent('setup');
+  if (pathname === '/facilities/new') return preloadRouteComponent('facility-create');
   if (pathname.startsWith('/facilities/')) return preloadRouteComponent('facility-detail');
   if (pathname === '/facilities') return preloadRouteComponent('facilities');
+  if (pathname === '/announcements/new') return preloadRouteComponent('announcement-create');
   if (pathname.startsWith('/announcements/')) return preloadRouteComponent('announcement-detail');
   if (pathname === '/announcements') return preloadRouteComponent('announcements');
+  if (/^\/issues\/[^/]+\/new$/u.test(pathname)) return preloadRouteComponent('issue-create');
   if (/^\/issues\/[^/]+\/[^/]+/u.test(pathname)) return preloadRouteComponent('issue-detail');
   if (pathname === '/' || pathname.startsWith('/issues')) return preloadRouteComponent('issues');
   return Promise.resolve();

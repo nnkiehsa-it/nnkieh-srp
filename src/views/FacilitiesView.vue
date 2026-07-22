@@ -10,7 +10,7 @@
       :category-options="categoryOptions"
       :create-label="t('facility.addFacility')"
       :search-hint="searchHint"
-      @create="composerOpen = true"
+      @create="openComposer"
       @submit-search="submitSearch"
       @clear-search="clearSearch"
     />
@@ -58,7 +58,6 @@
       </ContentListState>
     </div>
 
-    <FacilityComposer :open="composerOpen" :category-id="category" @close="composerOpen = false" @submitted="handleSubmitted" />
     <FacilityStatusDialog
       v-if="selectedFacility"
       :open="statusDialogOpen"
@@ -85,7 +84,6 @@ import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BoardControls from '@/components/BoardControls.vue';
-import FacilityComposer from '@/components/FacilityComposer.vue';
 import FacilityStatusDialog from '@/components/FacilityStatusDialog.vue';
 import FacilityTable from '@/components/FacilityTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -94,7 +92,7 @@ import { useFacilities } from '@/composables/useFacilities';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { useContentListRuntime } from '@/composables/useContentListRuntime';
 import { normalizeSearchText } from '@/lib/search';
-import type { FacilityRecord, FacilityStatus, FacilitySummary } from '@/types';
+import type { FacilityStatus, FacilitySummary } from '@/types';
 import { useI18n } from '@/i18n';
 import { findFacilityCategory, getDefaultFacilityCategoryId, useCategories } from '@/composables/useCategories';
 
@@ -109,7 +107,6 @@ const categoryOptions = computed(() => activeFacilityCategories.value.map((entry
   label: entry.label,
   value: entry.id,
 })));
-const composerOpen = ref(false);
 const {
   affectingFacilityId,
   bucket,
@@ -188,8 +185,8 @@ function openDetails(facility: FacilitySummary) {
   void router.push({ name: 'facility-detail', params: { facilityId: facility.id } });
 }
 
-function handleSubmitted(facility: FacilityRecord) {
-  if (facility.category_id === category.value) facilities.value.unshift(facility);
+function openComposer() {
+  void router.push({ name: 'facility-create', query: { category: category.value } });
 }
 
 async function handleToggleAffected(facility: FacilitySummary) {

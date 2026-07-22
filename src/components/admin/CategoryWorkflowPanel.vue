@@ -2,14 +2,11 @@
   <section class="space-y-5" aria-labelledby="category-workflow-title">
     <h2 id="category-workflow-title" class="sr-only">{{ t('adminCenter.categorySectionTitle') }}</h2>
 
-    <div class="grid gap-3 pb-1 sm:grid-cols-2" role="group" :aria-label="t('adminCenter.categorySectionTitle')">
-      <SelectionOptionButton
-        v-for="option in kindOptions"
-        :key="option.value"
-        :label="option.label"
-        :description="option.description"
-        :selected="activeCategoryKind === option.value"
-        @select="activeCategoryKind = option.value"
+    <div class="pb-1">
+      <PillSegmentedControl
+        v-model="activeCategoryKind"
+        layout="equal"
+        :options="kindOptions"
       />
     </div>
 
@@ -48,35 +45,49 @@
     </div>
 
     <template v-else>
-      <div class="space-y-2">
-        <PlatformFeatureToggle
-          :label="activeFeatureToggle.label"
-          :description="activeFeatureToggle.description"
-          :enabled="activeFeatureToggle.enabled"
-          :disabled="saving"
-          @toggle="toggleFeature(activeCategoryKind)"
-        />
-        <InlineMessage v-if="featureError">{{ featureError }}</InlineMessage>
-      </div>
-
       <CategoryManagementSection
         v-if="activeCategoryKind === 'issue'"
         v-model="issueCategories"
         kind="issue"
+        :disabled="!issuesEnabled"
         :title="t('categoryAdmin.proposalCategories')"
         :description="t('categoryAdmin.proposalManagementHelp')"
         :on-delete="deleteIssue"
         @add="addIssue"
-      />
+      >
+        <template #header-actions>
+          <PlatformFeatureToggle
+            compact
+            :label="activeFeatureToggle.label"
+            :description="activeFeatureToggle.description"
+            :enabled="activeFeatureToggle.enabled"
+            :disabled="saving"
+            @toggle="toggleFeature('issue')"
+          />
+        </template>
+      </CategoryManagementSection>
       <CategoryManagementSection
         v-else
         v-model="facilityCategories"
         kind="facility"
+        :disabled="!facilitiesEnabled"
         :title="t('categoryAdmin.facilityCategories')"
         :description="t('categoryAdmin.facilityManagementHelp')"
         :on-delete="deleteFacility"
         @add="addFacility"
-      />
+      >
+        <template #header-actions>
+          <PlatformFeatureToggle
+            compact
+            :label="activeFeatureToggle.label"
+            :description="activeFeatureToggle.description"
+            :enabled="activeFeatureToggle.enabled"
+            :disabled="saving"
+            @toggle="toggleFeature('facility')"
+          />
+        </template>
+      </CategoryManagementSection>
+      <InlineMessage v-if="featureError">{{ featureError }}</InlineMessage>
     </template>
 
     <div v-if="!loading" class="flex flex-col items-stretch gap-3 border-t border-ink-100 pt-4 dark:border-ink-800 sm:flex-row sm:items-center sm:justify-end">
@@ -97,7 +108,7 @@ import AppButton from '@/components/ui/atoms/AppButton.vue';
 import BusyButtonContent from '@/components/ui/atoms/BusyButtonContent.vue';
 import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
 import EmptyStatePanel from '@/components/ui/molecules/EmptyStatePanel.vue';
-import SelectionOptionButton from '@/components/ui/molecules/SelectionOptionButton.vue';
+import PillSegmentedControl, { type PillSegmentedControlOption } from '@/components/ui/molecules/PillSegmentedControl.vue';
 import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useCategories } from '@/composables/useCategories';
 import { useI18n } from '@/i18n';
@@ -121,9 +132,9 @@ const featureError = ref('');
 const saving = ref(false);
 const saveError = ref('');
 
-const kindOptions = computed(() => [
-  { value: 'issue' as const, label: t('categoryAdmin.proposalCategories'), description: t('categoryAdmin.proposalManagementHelp') },
-  { value: 'facility' as const, label: t('categoryAdmin.facilityCategories'), description: t('categoryAdmin.facilityManagementHelp') },
+const kindOptions = computed<readonly PillSegmentedControlOption<'issue' | 'facility'>[]>(() => [
+  { value: 'issue', label: t('categoryAdmin.proposalCategories'), icon: 'comment' },
+  { value: 'facility', label: t('categoryAdmin.facilityCategories'), icon: 'wrench' },
 ]);
 
 const activeFeatureToggle = computed(() => activeCategoryKind.value === 'issue'

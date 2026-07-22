@@ -34,11 +34,7 @@
       </div>
     </div>
 
-    <IssueBoard
-      v-else-if="isAllowedUser"
-      :is-form-open="isFormOpen"
-      @toggle-form="toggleForm"
-    />
+    <IssueBoard v-else-if="isAllowedUser" />
 
     <div v-else class="sr-only" role="status">
       {{ t("auth.redirectingToSignIn") }}
@@ -49,7 +45,7 @@
 <script setup lang="ts">
 import RoutePageFrame from "@/components/ui/organisms/RoutePageFrame.vue";
 import SkeletonBlock from "@/components/ui/atoms/SkeletonBlock.vue";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useI18n } from "@/i18n";
 import IssueBoard from "@/components/IssueBoard.vue";
 import IssueBoardTable from "@/components/IssueBoardTable.vue";
@@ -67,12 +63,6 @@ const {
   problemDescription: sessionProblemDescription,
   problemTitle: sessionProblemTitle,
 } = useLoadingTimeout(sessionLoading, 5_000);
-const isFormOpen = ref(false);
-
-function toggleForm() {
-  isFormOpen.value = !isFormOpen.value;
-}
-
 async function reloadPage() {
   await resetAppConnection();
   window.location.reload();

@@ -8,7 +8,7 @@ export function useIssueRouteFilter() {
   const { activeFilter } = useFilter();
 
   watch(
-    () => route.name === 'issues' || route.name === 'issue-detail' ? route.params.filter : null,
+    () => ['issue-create', 'issue-detail', 'issues'].includes(route.name as string) ? route.params.filter : null,
     (filterParam) => {
       if (filterParam === null) return;
 

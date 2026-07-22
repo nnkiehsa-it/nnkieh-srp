@@ -793,11 +793,10 @@ test('proposal and facility manager access is runtime-configured and category-sc
   assert.match(lookupMigration, /user_profiles_email_unique_idx/u);
   assert.match(lookupMigration, /backend_update_facility_status\.result_content/u);
   assert.match(accessView, /SelectionOptionButton/u);
-  assert.match(administrationView, /SelectionOptionButton/u);
-  assert.match(categoryWorkflow, /SelectionOptionButton/u);
-  for (const managementView of [accessView, administrationView, categoryWorkflow]) {
-    assert.doesNotMatch(managementView, /PillSegmentedControl/u);
-  }
+  assert.doesNotMatch(administrationView, /SelectionOptionButton/u);
+  assert.match(administrationView, /role="tablist"[\s\S]*<AppButton[\s\S]*role="tab"/u);
+  assert.match(categoryWorkflow, /<PillSegmentedControl[\s\S]*layout="equal"/u);
+  assert.doesNotMatch(accessView, /PillSegmentedControl/u);
   assert.doesNotMatch(accessView, /accessInheritedFromPlatformAdmin|fullAccessSummary|hasInheritedAccess/u);
   assert.doesNotMatch(accessView, /value: 'platform'|platformAdminTitle/u);
   assert.ok(accessView.indexOf('chooseResponsibilityStep') < accessView.indexOf('access-member-lookup'));
@@ -872,11 +871,13 @@ test('announcement editing is removed across frontend, backend, and database', a
   assert.match(removalMigration, /drop function if exists app_api\.backend_update_announcement/u);
 });
 
-test('announcement writes update visible lists and invalidate list-page caches', async () => {
-  const management = await read('src/composables/useAnnouncementManagement.ts');
+test('announcement writes open the created detail and invalidate list-page caches', async () => {
+  const composer = await read('src/components/AnnouncementComposer.vue');
+  const composerView = await read('src/views/AnnouncementComposerView.vue');
   const announcements = await read('src/services/announcements.ts');
 
-  assert.match(management, /const announcement = await createAnnouncement\(payload\);\s*upsertAnnouncement\(announcement\);/u);
+  assert.match(composer, /const announcement = await createAnnouncement\([\s\S]*emit\('submitted', announcement\)/u);
+  assert.match(composerView, /name: 'announcement-detail'[\s\S]*announcementId: announcement\.id/u);
   assert.match(announcements, /const ANNOUNCEMENT_LIST_CACHE_PREFIX = 'announcement-list-page\|'/u);
   assert.match(
     announcements,
@@ -1284,7 +1285,7 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   const commentThread = await read('src/components/CommentThreadPanel.vue');
   const detailShell = await read('src/components/ui/organisms/DetailPageShell.vue');
   const issueComposer = await read('src/components/IssueComposer.vue');
-  const announcementComposer = await read('src/components/AnnouncementComposerDialog.vue');
+  const announcementComposer = await read('src/components/AnnouncementComposer.vue');
   const facilityComposer = await read('src/components/FacilityComposer.vue');
   const composerShell = await read('src/components/ui/organisms/EntryComposerShell.vue');
   const countedField = await read('src/components/ui/molecules/CountedTextField.vue');
@@ -1321,7 +1322,9 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(composerShell, /MarkdownImageEditor/u);
   assert.match(composerShell, /class="entry-composer__footer"/u);
   assert.match(composerShell, /class="entry-composer__actions"/u);
-  assert.match(composerShell, /md:max-h-screen/u);
+  assert.match(composerShell, /<SurfacePanel[^>]*class="entry-composer-page__surface/u);
+  assert.match(composerShell, /onBeforeRouteLeave[\s\S]*discardDialogOpen/u);
+  assert.doesNotMatch(composerShell, /\bautofocus\b/u);
   assert.equal((composerShell.match(/<AppButton[\s\S]*?variant="secondary"[\s\S]*?class="entry-composer__action"/gu) ?? []).length, 2);
   assert.match(countedField, /v-model="value"/u);
   assert.match(composerShell, /min-h-\[220px\]/u);
@@ -1369,6 +1372,10 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.match(appShell, /preloadRoutePath/u);
   assert.match(routeComponents, /preloadRequests/u);
   assert.match(routeComponents, /for \(const routeName of routeNames\)/u);
+  assert.match(routeComponents, /loadIssueComposerView[\s\S]*loadFacilityComposerView[\s\S]*loadAnnouncementComposerView/u);
+  assert.match(routeComponents, /\/facilities\/new[\s\S]*facility-create[\s\S]*\/announcements\/new[\s\S]*announcement-create/u);
+  assert.match(defaultRoute, /issue-create[\s\S]*facility-create/u);
+  assert.match(appShell, /isComposerRoute[\s\S]*showAuthenticatedChrome\.value && !isComposerRoute\.value/u);
   assert.doesNotMatch(responsiveStyles, /\.page-content-(?:enter|leave)/u);
   assert.match(app, /class="route-stage[^"\n]*h-full[\s\S]*<Transition :name="routeTransitionName" mode="out-in"/u);
   assert.match(app, /getRouteNavigationDepth[\s\S]*route-forward[\s\S]*route-back/u);
@@ -1383,7 +1390,7 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.match(router, /isFeatureRouteEnabled\(to\.name\)[\s\S]*getDefaultAuthenticatedRoute/u);
   assert.doesNotMatch(appShell, /getRouteNavigationDepth|data-navigation-depth/u);
   assert.match(appShell, /showAuthenticatedChrome = computed\(\(\) => isAllowedUser\.value && !roleLoading\.value\)/u);
-  assert.match(appShell, /showMobileBottomNavigation = computed\(\(\) => showAuthenticatedChrome\.value\)/u);
+  assert.match(appShell, /showMobileBottomNavigation = computed\(\(\) => showAuthenticatedChrome\.value && !isComposerRoute\.value\)/u);
   assert.match(app, /roleLoading[\s\S]*publicOnly[\s\S]*ensureCategoryCatalog|publicOnly[\s\S]*roleLoading[\s\S]*ensureCategoryCatalog/u);
   assert.match(router, /publicOnly && user\.value[\s\S]*waitForRoleReady[\s\S]*setupCompleted/u);
   assert.match(baseStyles, /\.route-content-frame \{[\s\S]*background-color: rgb\(var\(--color-page-background\)\)/u);
@@ -1576,10 +1583,14 @@ test('initial setup reuses the settings-style selected category editor', async (
   assert.match(setupCategorySection, /lg:grid-cols-\[15rem_minmax\(0,1fr\)\]/u);
   assert.match(setupCategorySection, /<CategorySelectorList[\s\S]*v-model:selected-index="selectedIndex"[\s\S]*:categories="model"/u);
   assert.match(categoryManagementSection, /<CategorySelectorList[\s\S]*v-model:selected-index="selectedIndex"[\s\S]*:categories="model"[\s\S]*show-status/u);
+  assert.match(categoryManagementSection, /<fieldset[\s\S]*:disabled="disabled"[\s\S]*<CategoryEditorCard/u);
   assert.match(categorySelectorList, /v-for="\(category, index\) in categories"[\s\S]*content-trigger/u);
+  assert.match(categorySelectorList, /overflow-x-auto[\s\S]*lg:overflow-visible/u);
   assert.match(categorySelectorList, /:aria-current="selectedIndex === index \? 'true' : undefined"/u);
   assert.match(setupCategorySection, /<CategoryEditorCard[\s\S]*flat/u);
   assert.match(categoryEditor, /:is="flat \? 'article' : SurfacePanel"/u);
+  assert.match(categoryEditor, /v-if="managementDraft"[\s\S]*role="switch"[\s\S]*categoryAdmin\.defaultCategory[\s\S]*<SwitchIndicator/u);
+  assert.match(categoryEditor, /@click="makeDefault"[\s\S]*emit\('makeDefault'\)/u);
   assert.match(setup, /continueToPlatform[\s\S]*router\.replace\(getDefaultAuthenticatedRoute\(\)\)/u);
   assert.match(setup, /if \(setupCompleted\.value\) await continueToPlatform\(\)/u);
   assert.match(setup, /SETUP_STATUS_REFRESH_INTERVAL_MS[\s\S]*refreshWaitingSetupStatus[\s\S]*setInterval/u);
@@ -1602,6 +1613,7 @@ test('platform feature switches persist atomically and remain configurable after
   assert.match(categoryAction, /action === "savePlatformFeatures"[\s\S]*requirePermission\(auth, "category\.manage"\)/u);
   assert.match(categoryAction, /features:[\s\S]*facilitiesEnabled:[\s\S]*issuesEnabled:/u);
   assert.match(categoryManagement, /activeCategoryKind[\s\S]*PlatformFeatureToggle[\s\S]*saveCategoryManagement[\s\S]*saveAll/u);
+  assert.match(categoryManagement, /:disabled="!issuesEnabled"[\s\S]*:disabled="!facilitiesEnabled"/u);
   assert.match(categoryManagement, /SkeletonBlock[\s\S]*skeleton-enter|SkeletonBlock[\s\S]*aria-busy/u);
   assert.match(atomicManagementMigration, /backend_save_category_management[\s\S]*for update[\s\S]*backend_update_platform_features/u);
   assert.match(categoryState, /const loaded = ref\(false\)[\s\S]*if \(!force && loaded\.value\) return/u);
@@ -1658,6 +1670,10 @@ test('navigation and contextual creation share the same responsive information a
   const issueComposer = await read('src/components/IssueComposer.vue');
   const composerShell = await read('src/components/ui/organisms/EntryComposerShell.vue');
   const controls = await read('src/styles/controls.css');
+  const desktopUtility = await read('src/components/DesktopUtilityDialog.vue');
+  const notificationsView = await read('src/views/NotificationsView.vue');
+  const navigationStyles = await read('src/styles/navigation.css');
+  const responsiveStyles = await read('src/styles/responsive.css');
 
   assert.match(appShell, /label: t\('issue\.proposal'\)/u);
   assert.match(appShell, /:category-filter="mobileCategoryFilter"/u);
@@ -1676,14 +1692,21 @@ test('navigation and contextual creation share the same responsive information a
   assert.match(boardControls, /<AppButton[\s\S]{0,120}variant="contextual"[\s\S]{0,120}class="tap-target shrink-0 p-0"[\s\S]*name="plus"/u);
   assert.doesNotMatch(boardControls, /<span class="truncate">\{\{ createLabel \}\}<\/span>/u);
   assert.match(issueBoard, /t\('issue\.addToCategory'/u);
-  assert.match(facilitiesView, /:create-label="t\('facility\.addFacility'\)"[\s\S]*@create="composerOpen = true"/u);
+  assert.match(facilitiesView, /:create-label="t\('facility\.addFacility'\)"[\s\S]*@create="openComposer"/u);
+  assert.match(facilitiesView, /name: 'facility-create'[\s\S]*category: category\.value/u);
   assert.match(announcementsView, /v-if="isAdmin"[\s\S]*:aria-label="t\('announcement\.newAnnouncement'\)"/u);
+  assert.match(announcementsView, /name: 'announcement-create'/u);
+  assert.match(issueBoard, /name: 'issue-create'[\s\S]*filter: activeFilter\.value/u);
   assert.match(issueComposer, /EntryComposerShell/u);
   assert.match(composerShell, /<AppButton[\s\S]{0,120}variant="icon"[\s\S]{0,240}name="close"/u);
   assert.match(composerShell, /<AppButton[\s\S]*type="submit"[\s\S]*variant="secondary"[\s\S]*class="entry-composer__action"/u);
   assert.doesNotMatch(issueComposer, /entry-composer__action button-contextual/u);
   assert.match(controls, /\.button-contextual \{[\s\S]*bg-surface[\s\S]*box-shadow: var\(--shadow-card\)/u);
   assert.doesNotMatch(controls, /\.button-dialog-close\b/u);
+  assert.match(desktopUtility, /class="desktop-utility-content/u);
+  assert.doesNotMatch(notificationsView, /embedded \? '[^']*\bpx-(?:5|8)\b/u);
+  assert.match(navigationStyles, /\.desktop-utility-content \{[\s\S]*clamp\(2\.5rem, 3vw, 3rem\)[\s\S]*padding: var\(--desktop-utility-padding\)/u);
+  assert.match(responsiveStyles, /\.dialog-surface\.surface-pad-lg \{[\s\S]*padding-top: calc\(var\(--panel-padding\) \+ 0\.375rem\)/u);
   assert.ok(settingsPanel.indexOf('issue.myProposal') < settingsPanel.indexOf('dashboard.statistics'));
   assert.ok(settingsPanel.indexOf('dashboard.statistics') < settingsPanel.indexOf('adminCenter.openManagement'));
   assert.ok(settingsPanel.indexOf('adminCenter.openManagement') < settingsPanel.indexOf('settings.restartApp'));
@@ -1900,7 +1923,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(confirmDialog, /<DialogShell[\s\S]*described-by="confirm-dialog-message"/u);
   assert.match(confirmDialog, /<DialogActionRow>[\s\S]*<AppButton/u);
   assert.match(confirmDialog, /<DialogHeading[\s\S]*description-id="confirm-dialog-message"/u);
-  assert.match(entryComposer, /<DialogShell[\s\S]*labelled-by="entry-composer-title"/u);
+  assert.match(entryComposer, /<SurfacePanel[\s\S]*aria-labelledby="entry-composer-title"/u);
   [compactMenu, issueMenu, facilityMenu].forEach((menu) => assert.match(menu, /<AdaptiveActionMenu/u));
   assert.match(issueMenu, /@click\.stop="toggle"/u);
   assert.doesNotMatch(issueMenu, /useDropdownPosition|useClickOutside/u);

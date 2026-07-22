@@ -1,4 +1,4 @@
-import { computed, reactive, ref, toRef, watch, type Ref } from 'vue';
+import { computed, reactive, ref, toRef, type Ref } from 'vue';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import { createFacility } from '@/services/facilities';
@@ -6,7 +6,7 @@ import { RATE_LIMITS } from '@/generated/rate-limits';
 import type { FacilityRecord } from '@/types';
 import { getDefaultFacilityCategoryId } from '@/composables/useCategories';
 
-export function useFacilityComposerForm(open: Ref<boolean>, initialCategoryId: Ref<string>, onClose: () => void, onSubmitted: (facility: FacilityRecord) => void) {
+export function useFacilityComposerForm(initialCategoryId: Ref<string>, onClose: () => void, onSubmitted: (facility: FacilityRecord) => void) {
   const selectedCategoryId = () => initialCategoryId.value || getDefaultFacilityCategoryId();
   const form = reactive({ categoryId: selectedCategoryId(), title: '', location: '', content: '' });
   const images = useMarkdownImageUpload(toRef(form, 'content'), { maxImages: RATE_LIMITS.imageUploads.facilityMaxImages });
@@ -18,8 +18,6 @@ export function useFacilityComposerForm(open: Ref<boolean>, initialCategoryId: R
   function reset() {
     form.categoryId = selectedCategoryId(); form.title = ''; form.location = ''; form.content = ''; error.value = ''; showPreview.value = false; images.resetImages();
   }
-  watch(open, (value) => { if (!value) reset(); else form.categoryId = selectedCategoryId(); });
-
   async function close() {
     if (submitting.value || images.uploading.value) return;
     try {
@@ -61,7 +59,7 @@ export function useFacilityComposerForm(open: Ref<boolean>, initialCategoryId: R
       uploaded = result.uploadedImages;
       feedback.update('facility.creatingFacilityReport');
       const facility = await createFacility({ categoryId: form.categoryId, title: form.title.trim(), location: form.location.trim(), content: result.content });
-      reset(); onSubmitted(facility); onClose(); feedback.succeed('facility.facilityReportSubmitted');
+      reset(); onSubmitted(facility); feedback.succeed('facility.facilityReportSubmitted');
     } catch (caught) {
       if (uploaded.length) await images.deleteUploadedImages(uploaded);
       error.value = caught instanceof Error ? caught.message : 'facility.sendingFailed';

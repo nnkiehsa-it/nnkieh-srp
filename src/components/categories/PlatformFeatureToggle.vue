@@ -1,5 +1,21 @@
 <template>
-  <SurfacePanel variant="control" padding="sm">
+  <ListSurfaceRow
+    v-if="compact"
+    interactive
+    role="switch"
+    class="!min-h-10 !w-auto !gap-2 !p-0"
+    :title="t(description)"
+    :aria-label="t(label)"
+    :aria-checked="enabled"
+    :aria-disabled="disabled || undefined"
+    :disabled="disabled || undefined"
+    :class="disabled ? 'opacity-60' : ''"
+    @click="emit('toggle')"
+  >
+    <span class="whitespace-nowrap text-sm font-semibold text-ink-800 dark:text-ink-100">{{ t(label) }}</span>
+    <SwitchIndicator :checked="enabled" />
+  </ListSurfaceRow>
+  <SurfacePanel v-else variant="control" padding="sm">
     <ListSurfaceRow
       interactive
       role="switch"
@@ -25,6 +41,7 @@ import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
 import { useI18n } from '@/i18n';
 
 defineProps<{
+  compact?: boolean;
   description: string;
   disabled?: boolean;
   enabled: boolean;

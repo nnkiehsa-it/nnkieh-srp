@@ -1,4 +1,4 @@
-import { reactive, ref, toRef, watch, type Ref } from 'vue';
+import { reactive, ref, toRef, type Ref } from 'vue';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
@@ -12,7 +12,7 @@ interface IssueComposerFormOptions {
   onSubmitted: (issue: IssueRecord) => void;
 }
 
-export function useIssueComposerForm(open: Ref<boolean>, options: IssueComposerFormOptions) {
+export function useIssueComposerForm(options: IssueComposerFormOptions) {
   const { user } = useSession();
   const { show, start } = useActionFeedback();
   const form = reactive({
@@ -37,12 +37,6 @@ export function useIssueComposerForm(open: Ref<boolean>, options: IssueComposerF
   const submitting = ref(false);
   const showPreview = ref(false);
   const error = ref('');
-
-  watch(open, (isOpen) => {
-    if (!isOpen) {
-      resetForm();
-    }
-  });
 
   function resetForm() {
     form.title = '';
@@ -103,7 +97,6 @@ export function useIssueComposerForm(open: Ref<boolean>, options: IssueComposerF
 
       resetForm();
       options.onSubmitted(issue);
-      options.onClose();
       feedbackHandle.succeed('issue.proposalHasBeenSent');
     } catch (caught) {
       if (uploadedImages.length) {

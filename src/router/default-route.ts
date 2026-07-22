@@ -1,8 +1,8 @@
 import { getDefaultIssueRouteFilter } from '@/constants/categories';
 import { getPlatformFeaturesSnapshot } from '@/composables/useCategories';
 
-const ISSUE_ROUTE_NAMES = new Set(['issue-detail', 'issues']);
-const FACILITY_ROUTE_NAMES = new Set(['facilities', 'facility-detail']);
+const ISSUE_ROUTE_NAMES = new Set(['issue-create', 'issue-detail', 'issues']);
+const FACILITY_ROUTE_NAMES = new Set(['facilities', 'facility-create', 'facility-detail']);
 
 export function getDefaultAuthenticatedRoute() {
   const features = getPlatformFeaturesSnapshot();

@@ -4,7 +4,6 @@
     v-model:location="form.location"
     v-model:content="form.content"
     v-model:show-preview="showPreview"
-    :open="open"
     eyebrow="facility.reportAFacilityIssue"
     title="facility.addFacilityReport"
     title-input-id="facility-title"
@@ -56,12 +55,11 @@ import type { FacilityRecord } from '@/types';
 import { useCategories } from '@/composables/useCategories';
 import { useI18n } from '@/i18n';
 
-const props = defineProps<{ categoryId: string; open: boolean }>();
+const props = defineProps<{ categoryId: string }>();
 const emit = defineEmits<{ close: []; submitted: [facility: FacilityRecord] }>();
 const { activeFacilityCategories } = useCategories();
 const { t } = useI18n();
 const { editorImages, error, form, images, showPreview, submitting, close, submit } = useFacilityComposerForm(
-  toRef(props, 'open'),
   toRef(props, 'categoryId'),
   () => emit('close'),
   (facility) => emit('submitted', facility),

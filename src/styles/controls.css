@@ -174,6 +174,12 @@
     width: 2rem;
   }
 
+  .segmented-control__button--equal {
+    flex: 1 1 0;
+    padding-inline: 0.75rem;
+    width: auto;
+  }
+
   .tag {
     @apply inline-flex items-center gap-1.5 border-0 bg-ink-100/80 text-xs font-semibold tracking-[0.01em] text-ink-600 shadow-control dark:bg-ink-800/70 dark:text-ink-300 rounded-full;
     padding: 0.25rem 0.625rem;

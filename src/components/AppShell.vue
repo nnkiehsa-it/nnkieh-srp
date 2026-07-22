@@ -123,9 +123,10 @@ useVisualViewport();
 
 // Wait for role/bootstrap so login does not flash nav chrome with an unseeded home route.
 const showAuthenticatedChrome = computed(() => isAllowedUser.value && !roleLoading.value);
-const isIssueRouteActive = computed(() => route.name === 'issues' || route.name === 'issue-detail');
-const isAnnouncementRouteActive = computed(() => route.name === 'announcements' || route.name === 'announcement-detail');
-const isFacilityRouteActive = computed(() => route.name === 'facilities' || route.name === 'facility-detail');
+const isIssueRouteActive = computed(() => ['issue-create', 'issue-detail', 'issues'].includes(route.name as string));
+const isAnnouncementRouteActive = computed(() => ['announcement-create', 'announcement-detail', 'announcements'].includes(route.name as string));
+const isFacilityRouteActive = computed(() => ['facilities', 'facility-create', 'facility-detail'].includes(route.name as string));
+const isComposerRoute = computed(() => ['announcement-create', 'facility-create', 'issue-create'].includes(route.name as string));
 const isMyProposalsRouteActive = computed(() => isIssueRouteActive.value && activeFilter.value === 'my-proposals');
 const isProfileRouteActive = computed(() => isMyProposalsRouteActive.value || ['settings', 'dashboard', 'administration'].includes(route.name as string));
 const homeRoute = computed(() => getDefaultAuthenticatedRoute());
@@ -162,7 +163,7 @@ const mobileCategoryLabel = computed(() => mobileCategoryFilter.value
   ? getIssueCategoryLabel(mobileCategoryFilter.value)
   : undefined);
 const bottomGap = computed(() => hasSafeIndicator.value ? 25 : 15);
-const showMobileBottomNavigation = computed(() => showAuthenticatedChrome.value);
+const showMobileBottomNavigation = computed(() => showAuthenticatedChrome.value && !isComposerRoute.value);
 const rootStyle = computed(() => ({
   '--app-bottom-nav-height': showMobileBottomNavigation.value
     ? `${bottomGap.value + MOBILE_NAV_HEIGHT + 6}px`
@@ -177,6 +178,9 @@ const activeMobileNavKey = computed(() => {
   return '';
 });
 const mobileHeaderTitle = computed(() => {
+  if (route.name === 'issue-create') return t('issue.startANewProposal');
+  if (route.name === 'facility-create') return t('facility.reportAFacilityIssue');
+  if (route.name === 'announcement-create') return t('announcement.newAnnouncement');
   if (route.name === 'issue-detail') return t(isMyProposalsRouteActive.value ? 'issue.myProposal' : 'issue.proposalContent');
   if (route.name === 'facility-detail') return t('facility.facility');
   if (route.name === 'announcement-detail') return t('announcement.announcementContent');
@@ -189,9 +193,12 @@ const mobileHeaderTitle = computed(() => {
   if (isMyProposalsRouteActive.value) return t('issue.myProposal');
   return t('issue.proposal');
 });
-const showMobileBackButton = computed(() => ['issue-detail', 'facility-detail', 'announcement-detail', 'dashboard', 'administration'].includes(route.name as string) || isMyProposalsRouteActive.value);
+const showMobileBackButton = computed(() => ['issue-create', 'issue-detail', 'facility-create', 'facility-detail', 'announcement-create', 'announcement-detail', 'dashboard', 'administration'].includes(route.name as string) || isMyProposalsRouteActive.value);
 const routeAnnouncement = ref('');
 const mobileBackLabel = computed(() => {
+  if (route.name === 'announcement-create') return t('announcement.returnToAnnouncementList');
+  if (route.name === 'facility-create') return t('facility.backToFacilityList');
+  if (route.name === 'issue-create') return t('issue.returnToProposalList');
   if (route.name === 'dashboard') return t('navigation.returnMy');
   if (route.name === 'administration') return t('navigation.returnMy');
   if (route.name === 'issue-detail' && isMyProposalsRouteActive.value) return t('issue.returnToMyProposal');
@@ -267,6 +274,9 @@ function handleSidebarKeydown(event: KeyboardEvent) {
 
 async function handleMobileBack() {
   if (returnToNavigationOrigin(router)) return;
+  if (route.name === 'announcement-create') return void await router.replace({ name: 'announcements' });
+  if (route.name === 'facility-create') return void await router.replace({ name: 'facilities', query: route.query });
+  if (route.name === 'issue-create') return void await router.replace({ name: 'issues', params: { filter: activeFilter.value } });
   if (route.name === 'announcement-detail') return void await router.replace({ name: 'announcements' });
   if (route.name === 'facility-detail') return void await router.replace({ name: 'facilities' });
   if (route.name === 'issue-detail') {

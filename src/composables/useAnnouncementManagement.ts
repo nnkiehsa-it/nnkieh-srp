@@ -6,14 +6,11 @@ import { useNetworkStatus } from '@/composables/useNetworkStatus';
 import { useSession } from '@/composables/useSession';
 import { useActionFeedback } from '@/composables/useActionFeedback';
 import {
-  createAnnouncement,
   deleteAnnouncement,
   fetchAnnouncementRecordById,
   setAnnouncementLike,
 } from '@/services/announcements';
 import { subscribeContentRealtimeEvents } from '@/services/realtime-events';
-import { deleteUploadedImages } from '@/services/uploads';
-import type { UploadedImage } from '@/composables/useImageUpload';
 import type { AnnouncementRecord } from '@/types';
 import { isContentUnavailableError } from '@/services/issues-core';
 import {
@@ -51,11 +48,8 @@ export function useAnnouncementManagement() {
     refreshAnnouncements,
     resetAnnouncements,
   } = useAnnouncements({ cacheScope: announcementCacheScope });
-  const composerError = ref('');
-  const composerOpen = ref(false);
   const liking = ref(false);
   const likingAnnouncementId = ref('');
-  const saving = ref(false);
   const deleting = ref(false);
   const deletePendingAnnouncement = ref<AnnouncementRecord | null>(null);
   const sessionLoading = computed(() => authLoading.value || !initialized.value);
@@ -75,34 +69,6 @@ export function useAnnouncementManagement() {
       params: { announcementId: announcement.id },
       query: initialTab === 'comments' ? { tab: 'comments' } : undefined,
     });
-  }
-
-  function openComposer() {
-    composerError.value = '';
-    composerOpen.value = true;
-  }
-
-  function closeComposer() {
-    if (saving.value) return;
-    composerOpen.value = false;
-  }
-
-  async function publishAnnouncement(payload: { title: string; content: string; uploadedImages: UploadedImage[] }) {
-    saving.value = true;
-    composerError.value = '';
-    const feedbackHandle = start('announcement.publishingAnnouncement');
-    try {
-      const announcement = await createAnnouncement(payload);
-      upsertAnnouncement(announcement);
-      composerOpen.value = false;
-      feedbackHandle.succeed('announcement.announcementHasBeenReleased');
-    } catch (caught) {
-      await deleteUploadedImages(payload.uploadedImages.map((image) => image.storagePath)).catch(() => undefined);
-      composerError.value = caught instanceof Error ? caught.message : 'announcement.announcementPublishingFailed';
-      feedbackHandle.fail(composerError.value);
-    } finally {
-      saving.value = false;
-    }
   }
 
   function handleListDelete(announcement: AnnouncementRecord) {
@@ -258,20 +224,14 @@ export function useAnnouncementManagement() {
     hasMore,
     loadMoreAnnouncements,
     refreshAnnouncements: () => refreshAnnouncementList({ force: true }),
-    composerError,
-    composerOpen,
     liking,
     likingAnnouncementId,
-    saving,
     deleting,
     deletePendingAnnouncement,
     sessionLoading,
     isAdmin,
     isAllowedUser,
     openAnnouncementDetails,
-    openComposer,
-    closeComposer,
-    publishAnnouncement,
     handleListDelete,
     closeDeleteDialog,
     confirmDelete,

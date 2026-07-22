@@ -58,7 +58,7 @@
 - `styles/navigation.css` — 桌面側欄與手機底部導覽
 - `styles/content.css` / `responsive.css` — 列表、設定、統計、Dialog 與跨裝置覆寫
 - `assets/fonts/` — JetBrains Mono 與 Material Symbols 子集
-- `router/index.ts` / `router/default-route.ts` / `router/route-components.ts` / `router/navigation-hierarchy.ts` — 組合 modules、依啟用功能選擇登入預設頁並阻擋已關閉入口、abort 上一頁、session guard、主要頁面 chunk 預載，以及 root／子頁／巢狀詳情深度、轉場方向與通知來源返回
+- `router/index.ts` / `router/default-route.ts` / `router/route-components.ts` / `router/navigation-hierarchy.ts` — 組合 modules、依啟用功能選擇登入預設頁並阻擋已關閉入口、abort 上一頁、session guard、主要頁面與三領域新增頁 chunk 預載，以及 root／新增／子頁／巢狀詳情深度、轉場方向與通知來源返回
 - `router/authRoutes.ts` / `issueRoutes.ts` / `facilityRoutes.ts` / `announcementRoutes.ts` / `adminRoutes.ts` / `notificationRoutes.ts` / `settingsRoutes.ts`
 - `views/LoginView.vue` — 登入
 - `views/IssueBoardView.vue` — 提案看板
@@ -69,9 +69,9 @@
 - `views/NotificationsView.vue` — 通知頁
 - `views/SettingsView.vue` — 設定頁（手機）
 - `views/DashboardView.vue` — 管理員統計
-- `views/AdministrationView.vue` — 單一系統設定中心，以大型選項卡切換分類／流程與人員／權限兩個操作階段；舊 `/admin/access`、`/admin/categories` 會導向對應區段
-- `components/admin/CategoryWorkflowPanel.vue` / `MemberAccessPanel.vue` / `MemberAccessRow.vue` / `MemberAccessListSkeleton.vue` / `CategoryWizardDialog.vue` — 先選提案／設備分類類型，再顯示對應功能開關與分類草稿並由單一按鈕原子儲存；人員權限先選分類／功能、只列出現有負責人，再以完整 Email／UID 查找並以共用成員列與載入骨架呈現／指派；平台總管理員只由 `ADMIN_EMAILS` 同步，不混入分類負責人名單，也不提供 UI 或一般權限 API 修改入口
-- `components/categories/CategoryManagementSection.vue` / `SetupCategorySection.vue` / `CategorySelectorList.vue` / `CategoryEditorCard.vue` / `PlatformFeatureToggle.vue` — 初始設定與後續管理共用圓角分類選擇清單，一次選取並編輯一個分類的規則表單，以及共用的提案與設備功能開關
+- `views/AdministrationView.vue` — 單一系統設定中心，以頁面層級文字 Tabs 切換分類／流程與人員／權限，避免和內容選擇控制混淆；舊 `/admin/access`、`/admin/categories` 會導向對應區段
+- `components/admin/CategoryWorkflowPanel.vue` / `MemberAccessPanel.vue` / `MemberAccessRow.vue` / `MemberAccessListSkeleton.vue` / `CategoryWizardDialog.vue` — 以等寬膠囊 Tabs 切換提案／設備，功能開關與分類草稿由單一按鈕原子儲存；草稿關閉功能時鎖定該功能的分類編輯，尚未儲存前不影響前台；人員權限先選分類／功能、只列出現有負責人，再以完整 Email／UID 查找並以共用成員列與載入骨架呈現／指派；平台總管理員只由 `ADMIN_EMAILS` 同步，不混入分類負責人名單，也不提供 UI 或一般權限 API 修改入口
+- `components/categories/CategoryManagementSection.vue` / `SetupCategorySection.vue` / `CategorySelectorList.vue` / `CategoryEditorCard.vue` / `PlatformFeatureToggle.vue` — 初始設定與後續管理共用可橫向捲動的手機分類選擇清單、單一分類規則表單、目前分類的預設／啟用 Switch，以及提案與設備功能開關
 - `views/SetupView.vue` / `components/LanguageSelector.vue` / `components/categories/SetupCategorySection.vue` — ADMIN_EMAILS 首次設定依序確認系統語言、啟用功能與其分類；只驗證啟用功能的必填資料，未完成時停用送出，相同語言選擇器亦供設定頁覆用
 
 ---
@@ -85,7 +85,7 @@
 - `organisms/ViewportFrame.vue` / `organisms/RoutePageFrame.vue` — AppShell 的 viewport gutter／safe-area 寬度與 route page 的 max-width、全高 flex、垂直 padding、底部導覽安全距離入口；route view 不自行計算 viewport 或拼裝頁面骨架
 - `organisms/ContentCardCollection.vue` / `ContentCardShell.vue` / `ContentCardSkeleton.vue` — 提案、公告、設備共用的列表狀態、卡片表面、作者／標題／時間／狀態與操作區；支援不取代可見入口的長按／右鍵快捷操作；列表與 load-more 骨架共用無陰影內層的 opacity 進場（`skeleton-card`／`skeleton-enter`），保留卡片陰影並避免 iOS WebKit 卸載殘影，領域元件只填資料及差異 slots
 - `organisms/DetailRouteState.vue` / `DetailPageShell.vue` / `SkeletonDetail.vue` — 三領域詳情共用的完整高度鏈、狀態、操作與 responsive panel
-- `organisms/EntryComposerShell.vue` / `MarkdownImageEditor.vue` / `VisualTableEditor.vue` — 三領域 Composer 與 Markdown／表格編輯流程；較小控制留在 molecules
+- `organisms/EntryComposerShell.vue` / `MarkdownImageEditor.vue` / `VisualTableEditor.vue` — 三領域共用的路由新增頁、鍵盤可視高度、未儲存離頁攔截與 Markdown／表格編輯流程；較小控制留在 molecules
 - `organisms/DialogShell.vue` / `AdaptiveActionMenu.vue` — Dialog overlay、card surface、scroll lock、focus trap、ARIA、返回鍵堆疊與 dismiss/persistent 行為的唯一完整外殼；一般浮層在手機自適應為可向下拖曳的 Bottom Sheet，選單共用同一份 slots 並在桌面使用 Dropdown、手機使用 Sheet；領域元件只填內容與 actions
 
 ---
@@ -94,7 +94,8 @@
 
 - Shell：`AppShell.vue`（共用導覽狀態、返回、捲動記憶與桌面 utility popup）、`app-shell/AppDesktopSidebar.vue`、`app-shell/AppMobileHeader.vue`、`app-shell/AppMobileBottomNav.vue`、`app-shell/types.ts`、`AppStartupScreen.vue`、`LoginPanel.vue`、`ActionFeedbackBar.vue`
 - 設定／通知：`SettingsPanelContent.vue`、`DesktopUtilityDialog.vue`；手機與深層連結保留獨立路由頁，桌面側欄的通知與頭像分別開啟各自尺寸與內容的獨立大型 popup
-- Dialog：`ConfirmDialog`、`AppInstallPromptDialog`、`AppUpdatePromptDialog`、`PushPermissionPromptDialog`、`IssueComposer`、`FacilityComposer`、`FacilityStatusDialog`、`AnnouncementComposerDialog`、`IssueReviewDialog`、`IssueStatusDialog`
+- 新增頁：`IssueComposer`、`FacilityComposer`、`AnnouncementComposer` 搭配 `views/IssueComposerView.vue`、`FacilityComposerView.vue`、`AnnouncementComposerView.vue`；手機隱藏 Bottom Nav、桌面限制編輯寬度，送出後 replace 至新內容詳情
+- Dialog：`ConfirmDialog`、`AppInstallPromptDialog`、`AppUpdatePromptDialog`、`PushPermissionPromptDialog`、`FacilityStatusDialog`、`IssueReviewDialog`、`IssueStatusDialog`
 - 留言：`CommentThreadPanel`、`CommentItem`、`CommentComposer`、`IssueComments`、`AnnouncementComments`
 - 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`
 - 詳情內容：`ContentDetailPagePanel` / `ContentDetailBody` — 提案、公告、設備共用完整 DetailPageShell、標題、作者、補充訊息與 Markdown 內容排版；留言、操作與領域標籤以 slots 注入

@@ -13,7 +13,7 @@
   >
     <section
       ref="dialogRef"
-      class="surface-card"
+      class="dialog-surface surface-card"
       :class="[paddedSurface ? 'surface-pad-lg' : '', surfaceClass, { 'bottom-sheet-surface': isSheet, 'bottom-sheet-surface--dragging': dragging }]"
       data-dialog-root
       :role="role"
