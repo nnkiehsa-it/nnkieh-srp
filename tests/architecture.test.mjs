@@ -1310,7 +1310,7 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(responsiveStyles, /padding-left: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-left\)\)/u);
   assert.match(responsiveStyles, /padding-right: max\(var\(--dialog-safe-padding, 1rem\), env\(safe-area-inset-right\)\)/u);
   assert.match(composerShell, /entry-composer__scroll/u);
-  assert.match(responsiveStyles, /\.entry-composer__scroll \{[\s\S]*margin-inline: -0\.5rem;[\s\S]*padding-inline: 0\.5rem;/u);
+  assert.match(responsiveStyles, /\.entry-composer__scroll \{[\s\S]*margin-inline: 0;[\s\S]*padding-inline: 0\.5rem;/u);
   assert.match(responsiveStyles, /\.entry-composer__footer \{/u);
   assert.match(responsiveStyles, /\.entry-composer__actions \{/u);
   assert.match(responsiveStyles, /\.entry-composer__action \{[\s\S]*height: var\(--control-height\);[\s\S]*font-weight: 600;/u);
@@ -1357,15 +1357,15 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
 
   assert.doesNotMatch(app, /Transition name="page-content"/u);
   assert.doesNotMatch(app, /flex-1 overflow-x-hidden/u);
-  assert.match(appShell, /app-main-content relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden/u);
+  assert.match(appShell, /app-main-content relative flex flex-1 flex-col overflow-auto/u);
   assert.match(appShell, /<AppMobileHeader[\s\S]*<ViewportFrame as="main"[\s\S]*<slot \/>/u);
-  assert.match(issueBoard, /overflow-y-auto overflow-x-hidden overscroll-contain/u);
+  assert.match(issueBoard, /overflow-auto overscroll-contain/u);
   assert.match(issueBoard, /<section class="relative flex min-h-0 flex-1 flex-col gap-5">/u);
-  assert.match(issueBoardView, /v-else-if="sessionLoading"[\s\S]*flex min-h-0 flex-1 flex-col gap-5[\s\S]*route-scroll-through[\s\S]*overflow-y-auto overflow-x-hidden/u);
+  assert.match(issueBoardView, /v-else-if="sessionLoading"[\s\S]*flex min-h-0 flex-1 flex-col gap-5[\s\S]*route-scroll-through[\s\S]*overflow-auto/u);
   // Session skeleton and IssueBoard must be exclusive; concurrent mount leaves residual card shadows.
   assert.match(issueBoardView, /<IssueBoard[\s\S]*v-else-if="isAllowedUser"/u);
   assert.doesNotMatch(issueBoardView, /<IssueBoard[\s\S]*v-if="isAllowedUser"/u);
-  assert.match(facilitiesView, /overflow-y-auto overflow-x-hidden overscroll-contain/u);
+  assert.match(facilitiesView, /overflow-auto overscroll-contain/u);
   assert.match(app, /requestIdleCallback/u);
   assert.match(app, /preloadPrimaryRouteComponents/u);
   assert.match(appShell, /@pointerover\.capture="handleNavigationIntent"/u);
@@ -1401,8 +1401,8 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.doesNotMatch(baseStyles, /\.app-root\[data-bottom-nav='true'\] \.route-content-frame \{[\s\S]*padding-bottom/u);
   assert.match(primitives, /\.route-page-frame--flow,[\s\S]*\.route-page-frame--bottom-safe \{\s*padding-bottom: max\(0px, calc\(var\(--app-bottom-nav-height\) \+ var\(--app-bottom-nav-gap\) - 0\.375rem\)\);/u);
   assert.match(primitives, /\.route-scroll-through \{[\s\S]*scroll-padding-bottom: calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
-  assert.match(issueBoard, /route-scroll-through[\s\S]*overflow-y-auto/u);
-  assert.match(facilitiesView, /route-scroll-through[\s\S]*overflow-y-auto/u);
+  assert.match(issueBoard, /route-scroll-through[\s\S]*overflow-auto/u);
+  assert.match(facilitiesView, /route-scroll-through[\s\S]*overflow-auto/u);
   assert.doesNotMatch(baseStyles, /\.app-root\[data-bottom-nav='true'\] \.app-main-content \{[\s\S]{0,160}calc\(var\(--app-bottom-nav-height\) \+ 1rem\)/u);
   assert.match(baseStyles, /\.route-fade-enter-active \{[\s\S]*opacity 220ms[\s\S]*will-change: opacity/u);
   assert.match(baseStyles, /\.route-fade-leave-active \{[\s\S]*opacity 160ms[\s\S]*will-change: opacity/u);
@@ -1746,11 +1746,14 @@ test('navigation and contextual creation share the same responsive information a
   assert.match(navigationStyles, /\.desktop-utility-content \{[\s\S]*clamp\(1rem, 1\.5vw, 1\.25rem\)[\s\S]*padding: var\(--desktop-utility-padding\)/u);
   assert.match(navigationStyles, /\.desktop-utility-scroll,[\s\S]*\.settings-scroll \{[\s\S]*padding: 0\.375rem/u);
   [issueComposerView, facilityComposerView, announcementComposerView]
-    .forEach((view) => assert.match(view, /<RoutePageFrame[^>]*bleed[^>]*layout="fill"[^>]*entry-composer-page/u));
+    .forEach((view) => {
+      assert.match(view, /<RoutePageFrame[^>]*layout="fill"[^>]*entry-composer-page/u);
+      assert.doesNotMatch(view, /\bbleed\b/u);
+    });
   assert.match(responsiveStyles, /\.entry-composer-page \{[\s\S]*max-width: none/u);
   assert.match(responsiveStyles, /\.entry-composer-page__surface \{[\s\S]*border-radius: 0;[\s\S]*box-shadow: none/u);
   assert.match(responsiveStyles, /@media \(min-width: 640px\) \{[\s\S]*\.entry-composer__footer \{[\s\S]*padding-bottom: 0\.375rem;/u);
-  assert.match(responsiveStyles, /@media \(max-width: 767px\) \{[\s\S]*\.entry-composer-page__surface \{[\s\S]*padding-bottom: max\(0\.75rem, calc\(env\(safe-area-inset-bottom\) - 1rem\)\);[\s\S]*padding-left: max\(1rem, env\(safe-area-inset-left\)\);[\s\S]*padding-right: max\(1rem, env\(safe-area-inset-right\)\);/u);
+  assert.match(responsiveStyles, /@media \(max-width: 767px\) \{[\s\S]*\.entry-composer-page__surface \{[\s\S]*padding-bottom: max\(0\.75rem, calc\(env\(safe-area-inset-bottom\) - 1rem\)\);[\s\S]*padding-left: 0;[\s\S]*padding-right: 0;/u);
   assert.match(appShell, /'--app-bottom-nav-gap':[\s\S]*bottomGap\.value/u);
   assert.match(primitives, /\.route-page-frame--bottom-safe \{[\s\S]*padding-bottom: max\(0px, calc\(var\(--app-bottom-nav-height\) \+ var\(--app-bottom-nav-gap\) - 0\.375rem\)\);/u);
   assert.match(responsiveStyles, /\.dialog-surface\.surface-pad-lg \{[\s\S]*padding-top: calc\(var\(--panel-padding\) \+ 0\.375rem\)/u);
@@ -1793,17 +1796,20 @@ test('authenticated route pages share one content width and AppShell owns horizo
 
   const baseStyles = await read('src/styles/base.css');
   assert.match(baseStyles, /--app-content-max-width: 80rem;/u);
-  assert.match(baseStyles, /--app-viewport-gutter: 1\.5rem;/u);
-  assert.match(primitives, /\.viewport-frame \{[\s\S]*--viewport-shadow-bleed:[\s\S]*margin-left: calc\(max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\) - var\(--viewport-shadow-bleed\)\);[\s\S]*padding-left: var\(--viewport-shadow-bleed\);[\s\S]*width: auto;/u);
-  assert.match(contentStyles, /\.scroll-shadow-bleed--compact \{[\s\S]*margin-inline:[\s\S]*padding-inline:/u);
+  assert.match(baseStyles, /--app-viewport-gutter: 1rem;/u);
+  assert.match(primitives, /\.viewport-frame \{[\s\S]*margin-inline: 0;[\s\S]*padding-left: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\);[\s\S]*padding-right: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-right\)\);[\s\S]*width: 100%;/u);
+  assert.doesNotMatch(primitives, /viewport-shadow-bleed|\.viewport-frame \{[\s\S]{0,300}margin-(?:left|right): calc/u);
+  assert.match(contentStyles, /\.scroll-shadow-space--compact \{[\s\S]*margin-inline: 0;[\s\S]*padding-inline:/u);
   assert.match(primitives, /\.viewport-floating-inline \{[\s\S]*left: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\);[\s\S]*right: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-right\)\);/u);
   assert.match(primitives, /\.route-page-frame \{[\s\S]*max-width: var\(--app-content-max-width\);[\s\S]*min-width: 0;[\s\S]*width: 100%;/u);
   assert.match(primitives, /\.route-page-frame--fill \{[\s\S]*flex: 1 1 0%;[\s\S]*height: 100%;[\s\S]*min-height: 0;/u);
-  assert.match(primitives, /\.route-page-frame--bleed \{[\s\S]*margin-left:[\s\S]*margin-right:[\s\S]*max-width: none;[\s\S]*width: calc/u);
+  assert.doesNotMatch(primitives, /route-page-frame--bleed|route-page-bleed/u);
   assert.match(primitives, /\.route-page-frame--bottom-safe \{[\s\S]*padding-bottom: 1rem/u);
   assert.doesNotMatch(baseStyles, /\.app-viewport-frame/u);
-  assert.match(viewportFrame, /class="viewport-frame"[\s\S]*'viewport-content': content/u);
-  assert.match(routePageFrame, /class="route-page-frame"[\s\S]*route-page-frame--\$\{layout\}[\s\S]*route-page-frame--padding-\$\{padding\}[\s\S]*route-page-frame--bleed/u);
+  assert.match(viewportFrame, /class="viewport-frame"/u);
+  assert.doesNotMatch(viewportFrame, /viewport-content|content\?:/u);
+  assert.match(routePageFrame, /class="route-page-frame"[\s\S]*route-page-frame--\$\{layout\}[\s\S]*route-page-frame--padding-\$\{padding\}/u);
+  assert.doesNotMatch(routePageFrame, /bleed/u);
   assert.match(appShell, /<ViewportFrame as="main" class="flex min-h-0 flex-1 flex-col">/u);
   assert.match(mobileHeader, /<ViewportFrame/u);
   assert.doesNotMatch(mobileHeader, /mx-auto|max-w-/u);
@@ -1814,12 +1820,12 @@ test('authenticated route pages share one content width and AppShell owns horizo
   routePages.forEach((page) => assert.doesNotMatch(page, /app-viewport-gutter|safe-area-inset-(?:left|right)/u));
   routePages.slice(7).forEach((page) => assert.match(page, /<RoutePageFrame as="div" bottom-safe layout="fill">/u));
   assert.doesNotMatch(issueBoard, /app-viewport-gutter/u);
-  assert.match(appShell, /app-main-content[^"\n]*overflow-y-auto overflow-x-hidden/u);
+  assert.match(appShell, /app-main-content[^"\n]*overflow-auto/u);
   assert.doesNotMatch(contentStyles, /\.issue-card-grid \{[^}]*padding:/u);
-  assert.match(contentStyles, /\.scroll-shadow-bleed \{[\s\S]*--scroll-shadow-bleed: 1\.5rem/u);
-  assert.match(contentStyles, /\.scroll-shadow-bleed \{[\s\S]*margin-left: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*margin-top: calc\(var\(--scroll-shadow-bleed\) \* -1\);[\s\S]*padding-left: var\(--scroll-shadow-bleed\);[\s\S]*padding-top: var\(--scroll-shadow-bleed\);/u);
+  assert.match(contentStyles, /\.scroll-shadow-space \{[\s\S]*--scroll-shadow-space: 0\.625rem[\s\S]*margin: 0;[\s\S]*padding-left: var\(--scroll-shadow-space\);[\s\S]*padding-top: var\(--scroll-shadow-space\);/u);
+  assert.doesNotMatch(contentStyles, /scroll-shadow-(?:space|bleed)[\s\S]{0,220}calc\(var\(--scroll-shadow-(?:space|bleed)\) \* -1\)/u);
   [issueBoard, routePages[1]]
-    .forEach((page) => assert.match(page, /scroll-shadow-bleed[\s\S]*overflow-y-auto overflow-x-hidden/u));
+    .forEach((page) => assert.match(page, /scroll-shadow-space[\s\S]*overflow-auto/u));
   assert.match(emptyState, /class="flex w-full min-w-0/u);
   // Empty boards must not paint a card-elevation icon tile that looks like a residual skeleton card.
   assert.match(emptyState, /<IconTile[\s\S]*elevation="none"/u);
@@ -1827,7 +1833,7 @@ test('authenticated route pages share one content width and AppShell owns horizo
   assert.match(feedbackBar, /action-feedback-card[\s\S]*min-h-14 w-full/u);
   assert.match(contentStyles, /\.settings-scroll--flat \{[\s\S]*@apply overflow-visible px-0 py-3/u);
   assert.match(settingsPanel, /flat \? 'settings-panel--flat overflow-visible' : 'overflow-hidden'/u);
-  assert.match(settingsPanel, /flat[\s\S]*\? 'settings-scroll--flat overflow-visible'[\s\S]*: 'overflow-x-hidden overflow-y-auto'/u);
+  assert.match(settingsPanel, /flat[\s\S]*\? 'settings-scroll--flat overflow-visible'[\s\S]*: 'overflow-auto'/u);
   assert.doesNotMatch(settingsPanel, /settings-scroll min-h-0 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto/u);
   assert.doesNotMatch(routePages[3], /px-0\.5|sm:px-1/u);
   assert.doesNotMatch(routePages[4], /:class="\{ 'px-1': true \}"/u);

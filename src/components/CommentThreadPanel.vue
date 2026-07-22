@@ -19,7 +19,7 @@
 
     <div
       ref="scrollContainerRef"
-      class="scroll-shadow-bleed--compact min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-2 overscroll-contain"
+      class="scroll-shadow-space--compact min-h-0 flex-1 overflow-auto py-2 overscroll-contain"
     >
       <SkeletonCommentList v-if="visibleLoading" />
 

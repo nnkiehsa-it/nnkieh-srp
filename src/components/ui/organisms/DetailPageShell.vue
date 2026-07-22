@@ -26,7 +26,7 @@
         :class="{ 'md:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]': showComments }"
       >
         <div class="flex min-h-0 min-w-0 flex-col px-5 py-5 pr-6">
-          <div class="scroll-shadow-bleed--compact min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+          <div class="scroll-shadow-space--compact min-h-0 flex-1 overflow-auto overscroll-contain">
             <slot name="details" :compact="false" :scroll-content="false" />
           </div>
           <div class="shrink-0 bg-surface dark:bg-surface">
@@ -46,7 +46,7 @@
 
     <article
       v-else
-      class="flex h-full min-h-0 flex-col overflow-hidden md:hidden"
+      class="flex h-full min-h-0 flex-col overflow-visible md:hidden"
       :aria-label="t(detailsLabel)"
     >
       <header class="flex shrink-0 items-start gap-3 px-0 py-3">
@@ -71,14 +71,14 @@
         />
       </header>
 
-      <div class="detail-tab-stage relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div class="detail-tab-stage relative flex min-h-0 flex-1 flex-col overflow-visible">
         <Transition name="detail-tab">
           <div
             v-if="!showComments || activeTab === 'details'"
             key="details"
             class="flex min-h-0 flex-1 flex-col border-t border-ink-100/70 dark:border-ink-800/70"
           >
-            <div class="scroll-shadow-bleed--compact min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 overscroll-contain">
+            <div class="scroll-shadow-space--compact min-h-0 flex-1 overflow-auto py-3 overscroll-contain">
               <slot name="details" :compact="true" :scroll-content="false" />
             </div>
             <div class="shrink-0 px-0">

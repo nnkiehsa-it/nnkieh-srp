@@ -4,20 +4,18 @@
     @apply overflow-visible border-0 bg-transparent;
   }
 
-  .scroll-shadow-bleed {
-    --scroll-shadow-bleed: 1.5rem;
-    margin-left: calc(var(--scroll-shadow-bleed) * -1);
-    margin-right: calc(var(--scroll-shadow-bleed) * -1);
-    margin-top: calc(var(--scroll-shadow-bleed) * -1);
-    padding-left: var(--scroll-shadow-bleed);
-    padding-right: var(--scroll-shadow-bleed);
-    padding-top: var(--scroll-shadow-bleed);
+  .scroll-shadow-space {
+    --scroll-shadow-space: 0.625rem;
+    margin: 0;
+    padding-left: var(--scroll-shadow-space);
+    padding-right: var(--scroll-shadow-space);
+    padding-top: var(--scroll-shadow-space);
   }
 
-  .scroll-shadow-bleed--compact {
-    --scroll-shadow-bleed: 0.375rem;
-    margin-inline: calc(var(--scroll-shadow-bleed) * -1);
-    padding-inline: var(--scroll-shadow-bleed);
+  .scroll-shadow-space--compact {
+    --scroll-shadow-space: 0.375rem;
+    margin-inline: 0;
+    padding-inline: var(--scroll-shadow-space);
   }
 
   .issue-card-grid {

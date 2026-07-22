@@ -5,20 +5,11 @@
    * vertical composition; feature components must not add page-side padding.
    */
   .viewport-frame {
-    --viewport-shadow-bleed: 0.625rem;
     align-self: stretch;
     box-sizing: border-box;
-    margin-left: calc(max(var(--app-viewport-gutter), env(safe-area-inset-left)) - var(--viewport-shadow-bleed));
-    margin-right: calc(max(var(--app-viewport-gutter), env(safe-area-inset-right)) - var(--viewport-shadow-bleed));
-    padding-left: var(--viewport-shadow-bleed);
-    padding-right: var(--viewport-shadow-bleed);
-    width: auto;
-  }
-
-  .viewport-content {
-    box-sizing: border-box;
-    max-width: var(--app-content-max-width);
-    min-width: 0;
+    margin-inline: 0;
+    padding-left: max(var(--app-viewport-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--app-viewport-gutter), env(safe-area-inset-right));
     width: 100%;
   }
 
@@ -41,15 +32,6 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-  }
-
-  .route-page-frame--bleed {
-    --route-page-bleed-left: max(var(--app-viewport-gutter), env(safe-area-inset-left));
-    --route-page-bleed-right: max(var(--app-viewport-gutter), env(safe-area-inset-right));
-    margin-left: calc(var(--route-page-bleed-left) * -1);
-    margin-right: calc(var(--route-page-bleed-right) * -1);
-    max-width: none;
-    width: calc(100% + var(--route-page-bleed-left) + var(--route-page-bleed-right));
   }
 
   .route-page-frame--padding-compact {

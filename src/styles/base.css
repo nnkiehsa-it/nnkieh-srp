@@ -66,7 +66,7 @@
     --app-sidebar-width: var(--app-sidebar-collapsed-width);
     --app-sidebar-panel-width: var(--app-sidebar-width);
     --app-content-max-width: 80rem;
-    --app-viewport-gutter: 1.5rem;
+    --app-viewport-gutter: 1rem;
     --dialog-page-background: 255 255 255;
     --shadow-control: 0 0 5px rgb(var(--color-shadow) / 0.14), 0 2px 4px rgb(var(--color-shadow) / 0.08);
     --shadow-card: 0 0 10px rgb(var(--color-shadow) / 0.18), 0 3px 6px rgb(var(--color-shadow) / 0.1);
@@ -82,14 +82,14 @@
 
   @media (min-width: 640px) {
     :root {
-      --app-viewport-gutter: 2.25rem;
+      --app-viewport-gutter: 1.5rem;
       --panel-padding: 1.75rem;
     }
   }
 
   @media (min-width: 1024px) {
     :root {
-      --app-viewport-gutter: 2.75rem;
+      --app-viewport-gutter: 2rem;
     }
   }
 

@@ -1,6 +1,6 @@
 <template>
   <RoutePageFrame
-    :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+    :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-visible' : ''"
   >
     <div v-if="loading" class="space-y-6 py-4">
       <!-- Account Skeleton -->

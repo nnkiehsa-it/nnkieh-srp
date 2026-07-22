@@ -86,7 +86,7 @@
     <!-- Mobile Viewport Skeleton -->
     <article
       v-else
-      class="flex h-full min-h-0 flex-col overflow-hidden"
+      class="flex h-full min-h-0 flex-col overflow-visible"
     >
       <header class="flex shrink-0 items-start gap-3 px-0 py-3">
         <!-- Tags -->
@@ -105,7 +105,7 @@
         class="flex min-h-0 flex-1 flex-col border-t border-ink-100/70 dark:border-ink-800/70"
       >
         <div
-          class="scroll-shadow-bleed--compact min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-5"
+          class="scroll-shadow-space--compact min-h-0 flex-1 overflow-auto py-3 space-y-5"
         >
           <!-- Title -->
           <div class="pb-1">

@@ -160,7 +160,6 @@ for (const file of files) {
 const primitives = await readFile(path.join(sourceRoot, 'styles/primitives.css'), 'utf8');
 for (const requiredPrimitive of [
   '.viewport-frame',
-  '.viewport-content',
   '.viewport-floating-inline',
   '.route-page-frame',
   '.route-page-frame--fill',

@@ -1,7 +1,7 @@
 <template>
   <SurfacePanel
     as="article"
-    class="entry-composer-page__surface flex min-h-0 flex-1 flex-col overflow-hidden"
+    class="entry-composer-page__surface flex min-h-0 flex-1 flex-col overflow-visible"
     :aria-busy="blocked || undefined"
     aria-labelledby="entry-composer-title"
   >
@@ -23,7 +23,7 @@
     </div>
 
     <form
-      class="entry-composer__scroll mt-5 flex min-h-0 flex-1 flex-col space-y-5 overflow-y-auto md:overflow-hidden"
+      class="entry-composer__scroll mt-5 flex min-h-0 flex-1 flex-col space-y-5 overflow-auto"
       autocomplete="off"
       @submit.prevent="emit('submit')"
     >

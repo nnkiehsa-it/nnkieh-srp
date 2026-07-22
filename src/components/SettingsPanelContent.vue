@@ -27,7 +27,7 @@
       class="settings-scroll min-h-0 min-w-0 w-full max-w-full"
       :class="flat
         ? 'settings-scroll--flat overflow-visible'
-        : 'overflow-x-hidden overflow-y-auto'"
+        : 'overflow-auto'"
     >
       <SurfacePanel as="section" variant="list" :aria-label="t('settings.accountInformation')" class="settings-group py-4">
         <p v-if="SCHOOL_NAME" class="mb-3 text-xs font-semibold text-ink-500 dark:text-ink-400">
