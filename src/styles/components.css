@@ -1,7 +1,36 @@
 @layer components {
+  .decoded-image {
+    @apply relative inline-flex items-center justify-center overflow-hidden bg-ink-100/70 text-ink-500 dark:bg-ink-900/70 dark:text-ink-400;
+  }
+
+  .decoded-image__loading,
+  .decoded-image__error {
+    @apply absolute inset-0 flex items-center justify-center;
+  }
+
+  .decoded-image__media {
+    display: block;
+    opacity: 0;
+    transition: opacity 140ms var(--motion-ease-enter);
+  }
+
+  .decoded-image--ready .decoded-image__media {
+    opacity: 1;
+  }
+
+  .decoded-image--failed .decoded-image__media {
+    visibility: hidden;
+  }
+
   .tap-target {
     min-height: var(--tap-target);
     min-width: var(--tap-target);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .decoded-image__media {
+      transition: none;
+    }
   }
 
   .focus-ring,

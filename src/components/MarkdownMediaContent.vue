@@ -26,11 +26,14 @@
         >
           <LoadingSpinner :size="5" />
         </SkeletonBlock>
-        <img
+        <DecodedImage
           v-else
           :src="image.src"
           :alt="image.alt || fallbackAlt"
-          class="aspect-[4/3] w-full object-cover"
+          :width="image.width"
+          :height="image.height"
+          class="aspect-[4/3] w-full"
+          image-class="h-full w-full object-cover"
           loading="lazy"
         />
       </button>
@@ -67,11 +70,16 @@
       >
         <AppIcon name="close" :size="5" />
       </AppButton>
-      <img
+      <DecodedImage
         v-if="selectedImage"
         :src="selectedImage.fullSrc || selectedImage.src"
         :alt="selectedImage.alt || fallbackAlt"
-        class="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] object-contain"
+        :width="selectedImage.width"
+        :height="selectedImage.height"
+        class="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] bg-transparent"
+        image-class="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] object-contain"
+        loading="eager"
+        :spinner-size="8"
       />
     </DialogShell>
   </div>
@@ -81,6 +89,7 @@
 import { computed, ref, useId } from "vue";
 import MarkdownRenderer from "@/components/MarkdownRenderer.vue";
 import LoadingSpinner from "@/components/ui/atoms/LoadingSpinner.vue";
+import DecodedImage from "@/components/ui/atoms/DecodedImage.vue";
 import SkeletonBlock from "@/components/ui/atoms/SkeletonBlock.vue";
 import AppIcon from "@/components/ui/atoms/AppIcon.vue";
 import AppButton from "@/components/ui/atoms/AppButton.vue";

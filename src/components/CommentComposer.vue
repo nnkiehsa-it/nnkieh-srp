@@ -26,17 +26,25 @@
           tone="muted"
           class="relative h-20 w-20 overflow-hidden"
         >
-          <img :src="url" :alt="t('comments.commentAttachmentPreview')" class="h-full w-full object-cover" />
+          <DecodedImage
+            :src="url"
+            :alt="t('comments.commentAttachmentPreview')"
+            class="h-full w-full"
+            image-class="h-full w-full object-cover"
+            loading="eager"
+          />
           <ImageRemoveButton :aria-label="t('comments.removeImage')" @click="removeImage(index)" />
         </EditorSurface>
       </div>
 
       <div class="flex items-end gap-1.5 p-2 pl-3">
-        <img
+        <DecodedImage
           v-if="myPhotoUrl"
           :src="myPhotoUrl"
           :alt="t('comments.currentAvatar')"
-          class="mb-1.5 h-7 w-7 shrink-0 rounded-full object-cover shadow-control"
+          class="mb-1.5 h-7 w-7 shrink-0 rounded-full shadow-control"
+          image-class="h-full w-full rounded-full object-cover"
+          :spinner-size="3"
         />
 
         <textarea
@@ -99,6 +107,7 @@ import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
 import InlineMessage from '@/components/ui/atoms/InlineMessage.vue';
 import ImageRemoveButton from '@/components/ui/atoms/ImageRemoveButton.vue';
+import DecodedImage from '@/components/ui/atoms/DecodedImage.vue';
 import EditorSurface from '@/components/ui/molecules/EditorSurface.vue';
 import { useMarkdownImageUpload } from '@/composables/useMarkdownImageUpload';
 import { useSession } from '@/composables/useSession';

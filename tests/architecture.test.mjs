@@ -1828,6 +1828,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const packageJson = JSON.parse(await read('package.json'));
   const styleEntry = await read('src/style.css');
   const baseStyles = await read('src/styles/base.css');
+  const componentStyles = await read('src/styles/components.css');
   const primitives = await read('src/styles/primitives.css');
   const appButton = await read('src/components/ui/atoms/AppButton.vue');
   const iconTile = await read('src/components/ui/atoms/IconTile.vue');
@@ -1836,6 +1837,7 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const inlineAlert = await read('src/components/ui/atoms/InlineAlert.vue');
   const inlineMessage = await read('src/components/ui/atoms/InlineMessage.vue');
   const skeletonBlock = await read('src/components/ui/atoms/SkeletonBlock.vue');
+  const decodedImage = await read('src/components/ui/atoms/DecodedImage.vue');
   const imageRemoveButton = await read('src/components/ui/atoms/ImageRemoveButton.vue');
   const tagBadge = await read('src/components/ui/atoms/TagBadge.vue');
   const iconListRow = await read('src/components/ui/molecules/IconListRow.vue');
@@ -1867,6 +1869,9 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const languageSelector = await read('src/components/LanguageSelector.vue');
   const commentComposer = await read('src/components/CommentComposer.vue');
+  const markdownMediaContent = await read('src/components/MarkdownMediaContent.vue');
+  const markdownImagePreviews = await read('src/components/ui/molecules/MarkdownImagePreviews.vue');
+  const userAvatar = await read('src/components/ui/atoms/UserAvatar.vue');
   const contentCardSkeleton = await read('src/components/ui/organisms/ContentCardSkeleton.vue');
   const segmentedControl = await read('src/components/ui/molecules/PillSegmentedControl.vue');
   const controls = await read('src/styles/controls.css');
@@ -1924,6 +1929,13 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(inlineAlert, /class="inline-alert"[\s\S]*inline-alert--\$\{tone\}[\s\S]*:aria-live="live"/u);
   assert.match(inlineMessage, /class="inline-message"[\s\S]*inline-message--\$\{tone\}[\s\S]*inline-message--\$\{size\}/u);
   assert.match(skeletonBlock, /<component :is="as" class="skeleton-block" aria-hidden="true">/u);
+  assert.match(decodedImage, /<LoadingSpinner[\s\S]*decoding="async"[\s\S]*@load="handleLoad"/u);
+  assert.match(decodedImage, /await image\.decode\(\)[\s\S]*image\.naturalWidth === 0[\s\S]*ready\.value = true/u);
+  assert.match(componentStyles, /\.decoded-image__media \{[\s\S]*opacity: 0;[\s\S]*transition: opacity 140ms/u);
+  assert.match(componentStyles, /\.decoded-image--ready \.decoded-image__media \{[\s\S]*opacity: 1;/u);
+  [markdownMediaContent, markdownImagePreviews, commentComposer, userAvatar]
+    .forEach((consumer) => assert.match(consumer, /<DecodedImage/u));
+  assert.equal([...markdownMediaContent.matchAll(/<DecodedImage\b/gu)].length, 2);
   assert.match(imageRemoveButton, /class="button-remove-image"[\s\S]*<AppIcon name="close"/u);
   assert.match(tagBadge, /size === 'sm' \? 'tag-sm' : 'tag'/u);
   assert.match(iconListRow, /<ListSurfaceRow[\s\S]*<AppIcon :name="icon"[\s\S]*<slot name="trailing">/u);

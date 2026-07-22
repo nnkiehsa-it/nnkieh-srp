@@ -11,10 +11,12 @@
       class="relative overflow-hidden"
       :class="size === 'lg' ? 'h-24 w-24' : 'h-16 w-16'"
     >
-      <img
+      <DecodedImage
         :src="image.src"
         :alt="image.alt"
-        class="h-full w-full object-cover"
+        class="h-full w-full"
+        image-class="h-full w-full object-cover"
+        loading="eager"
       />
       <ImageRemoveButton
         class="cursor-pointer"
@@ -27,6 +29,7 @@
 
 <script setup lang="ts">
 import ImageRemoveButton from '@/components/ui/atoms/ImageRemoveButton.vue';
+import DecodedImage from '@/components/ui/atoms/DecodedImage.vue';
 import EditorSurface from "@/components/ui/molecules/EditorSurface.vue";
 import { useI18n } from "@/i18n";
 

@@ -1,10 +1,13 @@
 <template>
-  <img
-    v-if="photoUrl"
+  <DecodedImage
+    v-if="photoUrl && !imageFailed"
     :src="photoUrl"
     :alt="t(altText)"
-    class="rounded-full border border-ink-300 object-cover dark:border-ink-700"
+    class="rounded-full border border-ink-300 dark:border-ink-700"
     :class="imageSizeClass"
+    image-class="h-full w-full rounded-full object-cover"
+    :spinner-size="3"
+    @error="imageFailed = true"
   />
   <div
     v-else
@@ -16,7 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import DecodedImage from '@/components/ui/atoms/DecodedImage.vue';
 import { useI18n } from '@/i18n';
 
 const props = withDefaults(defineProps<{
@@ -29,6 +33,11 @@ const props = withDefaults(defineProps<{
   altText: 'settings.userAvatar',
 });
 const { t } = useI18n();
+const imageFailed = ref(false);
+
+watch(() => props.photoUrl, () => {
+  imageFailed.value = false;
+});
 
 const imageSizeClass = computed(() => {
   if (props.size === 'sm') return 'h-7 w-7';
