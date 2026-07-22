@@ -369,6 +369,12 @@
     transition-delay: 0s !important;
     transition-duration: 0.01ms !important;
   }
+
+  :where(button, a[href], [role='button']):active {
+    scale: 1 !important;
+    translate: 0 0 !important;
+    filter: none !important;
+  }
 }
 
 .no-transitions *,

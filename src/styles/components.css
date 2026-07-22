@@ -80,9 +80,9 @@
     scale: 1;
     translate: 0 0;
     transition:
-      scale var(--motion-duration-release) var(--motion-ease-enter),
-      translate var(--motion-duration-release) var(--motion-ease-enter),
-      transform var(--motion-duration-release) var(--motion-ease-enter),
+      scale var(--motion-duration-release) var(--motion-ease-spring),
+      translate var(--motion-duration-release) var(--motion-ease-spring),
+      transform var(--motion-duration-release) var(--motion-ease-spring),
       opacity var(--motion-duration) var(--motion-ease),
       box-shadow var(--motion-duration) var(--motion-ease),
       border-color var(--motion-duration) var(--motion-ease),
@@ -110,14 +110,12 @@
   .author-avatar:active:not([aria-disabled='true']),
   .list-row-title-trigger:active:not(:disabled):not([aria-disabled='true']),
   .segmented-control__button:active:not(:disabled):not([aria-disabled='true']) {
-    transform: translateY(0.5px) scale(0.985);
-    scale: 0.985;
-    translate: 0 0.5px;
-    opacity: 0.94;
-    filter: brightness(0.97) saturate(0.98);
-    box-shadow: inset 0 1px 2px rgb(var(--color-shadow) / 0.08);
+    scale: var(--press-scale);
+    translate: 0 0;
+    opacity: 1;
+    filter: brightness(1.025) saturate(1.01);
     transition-duration: var(--motion-duration-press);
-    transition-timing-function: var(--motion-ease);
+    transition-timing-function: var(--motion-ease-press);
   }
 
   .interactive-surface {
@@ -132,37 +130,25 @@
 
   .content-trigger {
     @apply rounded-xl;
+    --press-scale: 1.008;
   }
 
   .content-trigger:active:not(:disabled) {
-    transform: translateY(0.5px) scale(0.99);
-    scale: 0.99;
-    translate: 0 0.5px;
-    opacity: 0.94;
     background-color: rgb(var(--color-secondary-container) / 0.72);
   }
 
   .text-trigger {
     @apply rounded-md;
+    --press-scale: 1.01;
   }
 
   .text-trigger:active:not(:disabled) {
-    transform: translateY(0.5px) scale(0.99);
-    scale: 0.99;
-    translate: 0 0.5px;
-    opacity: 0.92;
     background-color: rgb(var(--color-secondary-container) / 0.56);
-  }
-
-  .nav-item:active:not([aria-disabled='true']) {
-    transform: translateY(0.5px) scale(0.985);
-    scale: 0.985;
-    translate: 0 0.5px;
-    opacity: 0.94;
   }
 
   .nav-item {
     @apply flex items-center rounded-2xl px-4 py-3 text-base font-bold tracking-normal;
+    --press-scale: 1.012;
     min-height: var(--tap-target);
   }
 

@@ -202,7 +202,8 @@
     padding: 0.125rem;
     transition:
       background-color var(--motion-duration) var(--motion-ease),
-      transform var(--motion-duration-press) var(--motion-ease);
+      scale var(--motion-duration-release) var(--motion-ease-spring);
+    scale: 1;
     width: 3rem;
   }
 
@@ -226,7 +227,9 @@
   }
 
   .switch-indicator:active:not([aria-disabled="true"]) {
-    transform: scale(0.985);
+    scale: 1.015;
+    transition-duration: var(--motion-duration-press);
+    transition-timing-function: var(--motion-ease-press);
   }
 
   .list-section-label {
@@ -405,7 +408,9 @@
     transition:
       background-color var(--motion-duration) var(--motion-ease),
       color var(--motion-duration) var(--motion-ease),
-      transform var(--motion-duration-press) var(--motion-ease);
+      scale var(--motion-duration-release) var(--motion-ease-spring);
+    scale: 1;
+    --press-scale: 1.008;
     width: 100%;
   }
 
@@ -420,7 +425,9 @@
   }
 
   .dropdown-item:active:not(:disabled):not([aria-disabled="true"]) {
-    transform: translateY(0.5px) scale(0.985);
+    scale: var(--press-scale);
+    transition-duration: var(--motion-duration-press);
+    transition-timing-function: var(--motion-ease-press);
   }
 
   .dropdown-item--danger {

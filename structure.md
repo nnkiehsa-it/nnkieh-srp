@@ -54,7 +54,7 @@
 - `style.css` — 全域樣式載入入口；依序載入 base、primitives 與領域樣式
 - `styles/base.css` — design tokens、全域基礎與頁面骨架
 - `styles/primitives.css` — viewport、control／card／floating 表面與陰影、list、dropdown、control frame 的單一可復用視覺契約；Tailwind 陰影名稱同樣只使用 `shadow-control`、`shadow-card`、`shadow-floating`
-- `styles/components.css` / `controls.css` — 共用表面、互動狀態、按鈕與欄位
+- `styles/components.css` / `controls.css` — 共用表面、互動狀態、按鈕與欄位；全域點擊回饋使用無位移的輕微放大與 spring-like 回彈，大型表面降低幅度，不叠加縮小、下沉或 inset shadow
 - `styles/navigation.css` — 桌面側欄與手機底部導覽
 - `styles/content.css` / `responsive.css` — 列表、設定、統計、Dialog 與跨裝置覆寫
 - `assets/fonts/` — JetBrains Mono 與 Material Symbols 子集

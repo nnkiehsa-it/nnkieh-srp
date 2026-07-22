@@ -1977,6 +1977,10 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(decodedImage, /await image\.decode\(\)[\s\S]*image\.naturalWidth === 0[\s\S]*ready\.value = true/u);
   assert.match(componentStyles, /\.decoded-image__media \{[\s\S]*opacity: 0;[\s\S]*transition: opacity 140ms/u);
   assert.match(componentStyles, /\.decoded-image--ready \.decoded-image__media \{[\s\S]*opacity: 1;/u);
+  assert.match(baseStyles, /--motion-ease-spring: linear\([^)]+\);[\s\S]*--press-scale: 1\.018;/u);
+  assert.match(baseStyles, /\):active \{[\s\S]*scale: var\(--press-scale\);[\s\S]*brightness\(1\.025\)/u);
+  assert.match(componentStyles, /\.content-trigger \{[\s\S]*--press-scale: 1\.008;/u);
+  assert.doesNotMatch(componentStyles, /:active[^}]+scale\(0\.9/u);
   [markdownMediaContent, markdownImagePreviews, commentComposer, userAvatar]
     .forEach((consumer) => assert.match(consumer, /<DecodedImage/u));
   assert.equal([...markdownMediaContent.matchAll(/<DecodedImage\b/gu)].length, 2);

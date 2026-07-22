@@ -104,10 +104,10 @@
 
   .issue-card:active:not(:has(button:active)) {
     background-color: rgb(var(--color-secondary-container) / 0.78);
-    box-shadow: inset 0 1px 3px rgb(var(--color-shadow) / 0.05);
-    opacity: 0.97;
-    transform: translateY(0.5px) scale(0.997) !important;
+    scale: 1.006;
+    transform: none !important;
     transition-duration: var(--motion-duration-press);
+    transition-timing-function: var(--motion-ease-press);
   }
 
   @media (prefers-color-scheme: dark) {
