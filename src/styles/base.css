@@ -54,9 +54,9 @@
     --motion-duration-fast: 0.14s;
     --motion-duration: 0.22s;
     --motion-duration-panel: 0.32s;
-    --motion-duration-press: 0.14s;
-    --motion-duration-release: 0.34s;
-    --press-scale: 1.04;
+    --motion-duration-press: 0.16s;
+    --motion-duration-release: 0.38s;
+    --press-scale: 1.07;
     --surface-gap: 0.375rem;
     --radius-inner: 1rem;
     --radius-outer: calc(var(--radius-inner) + var(--surface-gap));

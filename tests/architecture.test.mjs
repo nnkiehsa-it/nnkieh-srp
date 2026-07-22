@@ -1979,12 +1979,14 @@ test('reusable UI primitives own buttons, surfaces, lists, dropdowns, controls, 
   assert.match(decodedImage, /await image\.decode\(\)[\s\S]*image\.naturalWidth === 0[\s\S]*ready\.value = true/u);
   assert.match(componentStyles, /\.decoded-image__media \{[\s\S]*opacity: 0;[\s\S]*transition: opacity 140ms/u);
   assert.match(componentStyles, /\.decoded-image--ready \.decoded-image__media \{[\s\S]*opacity: 1;/u);
-  assert.match(baseStyles, /--motion-ease-spring: linear\([^)]+\);[\s\S]*--press-scale: 1\.04;/u);
-  assert.match(baseStyles, /--press-scale: 1\.04;/u);
+  assert.match(baseStyles, /--motion-ease-spring: linear\([^)]+\);[\s\S]*--press-scale: 1\.07;/u);
+  assert.match(baseStyles, /--press-scale: 1\.07;/u);
   assert.match(baseStyles, /\):active,[\s\S]*\.is-pressing \{[\s\S]*scale: var\(--press-scale\)/u);
-  assert.match(componentStyles, /\.content-trigger \{[\s\S]*--press-scale: 1\.014;/u);
+  assert.match(componentStyles, /\.content-trigger \{[\s\S]*--press-scale: 1\.025;/u);
+  assert.match(componentStyles, /\.button-contextual:is\(:active, \.is-pressing\)[\s\S]*background-color: rgb\(var\(--color-secondary-container\) \/ 0\.92\);/u);
+  assert.match(primitives, /\.list-surface-row--interactive:is\(:active, \.is-pressing\)[\s\S]*box-shadow: var\(--shadow-card\);/u);
   assert.doesNotMatch(componentStyles, /:active[^}]+scale\(0\.9/u);
-  assert.match(pressFeedback, /MINIMUM_VISIBLE_MS = 120[\s\S]*MOVE_TOLERANCE_PX = 12/u);
+  assert.match(pressFeedback, /RELEASE_VISIBLE_MS = 160[\s\S]*MOVE_TOLERANCE_PX = 12/u);
   assert.match(pressFeedback, /\[data-list-row-trigger\][\s\S]*classList\.add\('is-pressing'\)[\s\S]*pointermove/u);
   assert.match(mainEntry, /initializePressFeedback\(\)/u);
   [markdownMediaContent, markdownImagePreviews, commentComposer, userAvatar]

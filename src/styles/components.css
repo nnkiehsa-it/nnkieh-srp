@@ -47,6 +47,7 @@
   .button-primary,
   .button-danger,
   .button-secondary,
+  .button-contextual,
     .button-toolbar,
     .button-remove-image,
     .button-danger-icon,
@@ -69,6 +70,7 @@
   .button-primary,
   .button-danger,
   .button-secondary,
+  .button-contextual,
     .button-toolbar,
     .button-remove-image,
     .button-danger-icon,
@@ -91,31 +93,52 @@
       filter var(--motion-duration) ease;
   }
 
-  .pressable:active:not(:disabled):not([aria-disabled='true']),
-  .interactive-surface:active:not(:disabled):not([aria-disabled='true']),
-  .content-trigger:active:not(:disabled):not([aria-disabled='true']),
-  .text-trigger:active:not(:disabled):not([aria-disabled='true']),
-  .nav-item:active:not(:disabled):not([aria-disabled='true']),
-  .button-icon:active:not(:disabled):not([aria-disabled='true']),
-  .button-icon-filled:active:not(:disabled):not([aria-disabled='true']),
-  .button-icon-pill:active:not(:disabled):not([aria-disabled='true']),
-  .button-icon-pill-filled:active:not(:disabled):not([aria-disabled='true']),
-  .button-primary:active:not(:disabled):not([aria-disabled='true']),
-  .button-danger:active:not(:disabled):not([aria-disabled='true']),
-  .button-secondary:active:not(:disabled):not([aria-disabled='true']),
-  .button-toolbar:active:not(:disabled):not([aria-disabled='true']),
-  .button-remove-image:active:not(:disabled):not([aria-disabled='true']),
-  .button-danger-icon:active:not(:disabled):not([aria-disabled='true']),
-  .app-bottom-nav__item:active:not([aria-disabled='true']),
-  .author-avatar:active:not([aria-disabled='true']),
-  .list-row-title-trigger:active:not(:disabled):not([aria-disabled='true']),
-  .segmented-control__button:active:not(:disabled):not([aria-disabled='true']) {
+  .pressable:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .interactive-surface:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .content-trigger:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .text-trigger:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .nav-item:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-icon:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-icon-filled:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-icon-pill:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-icon-pill-filled:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-primary:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-danger:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-secondary:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-contextual:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-toolbar:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-remove-image:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .button-danger-icon:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .app-bottom-nav__item:is(:active, .is-pressing):not([aria-disabled='true']),
+  .author-avatar:is(:active, .is-pressing):not([aria-disabled='true']),
+  .list-row-title-trigger:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']),
+  .segmented-control__button:is(:active, .is-pressing):not(:disabled):not([aria-disabled='true']) {
     scale: var(--press-scale);
     translate: 0 0;
     opacity: 1;
-    filter: brightness(1.025) saturate(1.01);
+    filter: brightness(1.08) saturate(1.04);
     transition-duration: var(--motion-duration-press);
     transition-timing-function: var(--motion-ease-press);
+  }
+
+  .button-icon:is(:active, .is-pressing):not(:disabled),
+  .button-icon-pill:is(:active, .is-pressing):not(:disabled),
+  .button-secondary:is(:active, .is-pressing):not(:disabled),
+  .button-contextual:is(:active, .is-pressing):not(:disabled),
+  .button-toolbar:is(:active, .is-pressing):not(:disabled),
+  .segmented-control__button:is(:active, .is-pressing):not(:disabled) {
+    background-color: rgb(var(--color-secondary-container) / 0.92);
+    box-shadow: var(--shadow-card);
+  }
+
+  .button-icon-filled:is(:active, .is-pressing):not(:disabled),
+  .button-icon-pill-filled:is(:active, .is-pressing):not(:disabled),
+  .button-primary:is(:active, .is-pressing):not(:disabled),
+  .button-danger:is(:active, .is-pressing):not(:disabled),
+  .button-remove-image:is(:active, .is-pressing):not(:disabled),
+  .button-danger-icon:is(:active, .is-pressing):not(:disabled) {
+    box-shadow: var(--shadow-card);
+    filter: brightness(1.16) saturate(1.06);
   }
 
   .interactive-surface {
@@ -130,25 +153,25 @@
 
   .content-trigger {
     @apply rounded-xl;
-    --press-scale: 1.014;
+    --press-scale: 1.025;
   }
 
   .content-trigger:is(:active, .is-pressing):not(:disabled) {
-    background-color: rgb(var(--color-secondary-container) / 0.72);
+    background-color: rgb(var(--color-secondary-container) / 0.86);
   }
 
   .text-trigger {
     @apply rounded-md;
-    --press-scale: 1.02;
+    --press-scale: 1.035;
   }
 
   .text-trigger:is(:active, .is-pressing):not(:disabled) {
-    background-color: rgb(var(--color-secondary-container) / 0.56);
+    background-color: rgb(var(--color-secondary-container) / 0.78);
   }
 
   .nav-item {
     @apply flex items-center rounded-2xl px-4 py-3 text-base font-bold tracking-normal;
-    --press-scale: 1.025;
+    --press-scale: 1.045;
     min-height: var(--tap-target);
   }
 

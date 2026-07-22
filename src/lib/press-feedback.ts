@@ -13,12 +13,11 @@ const PRESSABLE_SELECTOR = [
   '.list-surface-row--interactive',
 ].join(',');
 
-const MINIMUM_VISIBLE_MS = 120;
+const RELEASE_VISIBLE_MS = 160;
 const MOVE_TOLERANCE_PX = 12;
 
 interface ActivePress {
   element: HTMLElement;
-  startedAt: number;
   startX: number;
   startY: number;
 }
@@ -41,7 +40,6 @@ export function initializePressFeedback() {
     element.classList.add('is-pressing');
     activePresses.set(event.pointerId, {
       element,
-      startedAt: performance.now(),
       startX: event.clientX,
       startY: event.clientY,
     });
@@ -59,7 +57,7 @@ export function initializePressFeedback() {
     const press = activePresses.get(event.pointerId);
     if (!press) return;
     activePresses.delete(event.pointerId);
-    const remaining = immediate ? 0 : Math.max(0, MINIMUM_VISIBLE_MS - (performance.now() - press.startedAt));
+    const remaining = immediate ? 0 : RELEASE_VISIBLE_MS;
     window.setTimeout(() => {
       const stillPressed = [...activePresses.values()].some((active) => active.element === press.element);
       if (!stillPressed) press.element.classList.remove('is-pressing');

@@ -104,7 +104,7 @@
 
   .issue-card:is(:active, .is-pressing):not(:has(button:active, button.is-pressing)) {
     background-color: rgb(var(--color-secondary-container) / 0.78);
-    scale: 1.01;
+    scale: 1.016;
     transform: none !important;
     transition-duration: var(--motion-duration-press);
     transition-timing-function: var(--motion-ease-press);
