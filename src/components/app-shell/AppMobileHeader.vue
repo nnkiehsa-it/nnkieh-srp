@@ -25,7 +25,7 @@
             :model-value="categoryFilter"
             :label="categoryLabel"
             :options="categoryOptions"
-            :selector-label="t('issue.chooseProposalCategory')"
+            :selector-label="categorySelectorLabel"
             variant="mobile-header"
             @update:model-value="filter => $emit('select-category', filter)"
           />
@@ -37,22 +37,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import BoardCategorySelector from '@/components/BoardCategorySelector.vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
 import ViewportFrame from '@/components/ui/organisms/ViewportFrame.vue';
-import type { IssueFilter } from '@/types';
-import { getIssueFilterOptions } from '@/constants/categories';
-import { useI18n } from '@/i18n';
-
-const { t } = useI18n();
-const categoryOptions = computed(getIssueFilterOptions);
 
 defineProps<{
   backLabel: string;
-  categoryFilter?: IssueFilter;
+  categoryFilter?: string;
   categoryLabel?: string;
+  categoryOptions: ReadonlyArray<{ label: string; value: string }>;
+  categorySelectorLabel: string;
   showBackButton: boolean;
   title: string;
 }>();

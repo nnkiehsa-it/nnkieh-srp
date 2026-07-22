@@ -182,7 +182,11 @@ watch(() => route.query.category, (value) => {
 });
 
 function openDetails(facility: FacilitySummary) {
-  void router.push({ name: 'facility-detail', params: { facilityId: facility.id } });
+  void router.push({
+    name: 'facility-detail',
+    params: { facilityId: facility.id },
+    query: { ...route.query, category: category.value },
+  });
 }
 
 function openComposer() {

@@ -25,7 +25,16 @@
     </template>
 
     <template #supplement>
-      <SurfacePanel v-if="issue.support_enabled" variant="inset" class="mt-4 px-3 py-2.5">
+      <ContentNoticePanel
+        v-if="issueNoticeSummary"
+        compact
+        class="mt-4"
+        :tone="issueNoticeSummary.tone"
+      >
+        <span class="font-semibold">{{ t(issueNoticeSummary.title) }}：</span>
+        <span>{{ issueNoticeSummary.content }}</span>
+      </ContentNoticePanel>
+      <SurfacePanel v-else-if="issue.support_enabled" variant="inset" class="mt-4 px-3 py-2.5">
         <div class="flex items-center justify-between gap-3 text-xs">
           <span class="font-semibold tabular-nums text-ink-700 dark:text-ink-300">
             {{ t('issue.countGoalSupports', { count: supportCount, goal: issue.support_goal ?? 0 }) }}
@@ -55,7 +64,7 @@
         <AppIcon name="comment" />
       </AppButton>
       <VoteButtons
-        v-if="issue.support_enabled"
+        v-if="issue.support_enabled && !issueNoticeSummary"
         :author-fixed="issue.isOwnIssue"
         :issue-id="issue.id"
         :current-user-supported="currentUserSupported"
@@ -82,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
+import { computed, ref, toRef } from 'vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import IssueAdminMenu from '@/components/IssueAdminMenu.vue';
 import VoteButtons from '@/components/VoteButtons.vue';
@@ -90,7 +99,10 @@ import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
 import ContentCardShell from '@/components/ui/organisms/ContentCardShell.vue';
 import SurfacePanel from '@/components/ui/molecules/SurfacePanel.vue';
+import ContentNoticePanel from '@/components/ui/molecules/ContentNoticePanel.vue';
 import { useIssueItemController } from '@/composables/useIssueItemController';
+import { getIssueNotice } from '@/lib/issue-notice';
+import { stripMarkdownImages } from '@/lib/markdown-images';
 import type { IssueRecord } from '@/types';
 import { useI18n } from '@/i18n';
 
@@ -135,4 +147,12 @@ const {
   (issue) => emit('issue-updated', issue),
   (issueId) => emit('issue-deleted', issueId),
 );
+const issueNoticeSummary = computed(() => {
+  const notice = getIssueNotice(props.issue, statusLabel.value);
+  if (!notice) return null;
+  return {
+    ...notice,
+    content: stripMarkdownImages(notice.content).replace(/\s+/g, ' ').trim() || statusLabel.value,
+  };
+});
 </script>

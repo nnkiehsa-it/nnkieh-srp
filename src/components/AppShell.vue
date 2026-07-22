@@ -19,6 +19,8 @@
       :back-label="mobileBackLabel"
       :category-filter="mobileCategoryFilter"
       :category-label="mobileCategoryLabel"
+      :category-options="mobileCategoryOptions"
+      :category-selector-label="mobileCategorySelectorLabel"
       :show-back-button="showMobileBackButton"
       :title="mobileHeaderTitle"
       @back="handleMobileBack"
@@ -86,9 +88,9 @@ import AppMobileHeader from '@/components/app-shell/AppMobileHeader.vue';
 import DesktopUtilityDialog from '@/components/DesktopUtilityDialog.vue';
 import ViewportFrame from '@/components/ui/organisms/ViewportFrame.vue';
 import { SCHOOL_NAME } from '@/constants/app';
-import { getIssueCategoryLabel, isIssueCategory } from '@/constants/categories';
+import { getIssueCategoryLabel, getIssueFilterOptions, isIssueCategory } from '@/constants/categories';
 import { refreshFromActiveNavigation } from '@/composables/useActiveNavigationRefresh';
-import { useCategories } from '@/composables/useCategories';
+import { findFacilityCategory, getDefaultFacilityCategoryId, useCategories } from '@/composables/useCategories';
 import { useIssueRouteFilter } from '@/composables/useIssueRouteFilter';
 import { useNotificationBadge } from '@/composables/useNotificationBadge';
 import { useSession } from '@/composables/useSession';
@@ -104,7 +106,7 @@ const MOBILE_NAV_HEIGHT = 60;
 const SCROLL_POSITION_LIMIT = 30;
 
 const { customPhotoUrl, isAllowedUser, roleLoading, user } = useSession();
-const { facilitiesEnabled, issuesEnabled } = useCategories();
+const { activeFacilityCategories, facilitiesEnabled, issuesEnabled } = useCategories();
 const { activeFilter } = useIssueRouteFilter();
 const { hasUnread } = useNotificationBadge();
 const route = useRoute();
@@ -156,12 +158,32 @@ const primaryRouteNavItems = computed(() => [
 const displayPhotoUrl = computed(() => customPhotoUrl.value || user.value?.photoURL || null);
 const userName = computed(() => user.value?.displayName || t('navigation.user'));
 const schoolLabel = computed(() => SCHOOL_NAME || t('navigation.theSchoolHasNotBeenSet'));
-const mobileCategoryFilter = computed<IssueFilter | undefined>(() =>
-  route.name === 'issues' && isIssueCategory(activeFilter.value) ? activeFilter.value : undefined
-);
-const mobileCategoryLabel = computed(() => mobileCategoryFilter.value
-  ? getIssueCategoryLabel(mobileCategoryFilter.value)
-  : undefined);
+const requestedFacilityCategory = computed(() => {
+  const value = Array.isArray(route.query.category) ? route.query.category[0] : route.query.category;
+  return typeof value === 'string' && findFacilityCategory(value)
+    ? value
+    : getDefaultFacilityCategoryId();
+});
+const mobileCategoryFilter = computed<string | undefined>(() => {
+  if (route.name === 'issues' && isIssueCategory(activeFilter.value)) return activeFilter.value;
+  if (route.name === 'facilities') return requestedFacilityCategory.value;
+  return undefined;
+});
+const mobileCategoryLabel = computed(() => {
+  if (route.name === 'issues' && isIssueCategory(mobileCategoryFilter.value)) {
+    return getIssueCategoryLabel(mobileCategoryFilter.value);
+  }
+  if (route.name === 'facilities') {
+    return findFacilityCategory(mobileCategoryFilter.value)?.label ?? t('facility.facility');
+  }
+  return undefined;
+});
+const mobileCategoryOptions = computed(() => route.name === 'facilities'
+  ? activeFacilityCategories.value.map((category) => ({ label: category.label, value: category.id }))
+  : getIssueFilterOptions());
+const mobileCategorySelectorLabel = computed(() => t(
+  route.name === 'facilities' ? 'facility.chooseCategory' : 'issue.chooseProposalCategory',
+));
 const bottomGap = computed(() => hasSafeIndicator.value ? 25 : 15);
 const showMobileBottomNavigation = computed(() => showAuthenticatedChrome.value && !isComposerRoute.value);
 const rootStyle = computed(() => ({
@@ -215,9 +237,14 @@ function handleNavigationClick(isActive: boolean) {
   if (isActive) void refreshFromActiveNavigation();
 }
 
-async function handleCategoryChange(filter: IssueFilter) {
-  if (filter === activeFilter.value && route.name === 'issues') return;
-  await router.push({ name: 'issues', params: { filter }, query: route.query });
+async function handleCategoryChange(filter: string) {
+  if (route.name === 'facilities') {
+    if (!findFacilityCategory(filter) || filter === requestedFacilityCategory.value) return;
+    await router.replace({ name: 'facilities', query: { ...route.query, category: filter } });
+    return;
+  }
+  if (!isIssueCategory(filter) || (filter === activeFilter.value && route.name === 'issues')) return;
+  await router.push({ name: 'issues', params: { filter: filter as IssueFilter }, query: route.query });
 }
 
 function handleNavigationIntent(event: Event) {

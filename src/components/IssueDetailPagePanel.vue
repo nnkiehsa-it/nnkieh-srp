@@ -6,11 +6,11 @@
     :comment-count="mobileCommentCount"
     :content="issue.content"
     details-label="issue.proposalContent"
-    :notice-content="issue.status === 'review-rejected' ? issue.review_rejection_reason : issue.result_content"
+    :notice-content="issueNotice?.content"
     :notice-fallback-alt="t('issue.resultImage', { title: issue.title })"
     :notice-markdown="issue.status !== 'review-rejected'"
-    :notice-title="issue.status === 'review-rejected' ? 'issue.reasonForRejection' : 'issue.result'"
-    :notice-tone="issue.status === 'review-rejected' ? 'error' : 'success'"
+    :notice-title="issueNotice?.title"
+    :notice-tone="issueNotice?.tone"
     :show-author="showAuthor"
     :title="issue.title"
     @back="emit('back')"
@@ -96,6 +96,7 @@ import { computed, ref, toRef } from 'vue';
 import { useIssueDisplay } from '@/composables/useIssueDisplay';
 import { useStatusStyling } from '@/composables/useStatusStyling';
 import { getSupportProgressPercent, getSupportRemainingLabel } from '@/lib/issue-status';
+import { getIssueNotice } from '@/lib/issue-notice';
 import type { IssueRecord } from '@/types';
 
 import TagBadge from '@/components/ui/atoms/TagBadge.vue';
@@ -158,6 +159,7 @@ const {
 } = useIssueDisplay(toRef(props, 'issue'));
 
 const { statusClass } = useStatusStyling(derivedStatus, 'dialog');
+const issueNotice = computed(() => getIssueNotice(props.issue, statusLabel.value));
 
 const supportProgressStyle = computed(() => {
   const progress = getSupportProgressPercent(props.supportCount, props.issue.support_goal);

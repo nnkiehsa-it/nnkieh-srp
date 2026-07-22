@@ -19,6 +19,9 @@
         :author-uid="authorUid"
         :compact="compact"
         :content="content"
+        :context-content="contextContent"
+        :context-title="contextTitle"
+        :context-tone="contextTone"
         :notice-content="noticeContent"
         :notice-fallback-alt="noticeFallbackAlt"
         :notice-markdown="noticeMarkdown"
@@ -51,6 +54,9 @@ withDefaults(defineProps<{
   commentCount?: number;
   commentsLabel?: string;
   content: string;
+  contextContent?: string;
+  contextTitle?: string;
+  contextTone?: 'error' | 'neutral' | 'success';
   detailsLabel: string;
   initialTab?: 'details' | 'comments';
   noticeContent?: string | null;
@@ -67,6 +73,9 @@ withDefaults(defineProps<{
   authorUid: null,
   commentCount: 0,
   commentsLabel: 'comments.title',
+  contextContent: '',
+  contextTitle: '',
+  contextTone: 'neutral',
   initialTab: 'details',
   noticeContent: '',
   noticeFallbackAlt: '',

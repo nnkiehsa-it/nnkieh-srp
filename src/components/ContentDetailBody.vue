@@ -29,23 +29,28 @@
     </div>
 
     <div class="min-h-0 py-2" :class="scrollContent ? 'my-2 flex-1 overflow-y-auto pr-2' : ''">
-      <div
-        v-if="noticeContent"
-        class="mb-4 rounded-[var(--radius-inner)] border-0 px-4 py-3 text-sm shadow-control"
-        :class="noticeTone === 'error'
-          ? 'bg-error-container/80 text-on-error-container'
-          : 'bg-success-container/80 text-on-success-container'"
+      <ContentNoticePanel
+        v-if="contextContent"
+        class="mb-4"
+        :title="contextTitle"
+        :tone="contextTone"
       >
-        <p class="font-semibold">{{ t(noticeTitle) }}</p>
-        <div class="mt-1 leading-6">
-          <MarkdownMediaContent
-            v-if="noticeMarkdown"
-            :content="noticeContent"
-            :fallback-alt="noticeFallbackAlt || t('image.resultImageForTitle', { title })"
-          />
-          <p v-else>{{ noticeContent }}</p>
-        </div>
-      </div>
+        <p>{{ contextContent }}</p>
+      </ContentNoticePanel>
+
+      <ContentNoticePanel
+        v-if="noticeContent"
+        class="mb-4"
+        :title="noticeTitle"
+        :tone="noticeTone"
+      >
+        <MarkdownMediaContent
+          v-if="noticeMarkdown"
+          :content="noticeContent"
+          :fallback-alt="noticeFallbackAlt || t('image.resultImageForTitle', { title })"
+        />
+        <p v-else>{{ noticeContent }}</p>
+      </ContentNoticePanel>
 
       <MarkdownMediaContent :content="content" :fallback-alt="title" />
     </div>
@@ -56,6 +61,7 @@
 import AuthorAvatar from '@/components/AuthorAvatar.vue';
 import MarkdownMediaContent from '@/components/MarkdownMediaContent.vue';
 import SkeletonBlock from '@/components/ui/atoms/SkeletonBlock.vue';
+import ContentNoticePanel from '@/components/ui/molecules/ContentNoticePanel.vue';
 import { useI18n } from '@/i18n';
 import { computed } from 'vue';
 import { useAuthorProfile } from '@/composables/useAuthorProfile';
@@ -67,6 +73,9 @@ const props = withDefaults(defineProps<{
   authorUid?: string | null;
   compact?: boolean;
   content: string;
+  contextContent?: string;
+  contextTitle?: string;
+  contextTone?: 'error' | 'neutral' | 'success';
   noticeContent?: string | null;
   noticeFallbackAlt?: string;
   noticeMarkdown?: boolean;
@@ -79,6 +88,9 @@ const props = withDefaults(defineProps<{
   authorSecondary: '',
   authorUid: null,
   compact: false,
+  contextContent: '',
+  contextTitle: '',
+  contextTone: 'neutral',
   noticeContent: '',
   noticeFallbackAlt: '',
   noticeMarkdown: false,

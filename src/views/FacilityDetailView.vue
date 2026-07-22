@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import FacilityDetailPagePanel from '@/components/FacilityDetailPagePanel.vue';
 import FacilityStatusDialog from '@/components/FacilityStatusDialog.vue';
@@ -73,6 +73,7 @@ import { returnToNavigationOrigin } from '@/router/navigation-hierarchy';
 import type { FacilityStatus, OperationTimeListItem } from '@/types';
 
 const router = useRouter();
+const route = useRoute();
 const {
   canLoad: canLoadFacility,
   isAllowedUser,
@@ -138,7 +139,7 @@ const { statusClass } = useStatusStyling(status, 'dialog');
 
 function goBackToFacilities() {
   if (returnToNavigationOrigin(router)) return;
-  void router.replace({ name: 'facilities' });
+  void router.replace({ name: 'facilities', query: route.query });
 }
 
 function copyFacilityUrl() {

@@ -79,7 +79,7 @@
 ## components/ui（Atomic Design，無業務）
 
 - `atoms/` — 不依賴其他 UI 組裝層的最小視覺與互動單位：`AppButton.vue`、`AppIcon.vue`、`ImageRemoveButton.vue`、`IconTile.vue`、`TagBadge.vue`、`SwitchIndicator.vue`、`CharacterCount.vue`、`InlineAlert.vue`、`InlineMessage.vue`、`SkeletonBlock.vue`、`BrandMark.vue`、`BusyButtonContent.vue`、`DecorativeGlow.vue`、`LoadingSpinner.vue`、`DecodedImage.vue`（下載與 decode 完成前隱藏漸進繪製並顯示 spinner）、`SelectionMark.vue`、`UserAvatar.vue`；新頁面不得自行複製按鈕、圖片移除鍵、圖示容器、徽章、switch、字數顯示、alert／inline message、skeleton、品牌、avatar、圖片載入或 loading 樣式
-- `molecules/` — 由 atoms 組成、可獨立重用的局部控制與狀態：`SurfacePanel`／`EditorSurface`／dropdown、`EditorModeBar`、`ListSurfaceRow`、`IconListRow`、`LabeledListSection`、`SectionHeader`、`WorkflowStepHeader`、`CountedTextField`、`CountedTextareaField`、`NumberField`、`DialogHeading`、`DialogActionRow`、選取控制、詳情操作、空狀態／錯誤、Markdown 工具列與圖片預覽；molecule 不得依賴 organism
+- `molecules/` — 由 atoms 組成、可獨立重用的局部控制與狀態：`SurfacePanel`／`ContentNoticePanel`（列表補充列與詳情結果／地點共用的 neutral、success、error 表面）／`EditorSurface`／dropdown、`EditorModeBar`、`ListSurfaceRow`、`IconListRow`、`LabeledListSection`、`SectionHeader`、`WorkflowStepHeader`、`CountedTextField`、`CountedTextareaField`、`NumberField`、`DialogHeading`、`DialogActionRow`、選取控制、詳情操作、空狀態／錯誤、Markdown 工具列與圖片預覽；molecule 不得依賴 organism
 - `organisms/` — 可直接供 route view 或領域元件填入資料／slots 的完整區塊：內容卡集合與 skeleton、列表狀態、詳情殼與 route 狀態、`DialogShell`、Composer、Markdown／表格編輯器、狀態 Dialog、`ViewportFrame` 與 `RoutePageFrame`
 - 依賴方向固定為 `atoms → molecules → organisms`；同層可組合，低層不得反向 import 高層，`check:ui` 會阻止 flat path 與逆向依賴
 - `organisms/ViewportFrame.vue` / `organisms/RoutePageFrame.vue` — AppShell 只用 safe-area-aware padding 提供唯一 viewport gutter，route page 只負責 max-width、全高 flex、垂直 padding與底部導覽安全距離；不以負 margin、bleed 或頁面級 `overflow-x-hidden` 推出／裁切內容。手機 `bottom-safe` 共用 Bottom Tab 實際螢幕底距，使 Detail 的時間／操作列到 Tab 與 Tab 到螢幕底部保持相同留白
@@ -92,16 +92,16 @@
 
 ## components（應用）
 
-- Shell：`AppShell.vue`（共用導覽狀態、返回、捲動記憶與桌面 utility popup；顯示 Bottom Tab 時不再額外加 main-content 底距）、`app-shell/AppDesktopSidebar.vue`、`app-shell/AppMobileHeader.vue`（返回鍵保留單一 DOM，槽位與 44px 點擊區同寬並以寬度／opacity 收合，避免按鈕溢出壓字；標題維持單一內容實例）、`app-shell/AppMobileBottomNav.vue`（每個項目自行顯示靜態選中底色，不量測 DOM 或搬移共用灰色 indicator）、`app-shell/types.ts`、`AppStartupScreen.vue`、`LoginPanel.vue`、`ActionFeedbackBar.vue`
+- Shell：`AppShell.vue`（共用導覽狀態、返回、捲動記憶、提案／設備的手機分類切換與桌面 utility popup；設備分類以 URL query 同步手機 Header 和桌面 BoardControls；顯示 Bottom Tab 時不再額外加 main-content 底距）、`app-shell/AppDesktopSidebar.vue`、`app-shell/AppMobileHeader.vue`（共用字串型分類選項；返回鍵保留單一 DOM，槽位與 44px 點擊區同寬並以寬度／opacity 收合，避免按鈕溢出壓字；標題維持單一內容實例）、`app-shell/AppMobileBottomNav.vue`（每個項目自行顯示靜態選中底色，不量測 DOM 或搬移共用灰色 indicator）、`app-shell/types.ts`、`AppStartupScreen.vue`、`LoginPanel.vue`、`ActionFeedbackBar.vue`
 - 設定／通知：`SettingsPanelContent.vue`、`DesktopUtilityDialog.vue`；手機與深層連結保留獨立路由頁，桌面側欄的通知與頭像分別開啟各自尺寸與內容的獨立大型 popup
 - 新增頁：`IssueComposer`、`FacilityComposer`、`AnnouncementComposer` 搭配 `views/IssueComposerView.vue`、`FacilityComposerView.vue`、`AnnouncementComposerView.vue`；手機隱藏 Bottom Nav，手機與桌面皆填滿 AppShell padding 內的可用內容區，不另做 full-bleed 補償；共用 Composer 以內側 padding 預留按鈕陰影繪製空間，手機沿用 AppShell 的 iOS 式側距並只保留扣除多餘安全區後的緊湊底距，送出後 replace 至新內容詳情
 - Dialog：`ConfirmDialog`、`AppInstallPromptDialog`、`AppUpdatePromptDialog`、`PushPermissionPromptDialog`、`FacilityStatusDialog`、`IssueReviewDialog`、`IssueStatusDialog`
 - 留言：`CommentThreadPanel`、`CommentItem`、`CommentComposer`、`IssueComments`、`AnnouncementComments`
-- 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`
-- 詳情內容：`ContentDetailPagePanel` / `ContentDetailBody` — 提案、公告、設備共用完整 DetailPageShell、標題、作者、補充訊息與 Markdown 內容排版；留言、操作與領域標籤以 slots 注入
+- 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`；附議在卡片維持緊湊 icon-pill，在詳情頁則組合共用 `DetailActionButton`，與設備「我也遇到」共用尺寸、表面及選中狀態
+- 詳情內容：`ContentDetailPagePanel` / `ContentDetailBody` — 提案、公告、設備共用完整 DetailPageShell、標題、作者、補充訊息與 Markdown 內容排版；可組合 context notice（設備地點）及 result notice（處理結果），留言、操作與領域標籤以 slots 注入
 - 看板：`IssueBoard`、`BoardControls`、`BoardCategorySelector`、`IssueBoardTable`、`IssueTableRow`、`IssueAdminMenu`、`IssueDetailPagePanel`、`IssueDetailSupportFooter`；提案與設備共用分類選擇器
 - 公告：`AnnouncementTable`、`AnnouncementTableRow`、`AnnouncementDetailPagePanel`、`AnnouncementDetailActions`、`CompactActionMenu`
-- 設備：`FacilityComposer`、`FacilityStatusDialog`、`FacilityAdminMenu`、`FacilityTable`、`FacilityTableRow`、`FacilityDetailPagePanel`、`FacilityDetailActions`；三領域共用 Composer、詳情內容、loading／錯誤、Skeleton、操作列與確認 Dialog，僅保留地點及設備狀態等領域差異
+- 設備：`FacilityComposer`、`FacilityStatusDialog`、`FacilityAdminMenu`、`FacilityTable`、`FacilityTableRow`、`FacilityDetailPagePanel`、`FacilityDetailActions`；列表補充列只顯示地點與遇到人數，分類由 AppShell／BoardControls 顯示；詳情以共用 notice 表面呈現地點且不重複分類。三領域共用 Composer、詳情內容、loading／錯誤、Skeleton、操作列與確認 Dialog
 - 分類：`categories/CategorySelectorList.vue` / `CategoryEditorCard.vue` / `CategoryManagementSection.vue` / `SetupCategorySection.vue` / `PlatformFeatureToggle.vue` — 初始設定與後續管理共用的分類選擇、表單、功能開關、唯一預設控制與永久刪除入口
 
 ---
@@ -128,7 +128,7 @@
 
 - `constants/app.ts` / `constants/input-limits.ts` — Novae 品牌名稱、學校顯示設定與前端輸入長度
 - `constants/categories.ts` / `statuses.ts` — 動態分類衍生規則與提案／設備狀態判斷
-- `lib/` — `firebase`、`google-identity`（lazy GIS Token Client）、`firebase-messaging`、`firebase-app-check`、`auth-token`、`supabase`、`request`、`request-id`、`route-request`、`reconnect`、`route`、`page-size`、`format`、`search`、`issue-status`、`issue-timeline`、`issue-sort`、`persistent-cache`（IndexedDB 跨 reload 快取）、`touch-zoom`（以 capture touchend 座標與 dblclick 雙層攔截雙擊放大，仍保留 pinch zoom）、`in-app-browser`、`pwa-install`、`caret`、`markdown-*`、`image-processing`
+- `lib/` — `firebase`、`google-identity`（lazy GIS Token Client）、`firebase-messaging`、`firebase-app-check`、`auth-token`、`supabase`、`request`、`request-id`、`route-request`、`reconnect`、`route`、`page-size`、`format`、`search`、`issue-status`、`issue-timeline`、`issue-notice`（列表與詳情共用的結案內容／標題／tone 正規化）、`issue-sort`、`persistent-cache`（IndexedDB 跨 reload 快取）、`touch-zoom`（以 capture touchend 座標與 dblclick 雙層攔截雙擊放大，仍保留 pinch zoom）、`in-app-browser`、`pwa-install`、`caret`、`markdown-*`、`image-processing`
 - `types/index.ts` / `types/categories.ts` / `types/pwa.d.ts` / `types/google-identity.d.ts` — 共通型別、動態分類契約、設備領域型別與 GIS Token Client 型別
 
 ---

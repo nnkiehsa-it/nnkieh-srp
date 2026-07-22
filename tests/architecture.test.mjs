@@ -822,10 +822,13 @@ test('facility next actions and account UID use existing detail controls', async
   const facilityActions = await read('src/components/FacilityDetailActions.vue');
   const detailPagePanel = await read('src/components/ContentDetailPagePanel.vue');
   const contentDetailBody = await read('src/components/ContentDetailBody.vue');
+  const contentNoticePanel = await read('src/components/ui/molecules/ContentNoticePanel.vue');
+  const facilityTableRow = await read('src/components/FacilityTableRow.vue');
   const settingsView = await read('src/views/SettingsView.vue');
   const settingsPanel = await read('src/components/SettingsPanelContent.vue');
   const shareUrl = await read('src/composables/useShareUrl.ts');
   const proposalFooter = await read('src/components/IssueDetailSupportFooter.vue');
+  const voteButtons = await read('src/components/VoteButtons.vue');
   const detailActionGroup = await read('src/components/ui/molecules/DetailActionGroup.vue');
   const operationTimes = await read('src/components/ui/molecules/OperationTimeList.vue');
   const detailRouteState = await read('src/components/ui/organisms/DetailRouteState.vue');
@@ -838,11 +841,17 @@ test('facility next actions and account UID use existing detail controls', async
   assert.match(facilityPanel, /#actions="\{ compact \}"/u);
   assert.match(facilityPanel, /:compact="compact"/u);
   assert.match(facilityActions, /DetailActionButton/u);
+  assert.match(voteButtons, /v-if="compact"[\s\S]*:variant="supportVariant"[\s\S]*<DetailActionButton[\s\S]*v-else[\s\S]*:active="optimisticSupported"/u);
   assert.match(facilityActions, /DetailActionGroup/u);
   assert.match(detailActionGroup, /label="common\.share"/u);
   assert.match(facilityPanel, /ContentDetailPagePanel/u);
+  assert.match(facilityPanel, /:context-content="facility\.location"[\s\S]*context-title="facility\.place"/u);
+  assert.doesNotMatch(facilityPanel, /categoryLabel|findFacilityCategory|authorSecondary/u);
+  assert.match(facilityTableRow, /ContentNoticePanel compact[\s\S]*facility\.location[\s\S]*#trailing[\s\S]*affectedCount/u);
+  assert.doesNotMatch(facilityTableRow, /categoryLabel|findFacilityCategory/u);
   assert.match(detailPagePanel, /ContentDetailBody/u);
-  assert.match(contentDetailBody, /noticeContent/u);
+  assert.match(contentDetailBody, /contextContent[\s\S]*ContentNoticePanel[\s\S]*noticeContent/u);
+  assert.match(contentNoticePanel, /compact \? 'inset' : 'control'[\s\S]*bg-error-container[\s\S]*bg-success-container/u);
   assert.equal((contentDetailBody.match(/<MarkdownMediaContent/gu) ?? []).length, 2);
   assert.match(facilityDetail, /facility\.startProcessing' : 'facility\.completeCannotResolve/u);
   assert.match(facilityDetail, /facility\.waitingTime[\s\S]*facility\.startProcessingTime[\s\S]*facility\.markedUnresolved/u);
@@ -1462,6 +1471,7 @@ test('proposals, announcements, and facilities share list cards and detail panel
     read('src/components/FacilityDetailPagePanel.vue'),
   ]);
   const issueDetailPanel = detailPanels[0];
+  const issueTableRow = rowComponents[0];
   const cardCollection = await read('src/components/ui/organisms/ContentCardCollection.vue');
   const cardShell = await read('src/components/ui/organisms/ContentCardShell.vue');
   const cardSkeleton = await read('src/components/ui/organisms/ContentCardSkeleton.vue');
@@ -1476,6 +1486,12 @@ test('proposals, announcements, and facilities share list cards and detail panel
   const announcementDetailFlow = await read('src/composables/useAnnouncementDetail.ts');
   const detailRouteQuery = await read('src/composables/useDetailRouteQuery.ts');
   const shareUrl = await read('src/composables/useShareUrl.ts');
+  const issueNotice = await read('src/lib/issue-notice.ts');
+  assert.match(issueDetailPanel, /:notice-content="issueNotice\?\.content"[\s\S]*getIssueNotice/u);
+  assert.match(issueTableRow, /ContentNoticePanel[\s\S]*v-if="issueNoticeSummary"[\s\S]*issueNoticeSummary\.content/u);
+  assert.match(issueTableRow, /v-if="issue\.support_enabled && !issueNoticeSummary"/u);
+  assert.match(issueTableRow, /stripMarkdownImages\(notice\.content\)[\s\S]*statusLabel\.value/u);
+  assert.match(issueNotice, /isClosedIssueStatus[\s\S]*review-rejected[\s\S]*tone: 'error'[\s\S]*tone: 'success'/u);
   const statuses = await read('src/constants/statuses.ts');
   const contentListState = await read('src/components/ui/organisms/ContentListState.vue');
   const contentListRuntime = await read('src/composables/useContentListRuntime.ts');
@@ -1718,7 +1734,11 @@ test('navigation and contextual creation share the same responsive information a
 
   assert.match(appShell, /label: t\('issue\.proposal'\)/u);
   assert.match(appShell, /:category-filter="mobileCategoryFilter"/u);
+  assert.match(appShell, /route\.name === 'facilities'[\s\S]*activeFacilityCategories[\s\S]*facility\.chooseCategory/u);
+  assert.match(appShell, /router\.replace\(\{ name: 'facilities', query: \{ \.\.\.route\.query, category: filter \} \}\)/u);
   assert.match(mobileHeader, /BoardCategorySelector/u);
+  assert.match(mobileHeader, /categoryOptions: ReadonlyArray[\s\S]*categorySelectorLabel: string/u);
+  assert.doesNotMatch(mobileHeader, /IssueFilter|getIssueFilterOptions/u);
   assert.match(boardControls, /BoardCategorySelector/u);
   assert.match(facilitiesView, /v-model:active-filter="category"/u);
   assert.doesNotMatch(mobileNav, /CreateActionMenu|新增/u);

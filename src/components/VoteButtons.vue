@@ -1,20 +1,29 @@
 <template>
   <div class="relative">
     <AppButton
+      v-if="compact"
       :variant="supportVariant"
-      :class="compact ? '!h-8 !px-2.5 !gap-1 text-xs' : ''"
+      class="!h-8 !gap-1 !px-2.5 text-xs"
       :disabled="busy || supportClosed || authorFixed"
       :title="supportTitle"
       :aria-label="t(authorFixed ? 'issue.theAuthorAutomaticallySupportsThisProposal' : optimisticSupported ? 'common.removeSupport' : 'issue.supportProposal')"
       @click="toggle"
     >
-      <AppIcon name="thumbs-up" :size="compact ? 4 : 5" />
-      <!-- Support count display -->
-      <span
-        class="font-semibold select-none leading-none"
-        :class="compact ? 'text-[11px]' : 'text-sm'"
-      >{{ displaySupportCount }}</span>
+      <AppIcon name="thumbs-up" :size="4" />
+      <span class="select-none text-[11px] font-semibold leading-none">{{ displaySupportCount }}</span>
     </AppButton>
+
+    <DetailActionButton
+      v-else
+      :active="optimisticSupported"
+      :disabled="busy || supportClosed || authorFixed"
+      :label="String(displaySupportCount)"
+      :title="supportTitle"
+      :aria-label="authorFixed ? 'issue.theAuthorAutomaticallySupportsThisProposal' : optimisticSupported ? 'common.removeSupport' : 'issue.supportProposal'"
+      @click="toggle"
+    >
+      <AppIcon name="thumbs-up" />
+    </DetailActionButton>
   </div>
 </template>
 
@@ -22,6 +31,7 @@
 import { computed, toRef } from 'vue';
 import AppIcon from '@/components/ui/atoms/AppIcon.vue';
 import AppButton from '@/components/ui/atoms/AppButton.vue';
+import DetailActionButton from '@/components/ui/molecules/DetailActionButton.vue';
 import { useVoteSupport } from '@/composables/useVoteSupport';
 import { useI18n } from '@/i18n';
 
@@ -40,14 +50,6 @@ const emit = defineEmits<{
   supported: [payload: { supported: boolean; supportCount: number }];
 }>();
 const { t } = useI18n();
-const supportTitle = computed(() => {
-  if (props.authorFixed) return t('issue.theAuthorAutomaticallySupportsThisProposal');
-  if (!props.supportClosed) return t(props.currentUserSupported ? 'common.removeSupport' : 'issue.supportProposal');
-  return props.statusLabel
-    ? t('issue.support.closedStatus', { status: props.statusLabel })
-    : t('issue.submissionsHaveEnded');
-});
-
 const supportClosed = computed(() => props.supportClosed);
 const {
   busy,
@@ -63,5 +65,12 @@ const {
   statusLabel: computed(() => props.statusLabel),
   onSupported: (payload) => emit('supported', payload),
   onContentUnavailable: (issueId) => emit('contentUnavailable', issueId),
+});
+const supportTitle = computed(() => {
+  if (props.authorFixed) return t('issue.theAuthorAutomaticallySupportsThisProposal');
+  if (!props.supportClosed) return t(optimisticSupported.value ? 'common.removeSupport' : 'issue.supportProposal');
+  return props.statusLabel
+    ? t('issue.support.closedStatus', { status: props.statusLabel })
+    : t('issue.submissionsHaveEnded');
 });
 </script>
