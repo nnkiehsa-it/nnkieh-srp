@@ -1365,7 +1365,7 @@ test('entry and comment limits are enforced across UI, Edge, and a new migration
   assert.match(composerShell, /editor-class="flex-1 min-h-\[180px\]"/u);
   assert.match(feedbackBar, /action-feedback-card[\s\S]*min-h-14 w-full/u);
   assert.match(baseStyles, /\.action-feedback-viewport \{[\s\S]*padding-left: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-left\)\);[\s\S]*padding-right: max\(var\(--app-viewport-gutter\), env\(safe-area-inset-right\)\)/u);
-  assert.match(baseStyles, /body\.dialog-open \.action-feedback-viewport \{[\s\S]*top: calc\(env\(safe-area-inset-top\) \+ 6\.75rem\)/u);
+  assert.match(baseStyles, /@media \(max-width: 767px\) \{[\s\S]*body\.dialog-open \.action-feedback-viewport \{[\s\S]*top: calc\(env\(safe-area-inset-top\) \+ 6\.75rem\)/u);
 });
 
 test('primary navigation keeps desktop chrome and persistent mobile navigation', async () => {
@@ -2214,4 +2214,39 @@ test('Edge Functions avoid the Supabase JS Node-version shim', async () => {
     integrationScript,
     /--data ['"][^'"]*integrationReadinessProbe/u,
   );
+});
+
+test('private database functions pin their search path without opening private tables', async () => {
+  const migration = await read(
+    'supabase/migrations/202607230002_security_advisor_function_paths.sql',
+  );
+  const functionNames = [
+    'firebase_project_id',
+    'firebase_uid',
+    'issue_list_sort_date',
+    'issue_user_sort_date',
+    'refresh_announcement_comment_count',
+    'refresh_announcement_like_count',
+    'set_issue_derived_fields',
+    'skip_duplicate_active_deletion_job',
+    'skip_identical_outbox_update',
+    'touch_updated_at',
+    'validate_announcement_comment_parent',
+    'validate_comment_parent',
+  ];
+
+  for (const functionName of functionNames) {
+    assert.match(
+      migration,
+      new RegExp(
+        `alter function app_private\\.${functionName}\\([\\s\\S]*?set search_path = pg_catalog, app_private;`,
+        'u',
+      ),
+    );
+  }
+  assert.match(
+    migration,
+    /revoke all on table[\s\S]*app_private\.access_assignment_audit[\s\S]*app_private\.facility_categories[\s\S]*from public, anon, authenticated;/u,
+  );
+  assert.doesNotMatch(migration, /create policy|grant (select|insert|update|delete)/iu);
 });

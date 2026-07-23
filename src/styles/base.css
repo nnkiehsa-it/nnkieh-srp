@@ -462,10 +462,6 @@
     top: calc(env(safe-area-inset-top) + var(--app-header-height) + 0.75rem);
   }
 
-  body.dialog-open .action-feedback-viewport {
-    top: calc(env(safe-area-inset-top) + 6.75rem);
-  }
-
   @media (min-width: 640px) {
     .app-main-content {
       padding-top: calc(var(--app-header-height) + env(safe-area-inset-top) + 1.25rem);
@@ -552,6 +548,10 @@
   }
 
   @media (max-width: 767px) {
+    body.dialog-open .action-feedback-viewport {
+      top: calc(env(safe-area-inset-top) + 6.75rem);
+    }
+
     input,
     select,
     textarea {
