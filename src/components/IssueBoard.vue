@@ -1,19 +1,19 @@
 <template>
-  <section class="relative flex min-h-0 flex-1 flex-col gap-5">
-    <BoardControls
-      v-model:status-tab="statusTab"
-      v-model:search-query="searchQuery"
-      v-model:sort-option="sortOption"
-      :active-filter="activeFilter"
-      :active-category-label="activeCategoryLabel"
-      :create-label="createLabel"
-      :search-hint="searchHint"
-      @create="openComposerForActiveCategory"
-      @submit-search="submitSearch"
-      @clear-search="clearSearch"
-    />
+  <section class="relative flex min-h-0 flex-1 flex-col">
+    <div ref="boardScrollRef" class="route-scroll-through scroll-shadow-space scrollbar-subtle min-h-0 flex-1 space-y-5 overflow-auto overscroll-contain">
+      <BoardControls
+        v-model:status-tab="statusTab"
+        v-model:search-query="searchQuery"
+        v-model:sort-option="sortOption"
+        :active-filter="activeFilter"
+        :active-category-label="activeCategoryLabel"
+        :create-label="createLabel"
+        :search-hint="searchHint"
+        @create="openComposerForActiveCategory"
+        @submit-search="submitSearch"
+        @clear-search="clearSearch"
+      />
 
-    <div ref="boardScrollRef" class="route-scroll-through scroll-shadow-space scrollbar-subtle min-h-0 flex-1 space-y-4 overflow-auto overscroll-contain">
       <ContentListState
         :empty="currentIssues.length === 0"
         :empty-description="emptyStateDescription"

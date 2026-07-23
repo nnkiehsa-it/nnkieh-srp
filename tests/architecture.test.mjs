@@ -1423,6 +1423,7 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   const issueBoard = await read('src/components/IssueBoard.vue');
   const issueBoardView = await read('src/views/IssueBoardView.vue');
   const facilitiesView = await read('src/views/FacilitiesView.vue');
+  const announcementsView = await read('src/views/AnnouncementsView.vue');
   const routeComponents = await read('src/router/route-components.ts');
   const hierarchy = await read('src/router/navigation-hierarchy.ts');
   const notificationNavigation = await read('src/composables/useNotificationNavigation.ts');
@@ -1436,12 +1437,14 @@ test('primary navigation keeps desktop chrome and persistent mobile navigation',
   assert.match(appShell, /app-main-content relative flex flex-1 flex-col overflow-auto/u);
   assert.match(appShell, /<AppMobileHeader[\s\S]*<ViewportFrame as="main"[\s\S]*<slot \/>/u);
   assert.match(issueBoard, /overflow-auto overscroll-contain/u);
-  assert.match(issueBoard, /<section class="relative flex min-h-0 flex-1 flex-col gap-5">/u);
-  assert.match(issueBoardView, /v-else-if="sessionLoading"[\s\S]*flex min-h-0 flex-1 flex-col gap-5[\s\S]*route-scroll-through[\s\S]*overflow-auto/u);
+  assert.match(issueBoard, /route-scroll-through[^"]*overflow-auto[\s\S]*<BoardControls[\s\S]*<ContentListState/u);
+  assert.match(issueBoardView, /v-else-if="sessionLoading"[\s\S]*route-scroll-through[^"]*overflow-auto[\s\S]*board-controls[\s\S]*<IssueBoardTable/u);
   // Session skeleton and IssueBoard must be exclusive; concurrent mount leaves residual card shadows.
   assert.match(issueBoardView, /<IssueBoard[\s\S]*v-else-if="isAllowedUser"/u);
   assert.doesNotMatch(issueBoardView, /<IssueBoard[\s\S]*v-if="isAllowedUser"/u);
-  assert.match(facilitiesView, /overflow-auto overscroll-contain/u);
+  assert.match(facilitiesView, /route-scroll-through[^"]*overflow-auto[\s\S]*<BoardControls[\s\S]*<ContentListState/u);
+  assert.match(announcementsView, /route-scroll-through[^"]*overflow-auto[\s\S]*announcement\.newAnnouncement[\s\S]*<ContentListState/u);
+  assert.match(announcementsView, /scrollRoot: announcementScrollRef/u);
   assert.match(app, /requestIdleCallback/u);
   assert.match(app, /preloadPrimaryRouteComponents/u);
   assert.match(appShell, /@pointerover\.capture="handleNavigationIntent"/u);

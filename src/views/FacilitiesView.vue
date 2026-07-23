@@ -1,21 +1,21 @@
 <template>
-  <RoutePageFrame layout="fill" class="relative gap-5">
-    <BoardControls
-      v-model:active-filter="category"
-      v-model:status-tab="bucket"
-      v-model:search-query="query"
-      v-model:sort-option="sort"
-      mode="facility"
-      :active-category-label="activeCategoryLabel"
-      :category-options="categoryOptions"
-      :create-label="t('facility.addFacility')"
-      :search-hint="searchHint"
-      @create="openComposer"
-      @submit-search="submitSearch"
-      @clear-search="clearSearch"
-    />
+  <RoutePageFrame layout="fill" class="relative">
+    <div class="route-scroll-through scroll-shadow-space scrollbar-subtle min-h-0 flex-1 space-y-5 overflow-auto overscroll-contain">
+      <BoardControls
+        v-model:active-filter="category"
+        v-model:status-tab="bucket"
+        v-model:search-query="query"
+        v-model:sort-option="sort"
+        mode="facility"
+        :active-category-label="activeCategoryLabel"
+        :category-options="categoryOptions"
+        :create-label="t('facility.addFacility')"
+        :search-hint="searchHint"
+        @create="openComposer"
+        @submit-search="submitSearch"
+        @clear-search="clearSearch"
+      />
 
-    <div class="route-scroll-through scroll-shadow-space scrollbar-subtle min-h-0 flex-1 space-y-4 overflow-auto overscroll-contain">
       <ContentListState
         :empty="facilities.length === 0"
         :empty-description="emptyDescription"

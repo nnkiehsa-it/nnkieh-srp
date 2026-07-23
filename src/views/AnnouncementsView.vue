@@ -1,72 +1,74 @@
 <template>
-  <RoutePageFrame class="space-y-5">
-    <div class="flex items-center justify-end gap-3 md:justify-between">
-      <h2 class="hidden shrink-0 text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block">{{ t('announcement.announcement') }}</h2>
-      <AppButton
-        v-if="isAdmin"
-        variant="contextual"
-        class="h-8 w-8 min-w-8 shrink-0 p-0"
-        :aria-label="t('announcement.newAnnouncement')"
-        :title="t('announcement.newAnnouncement')"
-        @click="openComposer"
+  <RoutePageFrame layout="fill">
+    <div ref="announcementScrollRef" class="route-scroll-through scroll-shadow-space scrollbar-subtle min-h-0 flex-1 space-y-5 overflow-auto overscroll-contain">
+      <div class="flex items-center justify-end gap-3 md:justify-between">
+        <h2 class="hidden shrink-0 text-2xl font-semibold tracking-[0.015em] text-ink-950 dark:text-ink-50 md:block">{{ t('announcement.announcement') }}</h2>
+        <AppButton
+          v-if="isAdmin"
+          variant="contextual"
+          class="h-8 w-8 min-w-8 shrink-0 p-0"
+          :aria-label="t('announcement.newAnnouncement')"
+          :title="t('announcement.newAnnouncement')"
+          @click="openComposer"
+        >
+          <AppIcon name="plus" :size="4" />
+        </AppButton>
+      </div>
+
+      <ContentListState
+        :empty="announcements.length === 0"
+        empty-description="announcement.emptyDescription"
+        empty-icon="chart"
+        empty-title="announcement.thereAreCurrentlyNoAnnouncements"
+        :error="error"
+        error-title="announcement.announcementReadingFailed"
+        :has-more="hasMore"
+        :loading="visibleAnnouncementLoading"
+        :loading-has-problem="announcementLoadingHasProblem"
+        :loading-more="loadingMore"
+        :panel-key="announcementPanelKey"
+        :problem-description="announcementProblemDescription"
+        :problem-title="announcementProblemTitle"
+        :retry-disabled="!announcementOnline"
+        spacing-class="space-y-3"
+        :unavailable="!isAllowedUser"
+        unavailable-description="announcement.pleaseLogInWithYourSchoolAccountFirst"
+        unavailable-title="announcement.unableToViewAnnouncements"
+        @load-more="loadMoreAnnouncements"
+        @retry="retryAnnouncements"
       >
-        <AppIcon name="plus" :size="4" />
-      </AppButton>
+        <template #loading>
+          <AnnouncementTable
+            :announcements="[]"
+            :can-manage="isAdmin"
+            :loading="true"
+          />
+        </template>
+
+        <template #loading-more>
+          <AnnouncementTable
+            :announcements="[]"
+            :can-manage="isAdmin"
+            :loading="true"
+            :loading-count="1"
+          />
+        </template>
+
+        <AnnouncementTable
+          :announcements="announcements"
+          :can-manage="isAdmin"
+          :liking-announcement-id="likingAnnouncementId"
+          @delete="handleListDelete"
+          @open="openAnnouncementDetails"
+          @open-comments="(announcement) => openAnnouncementDetails(announcement, 'comments')"
+          @toggle-like="handleToggleLike"
+        />
+
+        <template #sentinel>
+          <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
+        </template>
+      </ContentListState>
     </div>
-
-    <ContentListState
-      :empty="announcements.length === 0"
-      empty-description="announcement.emptyDescription"
-      empty-icon="chart"
-      empty-title="announcement.thereAreCurrentlyNoAnnouncements"
-      :error="error"
-      error-title="announcement.announcementReadingFailed"
-      :has-more="hasMore"
-      :loading="visibleAnnouncementLoading"
-      :loading-has-problem="announcementLoadingHasProblem"
-      :loading-more="loadingMore"
-      :panel-key="announcementPanelKey"
-      :problem-description="announcementProblemDescription"
-      :problem-title="announcementProblemTitle"
-      :retry-disabled="!announcementOnline"
-      spacing-class="space-y-3"
-      :unavailable="!isAllowedUser"
-      unavailable-description="announcement.pleaseLogInWithYourSchoolAccountFirst"
-      unavailable-title="announcement.unableToViewAnnouncements"
-      @load-more="loadMoreAnnouncements"
-      @retry="retryAnnouncements"
-    >
-      <template #loading>
-        <AnnouncementTable
-          :announcements="[]"
-          :can-manage="isAdmin"
-          :loading="true"
-        />
-      </template>
-
-      <template #loading-more>
-        <AnnouncementTable
-          :announcements="[]"
-          :can-manage="isAdmin"
-          :loading="true"
-          :loading-count="1"
-        />
-      </template>
-
-      <AnnouncementTable
-        :announcements="announcements"
-        :can-manage="isAdmin"
-        :liking-announcement-id="likingAnnouncementId"
-        @delete="handleListDelete"
-        @open="openAnnouncementDetails"
-        @open-comments="(announcement) => openAnnouncementDetails(announcement, 'comments')"
-        @toggle-like="handleToggleLike"
-      />
-
-      <template #sentinel>
-        <div ref="loadMoreSentinel" class="h-1" aria-hidden="true"></div>
-      </template>
-    </ContentListState>
 
     <ConfirmDialog
       :open="Boolean(deletePendingAnnouncement)"
@@ -82,7 +84,7 @@
 
 <script setup lang="ts">
 import RoutePageFrame from '@/components/ui/organisms/RoutePageFrame.vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AnnouncementTable from '@/components/AnnouncementTable.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -116,6 +118,7 @@ const {
 
 const { t } = useI18n();
 const router = useRouter();
+const announcementScrollRef = ref<HTMLElement | null>(null);
 const rawAnnouncementLoading = computed(() => sessionLoading.value || loading.value);
 const announcementPanelKey = 'announcements';
 const {
@@ -134,6 +137,7 @@ const {
   loading: rawAnnouncementLoading,
   loadingMore,
   refresh: refreshAnnouncements,
+  scrollRoot: announcementScrollRef,
   refreshFeedback: {
     error: 'announcement.updateFailed',
     loading: 'announcement.announcementIsBeingUpdated',

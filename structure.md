@@ -99,7 +99,7 @@
 - 留言：`CommentThreadPanel`、`CommentItem`、`CommentComposer`、`IssueComments`、`AnnouncementComments`
 - 內容：`MarkdownRenderer`、`MarkdownMediaContent`、`AuthorAvatar`、`VoteButtons`；附議在卡片維持緊湊 icon-pill，在詳情頁則組合共用 `DetailActionButton`，與設備「我也遇到」共用尺寸、表面及選中狀態
 - 詳情內容：`ContentDetailPagePanel` / `ContentDetailBody` — 提案、公告、設備共用完整 DetailPageShell、標題、作者、補充訊息與 Markdown 內容排版；可組合 context notice（設備地點）及 result notice（處理結果），留言、操作與領域標籤以 slots 注入
-- 看板：`IssueBoard`、`BoardControls`、`BoardCategorySelector`、`IssueBoardTable`、`IssueTableRow`、`IssueAdminMenu`、`IssueDetailPagePanel`、`IssueDetailSupportFooter`；提案與設備共用分類選擇器
+- 看板：`IssueBoard`、`BoardControls`、`BoardCategorySelector`、`IssueBoardTable`、`IssueTableRow`、`IssueAdminMenu`、`IssueDetailPagePanel`、`IssueDetailSupportFooter`；提案與設備共用分類選擇器，提案／設備／公告的列表操作列與卡片皆位於同一內容捲動層
 - 公告：`AnnouncementTable`、`AnnouncementTableRow`、`AnnouncementDetailPagePanel`、`AnnouncementDetailActions`、`CompactActionMenu`
 - 設備：`FacilityComposer`、`FacilityStatusDialog`、`FacilityAdminMenu`、`FacilityTable`、`FacilityTableRow`、`FacilityDetailPagePanel`、`FacilityDetailActions`；列表補充列只顯示地點與遇到人數，分類由 AppShell／BoardControls 顯示；詳情以共用 notice 表面呈現地點，並保留分類徽章。新增時標題與地點必填，詳細說明與圖片為選填；三領域共用 Composer、詳情內容、loading／錯誤、Skeleton、操作列與確認 Dialog
 - 分類：`categories/CategorySelectorList.vue` / `CategoryEditorCard.vue` / `CategoryManagementSection.vue` / `SetupCategorySection.vue` / `PlatformFeatureToggle.vue` — 初始設定與後續管理共用的分類選擇、表單、功能開關、唯一預設控制與永久刪除入口
@@ -111,7 +111,7 @@
 - Session：`useSession` + `sessionTypes` / `sessionDebug` / `sessionValidation` / `sessionAuthActions`（production：GIS Token Client → `signInWithCredential`；emulator：`signInWithPopup`）/ `sessionEffects`（登入 bootstrap 的 visit 最多每日寫入一次）
 - 分類：`useCategories` — 動態 catalog、平台功能開關、預設分類與標籤查找的前端單一狀態來源
 - 權限：`useMemberAccessManagement` — 分類／公告 scope 的負責人載入、精確查找、競態防護與單一範圍授權流程
-- 看板：`useIssueBoardData`、`useIssueBuckets`、`useIssueBoardPagination`、`useIssueSearch`、`useUserIssuesData`、`useIssueRouteFilter`、`useDocumentTitle`、`useFilter`
+- 看板：`useIssueBoardData`、`useIssueBuckets`（進行中／已結案各自持有請求，切換不互相中止）、`useIssueBoardPagination`、`useIssueSearch`、`useUserIssuesData`、`useIssueRouteFilter`、`useDocumentTitle`、`useFilter`
 - 詳情／列：`useIssueRouteDetail`、`useIssueDetailCacheScope`（列表 intent 預抓與詳情讀取共用的權限範圍 key）、`useIssueDisplay`、`useIssueSupport`、`useIssueItemController`、`useIssueComposerForm`、`useVoteSupport`、`useDeleteIssue`、`useStatusStyling`
 - 留言：`useIssueComments`、`useAnnouncementComments`、`useDiscussionComments`（共用 core，依提案／公告領域權限判斷管理操作）
 - 公告：`useAnnouncements`、`useAnnouncementManagement`、`useAnnouncementDetail`（詳情讀取、快取、Realtime、按讚與刪除流程）

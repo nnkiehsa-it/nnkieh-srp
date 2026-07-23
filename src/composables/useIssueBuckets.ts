@@ -63,8 +63,7 @@ function mergeIssues(
 export function useIssueBuckets(deps: BucketDeps) {
   const { user, activeFilter, isAdmin, supportedIssueIds, currentPageSize, sortOption } = deps;
   const { isOnline } = useNetworkStatus();
-  let activeController: AbortController | null = null;
-  let activeBucket: BucketState | null = null;
+  const bucketControllers = new Map<BucketState, AbortController>();
 
   function getBucketKey(statusBucket: IssueStatusBucket) {
     return [
@@ -106,10 +105,9 @@ export function useIssueBuckets(deps: BucketDeps) {
 
     const version = getBucketVersion(bucket);
     const cursor = options.append ? bucket.cursor : null;
-    if (activeBucket !== bucket) activeController?.abort();
+    bucketControllers.get(bucket)?.abort();
     const controller = new AbortController();
-    activeController = controller;
-    activeBucket = bucket;
+    bucketControllers.set(bucket, controller);
     bucket.error = '';
     if (options.append) {
       bucket.loadingMore = true;
@@ -157,17 +155,13 @@ export function useIssueBuckets(deps: BucketDeps) {
         bucket.loadingMore = false;
         bucket.refreshing = false;
       }
-      if (activeController === controller) {
-        activeController = null;
-        activeBucket = null;
-      }
+      if (bucketControllers.get(bucket) === controller) bucketControllers.delete(bucket);
     }
   }
 
   function activateBucket(statusBucket: IssueStatusBucket) {
     const bucket = getBucketState(statusBucket);
     if (activeFilter.value === 'my-proposals' || bucket.loading || bucket.refreshing) return;
-    if (activeController && activeBucket !== bucket) activeController.abort();
     if (bucket.initialized && isContentCacheFresh(bucket.updatedAt)) return;
     void loadBucket(statusBucket, { silent: bucket.initialized });
   }
@@ -222,9 +216,8 @@ export function useIssueBuckets(deps: BucketDeps) {
       bucket.refreshing = false;
       bucket.updatedAt = 0;
     });
-    activeController?.abort();
-    activeController = null;
-    activeBucket = null;
+    bucketControllers.forEach((controller) => controller.abort());
+    bucketControllers.clear();
   }
 
   function upsertIssueAcrossBuckets(issue: IssueRecord) {
@@ -244,7 +237,10 @@ export function useIssueBuckets(deps: BucketDeps) {
     });
   });
 
-  onScopeDispose(() => activeController?.abort());
+  onScopeDispose(() => {
+    bucketControllers.forEach((controller) => controller.abort());
+    bucketControllers.clear();
+  });
 
   return {
     activeState,
